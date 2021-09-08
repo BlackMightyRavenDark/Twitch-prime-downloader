@@ -251,9 +251,14 @@ namespace Twitch_prime_downloader
         public static string TWITCH_USHER_VOD_URL = "https://usher.ttvnw.net/vod/{0}.m3u8?" +
                      "player=twitchweb&nauth={1}&nauthsig={2}&" +
                      "$allow_audio_only=true&allow_source=true&type=any&p={3}";
+
+        /// <summary>
+        /// WARNING!!! Do not use this token if you are signed in!!!
+        /// </summary>
         public static string TWITCH_CHANNEL_TOKEN = "{\"operationName\": \"PlaybackAccessToken\", \"extensions\": {\"persistedQuery\":" +
             " {\"version\": 1, \"sha256Hash\": \"0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712\"}}," +
             " \"variables\": {\"isLive\": true, \"login\": \"<channame>\", \"isVod\": false, \"vodID\": \"\", \"playerType\": \"embed\"}}";
+
         public const string TWITCH_GQL_API_URL = "https://gql.twitch.tv/gql";
 
         public static string UNKNOWN_GAME_URL = "https://static-cdn.jtvnw.net/ttv-boxart/404_boxart.png";
@@ -590,6 +595,12 @@ namespace Twitch_prime_downloader
             return res;
         }
 
+        /// <summary>
+        /// Checks channel is prime or not.
+        /// WARNING!!! Do not use this method if you are signed in!!!
+        /// </summary>
+        /// <param name="channelName">Channel name</param>
+        /// <returns>TRUE if channel is prime or FALSE if not.</returns>
         public static bool IsChannelPrime(string channelName)
         {
             string body = TWITCH_CHANNEL_TOKEN.Replace("<channame>", channelName);
