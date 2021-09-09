@@ -35,6 +35,7 @@ namespace Twitch_prime_downloader
             this.tabPageDebug = new System.Windows.Forms.TabPage();
             this.memoDebug = new System.Windows.Forms.RichTextBox();
             this.tabPageSettings = new System.Windows.Forms.TabPage();
+            this.btnRestoreDefaultFilenameFormat = new System.Windows.Forms.Button();
             this.textBox_FileNameFormat = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.btnSelectBrowser = new System.Windows.Forms.Button();
@@ -64,14 +65,12 @@ namespace Twitch_prime_downloader
             this.scrollBarDownloads = new System.Windows.Forms.VScrollBar();
             this.panelDownloads = new System.Windows.Forms.Panel();
             this.contextMenuStreamImage = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.miCopyVideoUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miCopyVideoUrl = new System.Windows.Forms.ToolStripMenuItem();
             this.copyImageURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyStreamInfoJSOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveImageAssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnRestoreDefaultFilenameFormat = new System.Windows.Forms.Button();
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -145,6 +144,16 @@ namespace Twitch_prime_downloader
             this.tabPageSettings.Size = new System.Drawing.Size(818, 482);
             this.tabPageSettings.TabIndex = 1;
             this.tabPageSettings.Text = "Настройки";
+            // 
+            // btnRestoreDefaultFilenameFormat
+            // 
+            this.btnRestoreDefaultFilenameFormat.Location = new System.Drawing.Point(523, 83);
+            this.btnRestoreDefaultFilenameFormat.Name = "btnRestoreDefaultFilenameFormat";
+            this.btnRestoreDefaultFilenameFormat.Size = new System.Drawing.Size(109, 23);
+            this.btnRestoreDefaultFilenameFormat.TabIndex = 15;
+            this.btnRestoreDefaultFilenameFormat.Text = "Вернуть как было";
+            this.btnRestoreDefaultFilenameFormat.UseVisualStyleBackColor = true;
+            this.btnRestoreDefaultFilenameFormat.Click += new System.EventHandler(this.btnRestoreDefaultFilenameFormat_Click);
             // 
             // textBox_FileNameFormat
             // 
@@ -447,7 +456,6 @@ namespace Twitch_prime_downloader
             // contextMenuStreamImage
             // 
             this.contextMenuStreamImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miCopyVideoUrlToolStripMenuItem,
             this.miCopyVideoUrl,
             this.copyImageURLToolStripMenuItem,
             this.copyStreamInfoJSOToolStripMenuItem,
@@ -456,12 +464,6 @@ namespace Twitch_prime_downloader
             this.openVideoInBrowserToolStripMenuItem});
             this.contextMenuStreamImage.Name = "contextMenuStreamImage";
             this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 142);
-            // 
-            // miCopyVideoUrlToolStripMenuItem
-            // 
-            this.miCopyVideoUrlToolStripMenuItem.Name = "miCopyVideoUrlToolStripMenuItem";
-            this.miCopyVideoUrlToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-            this.miCopyVideoUrlToolStripMenuItem.Text = "miCopyVideoUrl";
             // 
             // miCopyVideoUrl
             // 
@@ -502,16 +504,6 @@ namespace Twitch_prime_downloader
             this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
             this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
-            // 
-            // btnRestoreDefaultFilenameFormat
-            // 
-            this.btnRestoreDefaultFilenameFormat.Location = new System.Drawing.Point(523, 83);
-            this.btnRestoreDefaultFilenameFormat.Name = "btnRestoreDefaultFilenameFormat";
-            this.btnRestoreDefaultFilenameFormat.Size = new System.Drawing.Size(109, 23);
-            this.btnRestoreDefaultFilenameFormat.TabIndex = 15;
-            this.btnRestoreDefaultFilenameFormat.Text = "Вернуть как было";
-            this.btnRestoreDefaultFilenameFormat.UseVisualStyleBackColor = true;
-            this.btnRestoreDefaultFilenameFormat.Click += new System.EventHandler(this.btnRestoreDefaultFilenameFormat_Click);
             // 
             // Form1
             // 
@@ -583,7 +575,6 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.ToolStripMenuItem openVideoInBrowserToolStripMenuItem;
         private System.Windows.Forms.TextBox textBox_FileNameFormat;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem miCopyVideoUrlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miCopyVideoUrl;
         private System.Windows.Forms.Button btnRestoreDefaultFilenameFormat;
     }
