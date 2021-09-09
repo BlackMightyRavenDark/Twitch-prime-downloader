@@ -662,5 +662,6 @@ namespace Twitch_prime_downloader
             textBox_FileNameFormat.Text = FILENAME_FORMAT_DEFAULT;
             config.fileNameFormat = FILENAME_FORMAT_DEFAULT;
         }
+
     }
 }
