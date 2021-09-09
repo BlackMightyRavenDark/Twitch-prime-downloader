@@ -149,6 +149,11 @@ namespace Twitch_prime_downloader
             public TwitchGameInfo gameInfo = new TwitchGameInfo();
             public string infoStringJson;
 
+            public bool IsHighlight()
+            {
+                return vodType == "highlight";
+            }
+
             ~TwitchStreamInfo()
             {
                 imageData?.Dispose();
@@ -263,8 +268,10 @@ namespace Twitch_prime_downloader
         public const string TWITCH_GQL_API_URL = "https://gql.twitch.tv/gql";
 
         public static string UNKNOWN_GAME_URL = "https://static-cdn.jtvnw.net/ttv-boxart/404_boxart.png";
-        public static string TWITCH_DOWNLOAD_ARCHIVE_URL = "https://vod-secure.twitch.tv/{0}/{1}/";
-        
+
+        public static string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "<server>/<stream_id>/chunked/index-dvr.m3u8";
+        public static string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "<server>/<stream_id>/chunked/highlight-<video_id>.m3u8";
+
         public static List<FrameStream> framesStream = new List<FrameStream>();
         public static List<FrameDownload> framesDownload = new List<FrameDownload>();
         public static List<string> twitchClientIDs = new List<string>();
@@ -582,20 +589,29 @@ namespace Twitch_prime_downloader
 
         public static int GetStreamPlaylistUrl(TwitchStreamInfo aStream, out string playlistUrl)
         {
-            playlistUrl = string.Empty;
-            int res = 404;
-            if (!string.IsNullOrEmpty(aStream.imageAnimatedPreviewUrl))
+            if (!string.IsNullOrEmpty(aStream.imageAnimatedPreviewUrl) && !string.IsNullOrWhiteSpace(aStream.imageAnimatedPreviewUrl))
             {
                 int n = aStream.imageAnimatedPreviewUrl.IndexOf(".net/");
                 if (n > 0)
                 {
                     string server = aStream.imageAnimatedPreviewUrl.Substring(0, n + 4);
-                    playlistUrl = $"{server}/{aStream.streamId}/chunked/index-dvr.m3u8";
-                    res = FileDownloader.GetContentLength(playlistUrl, out _);
+                    if (aStream.vodType == "highlight")
+                    {
+                        playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server>", server)
+                            .Replace("<stream_id>", aStream.streamId).Replace("<video_id>", aStream.videoId);
+                    }
+                    else
+                    {
+                        playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server>", server)
+                            .Replace("<stream_id>", aStream.streamId);
+                    }
+                    int res = FileDownloader.GetContentLength(playlistUrl, out _);
+                    return res;
                 }
             }
-            
-            return res;
+
+            playlistUrl = null;
+            return 400;
         }
 
         /// <summary>
