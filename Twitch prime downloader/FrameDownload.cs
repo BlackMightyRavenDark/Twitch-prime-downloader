@@ -337,7 +337,8 @@ namespace Twitch_prime_downloader
             fStreamInfo = aStreamInfo;
             lblStreamTitle.Text = $"Стрим: {fStreamInfo.title}";
             fOutputFilenameOrig = config.downloadingPath +
-                FixFileName(FormatFileName(config.fileNameFormat, fStreamInfo)) + ".ts";
+                FixFileName(FormatFileName(config.fileNameFormat, fStreamInfo)) +
+                (aStreamInfo.IsHighlight() ? " [highlight].ts" : ".ts");
             lblOutputFilename.Text = $"Имя файла: {fOutputFilenameOrig}";
             if (aStreamInfo.imageData != null)
                 pictureBoxStreamImage.Image = Image.FromStream(aStreamInfo.imageData);
