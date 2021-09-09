@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -415,10 +416,18 @@ namespace Twitch_prime_downloader
                     {
                         framesStream[i].imageStream.Image = Image.FromStream(stream.imageData);
                     }
+                    else
+                    {
+                        Bitmap bmp = GenerateErrorImage();
+                        bmp.Save(stream.imageData, ImageFormat.Bmp);
+                        framesStream[i].imageStream.Image = bmp;
+                    }
+
                     if (DownloadData(stream.gameInfo.ImagePreviewSmallURL, stream.gameInfo.imageData))
                     {
                         framesStream[i].imageGame.Image = Image.FromStream(stream.gameInfo.imageData);
                     }
+
                     Application.DoEvents();
                 }
             }
