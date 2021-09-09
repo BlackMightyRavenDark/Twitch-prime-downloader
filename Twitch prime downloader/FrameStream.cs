@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using static Twitch_prime_downloader.Utils;
 
@@ -69,6 +63,7 @@ namespace Twitch_prime_downloader
             lblStreamTitle.Text = streamInfo.title;
             lblChannelName.Text = streamInfo.userInfo.displayName;
             lblGame.Text = streamInfo.gameInfo.title;
+            lblBroadcastType.Text = aStream.vodType;
             if (aStream.mutedChunks.segments.Count > 0)
             {
                 lblMutedChunks.Text = $"Muted segments: {aStream.mutedChunks.segments.Count}";

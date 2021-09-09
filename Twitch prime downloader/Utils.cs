@@ -137,6 +137,7 @@ namespace Twitch_prime_downloader
             public string videoUrl;
             public DateTime length;
             public int viewCount;
+            public string vodType;
             public TwitchVodMutedChunks mutedChunks = new TwitchVodMutedChunks();
             public DateTime dateCreation;
             public DateTime dateDeletion;
@@ -672,6 +673,7 @@ namespace Twitch_prime_downloader
             stream.streamId = ExtractStreamIDFromImageURL(stream.imageAnimatedPreviewUrl);
             stream.userInfo.displayName = json.Value<JObject>("channel").Value<string>("display_name");
             stream.videoUrl = json.Value<string>("url");
+            stream.vodType = json.Value<string>("broadcast_type");
             stream.length = DateTime.MinValue + TimeSpan.FromSeconds(int.Parse(json.Value<string>("length")));
             string t = json.Value<string>("created_at");
             stream.dateCreation = TwitchTimeToDateTime(t, false);

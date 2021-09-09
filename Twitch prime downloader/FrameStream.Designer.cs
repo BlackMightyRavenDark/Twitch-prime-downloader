@@ -42,6 +42,7 @@
             this.imageGame = new System.Windows.Forms.PictureBox();
             this.imageStream = new System.Windows.Forms.PictureBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.lblBroadcastType = new System.Windows.Forms.Label();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imageGame)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageStream)).BeginInit();
@@ -170,11 +171,22 @@
             this.imageStream.Paint += new System.Windows.Forms.PaintEventHandler(this.ImageStream_Paint);
             this.imageStream.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ImageStream_MouseDown);
             // 
+            // lblBroadcastType
+            // 
+            this.lblBroadcastType.AutoSize = true;
+            this.lblBroadcastType.ForeColor = System.Drawing.Color.White;
+            this.lblBroadcastType.Location = new System.Drawing.Point(7, 280);
+            this.lblBroadcastType.Name = "lblBroadcastType";
+            this.lblBroadcastType.Size = new System.Drawing.Size(89, 13);
+            this.lblBroadcastType.TabIndex = 8;
+            this.lblBroadcastType.Text = "lblBroadcastType";
+            // 
             // FrameStream
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
+            this.Controls.Add(this.lblBroadcastType);
             this.Controls.Add(this.lblPrime);
             this.Controls.Add(this.lblMutedChunks);
             this.Controls.Add(this.btnDownload);
@@ -209,5 +221,6 @@
         private System.Windows.Forms.Label lblMutedChunks;
         private System.Windows.Forms.Label lblPrime;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Label lblBroadcastType;
     }
 }
