@@ -272,6 +272,8 @@ namespace Twitch_prime_downloader
         
         public static MainConfiguration config = new MainConfiguration();
 
+        public static Random random = new Random((int)DateTime.Now.Ticks);
+
         public const string FILENAME_FORMAT_DEFAULT = "<channel_name> [<year>-<month>-<day>] <video_title>";
         
         public static WebClient GetTwitchWebClient_Kraken(string clientId)
@@ -806,29 +808,47 @@ namespace Twitch_prime_downloader
             return Color.FromArgb(values[0], values[1], values[2]);
         }
 
-        public static Image GenerateErrorImage(Image img)
+        public static Bitmap GenerateErrorImage()
         {
-            Graphics g = Graphics.FromImage(img);
-            g.FillRectangle(Brushes.Black, new RectangleF(0, 0, img.Width, img.Height));
+            Bitmap bmp = new Bitmap(320, 180);
+            Graphics g = Graphics.FromImage(bmp);
+            g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
             Font fnt = new Font("Arial", 12);
-            Point center = new Point(img.Width / 2, img.Height / 2);
-            string t = "matrix has you";
-            SizeF sz = g.MeasureString(t, fnt);
-            int yDraw = (int)(center.Y - sz.Height / 2);
-            g.DrawString(t, fnt, Brushes.Lime, new Point((int)(center.X - sz.Width / 2), yDraw));
-            t = "fuck";
-            sz = g.MeasureString(t, fnt);
-            yDraw -= (int)sz.Height;
-            g.DrawString(t, fnt, Brushes.Lime, new Point((int)(center.X - sz.Width / 2), yDraw));
-            t = "there is no image";
-            sz = g.MeasureString(t, fnt);
-            yDraw -= (int)sz.Height;
-            g.DrawString(t, fnt, Brushes.Lime, new Point((int)(center.X - sz.Width / 2), yDraw));
-            t = "sorry :'(";
-            sz = g.MeasureString(t, fnt);
-            g.DrawString(t, fnt, Brushes.Lime, new Point((int)(center.X - sz.Width / 2), (int)(center.Y + sz.Height)));
+            Point center = new Point(bmp.Width / 2, bmp.Height / 2);
+            int n = random.Next(10);
+            if (n < 5)
+            {
+                string t = "matrix has you";
+                SizeF sz = g.MeasureString(t, fnt);
+                float yDraw = center.Y - sz.Height / 2.0f;
+                g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+                t = "fuck";
+                sz = g.MeasureString(t, fnt);
+                yDraw -= sz.Height;
+                g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+                t = "there is no image";
+                sz = g.MeasureString(t, fnt);
+                yDraw -= sz.Height;
+                g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+                t = "sorry :'(";
+                sz = g.MeasureString(t, fnt);
+                g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, center.Y + sz.Height);
+            }
+            else
+            {
+                string t = "картинки нет, но вы там держитесь";
+                SizeF sz = g.MeasureString(t, fnt);
+                float x = center.X - sz.Width / 2.0f;
+                g.DrawString(t, fnt, Brushes.Lime, x, center.Y - sz.Height);
+
+                t = "хорошего настроения и здоровья";
+                sz = g.MeasureString(t, fnt);
+                x = bmp.Width / 2.0f - sz.Width / 2.0f;
+                g.DrawString(t, fnt, Brushes.Lime, x, center.Y);
+            }
             fnt.Dispose();
-            return img;
+
+            return bmp;
         }
 
         public static void SetClipboardText(string text)
