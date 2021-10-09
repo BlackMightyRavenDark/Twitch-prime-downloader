@@ -71,6 +71,7 @@ namespace Twitch_prime_downloader
             this.saveImageAssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -329,21 +330,23 @@ namespace Twitch_prime_downloader
             // 
             // btnAddChannel
             // 
-            this.btnAddChannel.Location = new System.Drawing.Point(236, 17);
+            this.btnAddChannel.Location = new System.Drawing.Point(236, 19);
             this.btnAddChannel.Name = "btnAddChannel";
-            this.btnAddChannel.Size = new System.Drawing.Size(30, 22);
+            this.btnAddChannel.Size = new System.Drawing.Size(30, 21);
             this.btnAddChannel.TabIndex = 4;
             this.btnAddChannel.Text = "+";
+            this.toolTip1.SetToolTip(this.btnAddChannel, "Добавить канал");
             this.btnAddChannel.UseVisualStyleBackColor = true;
             this.btnAddChannel.Click += new System.EventHandler(this.btnAddChannel_Click);
             // 
             // btnRemoveChannel
             // 
-            this.btnRemoveChannel.Location = new System.Drawing.Point(273, 17);
+            this.btnRemoveChannel.Location = new System.Drawing.Point(273, 19);
             this.btnRemoveChannel.Name = "btnRemoveChannel";
-            this.btnRemoveChannel.Size = new System.Drawing.Size(30, 22);
+            this.btnRemoveChannel.Size = new System.Drawing.Size(30, 21);
             this.btnRemoveChannel.TabIndex = 3;
             this.btnRemoveChannel.Text = "-";
+            this.toolTip1.SetToolTip(this.btnRemoveChannel, "Удалить канал");
             this.btnRemoveChannel.UseVisualStyleBackColor = true;
             this.btnRemoveChannel.Click += new System.EventHandler(this.btnRemoveChannel_Click);
             // 
@@ -593,5 +596,6 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem miCopyVideoUrl;
         private System.Windows.Forms.Button btnRestoreDefaultFilenameFormat;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
