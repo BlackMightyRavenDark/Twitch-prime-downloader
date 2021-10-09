@@ -100,6 +100,7 @@ namespace Twitch_prime_downloader
             this.tabControlMain.SelectedIndex = 0;
             this.tabControlMain.Size = new System.Drawing.Size(826, 508);
             this.tabControlMain.TabIndex = 0;
+            this.tabControlMain.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControlMain_Selected);
             // 
             // tabPageDebug
             // 
@@ -147,7 +148,8 @@ namespace Twitch_prime_downloader
             // 
             // btnRestoreDefaultFilenameFormat
             // 
-            this.btnRestoreDefaultFilenameFormat.Location = new System.Drawing.Point(523, 83);
+            this.btnRestoreDefaultFilenameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRestoreDefaultFilenameFormat.Location = new System.Drawing.Point(702, 63);
             this.btnRestoreDefaultFilenameFormat.Name = "btnRestoreDefaultFilenameFormat";
             this.btnRestoreDefaultFilenameFormat.Size = new System.Drawing.Size(109, 23);
             this.btnRestoreDefaultFilenameFormat.TabIndex = 15;
@@ -157,16 +159,18 @@ namespace Twitch_prime_downloader
             // 
             // textBox_FileNameFormat
             // 
-            this.textBox_FileNameFormat.Location = new System.Drawing.Point(11, 83);
+            this.textBox_FileNameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_FileNameFormat.Location = new System.Drawing.Point(10, 63);
             this.textBox_FileNameFormat.Name = "textBox_FileNameFormat";
-            this.textBox_FileNameFormat.Size = new System.Drawing.Size(506, 20);
+            this.textBox_FileNameFormat.Size = new System.Drawing.Size(686, 20);
             this.textBox_FileNameFormat.TabIndex = 14;
             this.textBox_FileNameFormat.Leave += new System.EventHandler(this.textBox_FileNameFormat_Leave);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 67);
+            this.label2.Location = new System.Drawing.Point(7, 47);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(122, 13);
             this.label2.TabIndex = 11;
@@ -174,9 +178,10 @@ namespace Twitch_prime_downloader
             // 
             // btnSelectBrowser
             // 
-            this.btnSelectBrowser.Location = new System.Drawing.Point(557, 122);
+            this.btnSelectBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSelectBrowser.Location = new System.Drawing.Point(769, 102);
             this.btnSelectBrowser.Name = "btnSelectBrowser";
-            this.btnSelectBrowser.Size = new System.Drawing.Size(75, 20);
+            this.btnSelectBrowser.Size = new System.Drawing.Size(42, 20);
             this.btnSelectBrowser.TabIndex = 10;
             this.btnSelectBrowser.Text = "...";
             this.btnSelectBrowser.UseVisualStyleBackColor = true;
@@ -184,9 +189,10 @@ namespace Twitch_prime_downloader
             // 
             // btnSelectDownloadingPath
             // 
-            this.btnSelectDownloadingPath.Location = new System.Drawing.Point(557, 44);
+            this.btnSelectDownloadingPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSelectDownloadingPath.Location = new System.Drawing.Point(769, 24);
             this.btnSelectDownloadingPath.Name = "btnSelectDownloadingPath";
-            this.btnSelectDownloadingPath.Size = new System.Drawing.Size(75, 22);
+            this.btnSelectDownloadingPath.Size = new System.Drawing.Size(42, 22);
             this.btnSelectDownloadingPath.TabIndex = 9;
             this.btnSelectDownloadingPath.Text = "...";
             this.btnSelectDownloadingPath.UseVisualStyleBackColor = true;
@@ -194,23 +200,27 @@ namespace Twitch_prime_downloader
             // 
             // textBox_DownloadingPath
             // 
-            this.textBox_DownloadingPath.Location = new System.Drawing.Point(9, 44);
+            this.textBox_DownloadingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_DownloadingPath.Location = new System.Drawing.Point(8, 24);
             this.textBox_DownloadingPath.Name = "textBox_DownloadingPath";
-            this.textBox_DownloadingPath.Size = new System.Drawing.Size(542, 20);
+            this.textBox_DownloadingPath.Size = new System.Drawing.Size(755, 20);
             this.textBox_DownloadingPath.TabIndex = 8;
             this.textBox_DownloadingPath.Leave += new System.EventHandler(this.TextBox_DownloadingPath_Leave);
             // 
             // textBox_Browser
             // 
-            this.textBox_Browser.Location = new System.Drawing.Point(9, 122);
+            this.textBox_Browser.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_Browser.Location = new System.Drawing.Point(8, 102);
             this.textBox_Browser.Name = "textBox_Browser";
-            this.textBox_Browser.Size = new System.Drawing.Size(542, 20);
+            this.textBox_Browser.Size = new System.Drawing.Size(755, 20);
             this.textBox_Browser.TabIndex = 7;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 106);
+            this.label5.Location = new System.Drawing.Point(7, 86);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(73, 13);
             this.label5.TabIndex = 6;
@@ -219,7 +229,7 @@ namespace Twitch_prime_downloader
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(8, 28);
+            this.label4.Location = new System.Drawing.Point(7, 8);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(125, 13);
             this.label4.TabIndex = 5;
@@ -438,19 +448,25 @@ namespace Twitch_prime_downloader
             // 
             // scrollBarDownloads
             // 
-            this.scrollBarDownloads.Location = new System.Drawing.Point(798, 3);
+            this.scrollBarDownloads.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.scrollBarDownloads.Enabled = false;
+            this.scrollBarDownloads.Location = new System.Drawing.Point(801, 0);
             this.scrollBarDownloads.Name = "scrollBarDownloads";
-            this.scrollBarDownloads.Size = new System.Drawing.Size(17, 80);
+            this.scrollBarDownloads.Size = new System.Drawing.Size(17, 482);
             this.scrollBarDownloads.TabIndex = 1;
             this.scrollBarDownloads.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrollBarDownloads_Scroll);
             // 
             // panelDownloads
             // 
+            this.panelDownloads.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDownloads.BackColor = System.Drawing.Color.DarkGray;
             this.panelDownloads.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.panelDownloads.Location = new System.Drawing.Point(6, 6);
+            this.panelDownloads.Location = new System.Drawing.Point(0, 0);
             this.panelDownloads.Name = "panelDownloads";
-            this.panelDownloads.Size = new System.Drawing.Size(509, 364);
+            this.panelDownloads.Size = new System.Drawing.Size(801, 482);
             this.panelDownloads.TabIndex = 0;
             // 
             // contextMenuStreamImage
@@ -463,7 +479,7 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1,
             this.openVideoInBrowserToolStripMenuItem});
             this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-            this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 142);
+            this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 120);
             // 
             // miCopyVideoUrl
             // 

@@ -97,19 +97,20 @@ namespace Twitch_prime_downloader
 
         private void FrameDownload_Resize(object sender, EventArgs e)
         {
-            btnClose.Location = new Point(Parent.Width - btnClose.Width - 6, 2);
-            pictureBoxStreamImage.Left = Parent.Width - pictureBoxStreamImage.Width - 6;
+            int panelWidth = Parent.Parent.Parent.Width - 20;
+            btnClose.Location = new Point(panelWidth - btnClose.Width - 6, 2);
+            pictureBoxStreamImage.Left = panelWidth - pictureBoxStreamImage.Width - 6;
             lblStreamTitle.Width = pictureBoxStreamImage.Left - lblStreamTitle.Left - 4;
             lblOutputFilename.Width = lblStreamTitle.Width;
             progressBar1.Left = lblStreamTitle.Left;
             progressBar1.Width = pictureBoxStreamImage.Left + pictureBoxStreamImage.Width;
-            btnStopDownload.Left = Parent.Width - btnStopDownload.Width;
+            btnStopDownload.Left = panelWidth - btnStopDownload.Width;
             btnStartDownload.Left = btnStopDownload.Left - btnStartDownload.Width - 6;
 
             imgScrollBar.Left = -Left;
-            imgScrollBar.Width = Parent.Width;
+            imgScrollBar.Width = panelWidth;
 
-            grpDownloadOptions.Left = Parent.Width + 6;
+            grpDownloadOptions.Left = panelWidth + 6;
             grpDownloadRange.Left = grpDownloadOptions.Left;
 
             lblFilelist.Left = grpDownloadRange.Left + grpDownloadRange.Width + 10;
