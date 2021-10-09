@@ -332,6 +332,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
             this.BackColor = System.Drawing.SystemColors.Control;
+            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.imgScrollBar);
             this.Controls.Add(this.imgFcst);
             this.Controls.Add(this.lblElapsedTime);
@@ -348,7 +349,6 @@
             this.Controls.Add(this.lblOutputFilename);
             this.Controls.Add(this.pictureBoxStreamImage);
             this.Controls.Add(this.lblStreamTitle);
-            this.Controls.Add(this.btnClose);
             this.Name = "FrameDownload";
             this.Size = new System.Drawing.Size(1141, 313);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FrameDownload_Paint);
