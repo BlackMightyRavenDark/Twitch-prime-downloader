@@ -815,6 +815,26 @@ namespace Twitch_prime_downloader
             return fnOrig;
         }
 
+        public static string GetNumberedDirectoryName(string dirPathOrig)
+        {
+            if (dirPathOrig.EndsWith("\\"))
+            {
+                dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
+            }
+            if (Directory.Exists(dirPathOrig))
+            {
+                int n = 2;
+                string dirPathNew;
+                do
+                {
+                    dirPathNew = $"{dirPathOrig}_{n++}";
+                }
+                while (Directory.Exists(dirPathNew));
+                return dirPathNew + "\\";
+            }
+            return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
+        }
+
         public static Color IntToColor(int color)
         {
             //TODO: Rewrite this shit

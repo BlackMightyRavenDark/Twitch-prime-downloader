@@ -22,6 +22,8 @@ namespace Twitch_prime_downloader
         public string _streamRoot;
         public List<TwitchVodChunk> _chunks;
         public int lastErrorCode;
+        public const int ERROR_APPENDING_STREAM = -100;
+
         private SynchronizationContext context;
         public delegate void ConnectingDelegate(object sender, TwitchVodChunk chunk);
         public delegate void WorkStartDelegate(object sender, long fileSize, int chunkId);
@@ -40,6 +42,7 @@ namespace Twitch_prime_downloader
             context = (SynchronizationContext)par;
             
             Stream fDownloadingStream = _downloadingMode == DOWNLOADING_MODE.DM_FILE ? File.OpenWrite(fDownloadFilename) : null;
+
             fileDownloader = new FileDownloader();
             fileDownloader.Connecting += (s) =>
             {
@@ -59,6 +62,11 @@ namespace Twitch_prime_downloader
                 if (context != null)
                     context.Send(OnWorkProgress_Context, this);
             };
+
+            if (_downloadingMode == DOWNLOADING_MODE.DM_CHUNKED && !Directory.Exists(fDownloadFilename))
+            {
+                Directory.CreateDirectory(fDownloadFilename);
+            }
 
             fCanceled = false;
             fTerminated = false;
@@ -135,14 +143,27 @@ namespace Twitch_prime_downloader
                 }
                 else
                 {
-                    //TODO: Implement this
+                    string chunkFileExtension = Path.GetExtension(_chunks[iDownload].fileName);
+                    string chunkFileName = $"{fDownloadFilename}chunk{iDownload + 1}_{_chunks[iDownload].fileName}{chunkFileExtension}";
+                    Stream stream = File.OpenWrite(chunkFileName);
+                    bool appendSuccess = FileDownloader.AppendStream(mem, stream);
+                    stream.Close();
+                    stream.Dispose();
+
+                    mem.Close();
+                    mem.Dispose();
+
+                    if (!appendSuccess)
+                    {
+                        lastErrorCode = ERROR_APPENDING_STREAM;
+                    }
                 }
 
                 if (context != null)
                     context.Send(WorkEnd_Context, this);
 
                 iDownload++;
-            } while (iDownload <= fChunkTo && !fCanceled && !fTerminated);
+            } while (iDownload <= fChunkTo && !fCanceled && !fTerminated && lastErrorCode == 200);
             if (fDownloadingStream != null)
             {
                 fDownloadingStream.Close();

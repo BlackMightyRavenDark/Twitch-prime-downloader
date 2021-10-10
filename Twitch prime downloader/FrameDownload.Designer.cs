@@ -244,7 +244,6 @@
             // rbDownloadChunksSeparatelly
             // 
             this.rbDownloadChunksSeparatelly.AutoSize = true;
-            this.rbDownloadChunksSeparatelly.Enabled = false;
             this.rbDownloadChunksSeparatelly.Location = new System.Drawing.Point(17, 33);
             this.rbDownloadChunksSeparatelly.Name = "rbDownloadChunksSeparatelly";
             this.rbDownloadChunksSeparatelly.Size = new System.Drawing.Size(188, 17);
