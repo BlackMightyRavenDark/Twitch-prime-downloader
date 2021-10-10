@@ -213,7 +213,12 @@ namespace Twitch_prime_downloader
                     MessageBox.Show($"{StreamInfo.title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!", 
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
-                
+
+                case ThreadDownload.ERROR_APPENDING_STREAM:
+                    MessageBox.Show($"{StreamInfo.title}\nОшибка объединения чанков!\nСкачивание прервано!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
                 default:
                     MessageBox.Show($"{StreamInfo.title}\nНеизвестная ошибка!" +
                         $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
@@ -225,6 +230,7 @@ namespace Twitch_prime_downloader
             editTo.Enabled = true;
             btnSetMaxChunkTo.Enabled = true;
             rbDownloadOneBigFile.Enabled = true;
+            rbDownloadChunksSeparatelly.Enabled = true;
             btnStartDownload.Enabled = true;
         }
 
@@ -270,6 +276,12 @@ namespace Twitch_prime_downloader
             threadDownload._chunks = fChunks;
             threadDownload.fChunkFrom = fChunkFrom;
             threadDownload.fChunkTo = ChunkTo;
+
+            if (downloadingMode == DOWNLOADING_MODE.DM_CHUNKED)
+            {
+                fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
+                lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
+            }
             threadDownload.fDownloadFilename = fOutputFileName;
             threadDownload._downloadingMode = downloadingMode;
 
@@ -494,6 +506,8 @@ namespace Twitch_prime_downloader
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
             downloadingMode = DOWNLOADING_MODE.DM_CHUNKED;
+            fOutputFilenameOrig = $"{config.downloadingPath}{FixFileName(FormatFileName(config.fileNameFormat, StreamInfo))}\\";
+            lblOutputFilename.Text = $"Папка для скачивания: {fOutputFilenameOrig}";
         }
 
         private void imgScrollBar_Paint(object sender, PaintEventArgs e)
