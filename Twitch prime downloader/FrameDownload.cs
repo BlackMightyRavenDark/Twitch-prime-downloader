@@ -19,6 +19,7 @@ namespace Twitch_prime_downloader
         private int fChunkTo = 10;
         private int fCurrentChunkID = 0;
         private long fCurrentChunkFileSize;
+        private long currentDownloadedSize;
         public string streamRoot;
         private DOWNLOADING_MODE downloadingMode = DOWNLOADING_MODE.DM_FILE;
         private DateTime downloadStarted;
@@ -173,8 +174,19 @@ namespace Twitch_prime_downloader
                 progressBar1.Value2 = fCurrentChunkID - ChunkFrom + 1;
                 int max = ChunkTo - ChunkFrom + 1;
                 percent = 100.0 / max * progressBar1.Value2;
-                string t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
-                    ", Размер файла: " + FormatSize((sender as ThreadDownload).GetDownloadedStreamSize());
+                string t;
+                if (threadDownload._downloadingMode == DOWNLOADING_MODE.DM_FILE)
+                {
+                    t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
+                        ", Размер файла: " + FormatSize(threadDownload.GetDownloadedStreamSize());
+                }
+                else
+                {
+                    currentDownloadedSize += bytesTransfered;
+                    t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
+                        ", Размер скачанного: " + FormatSize(currentDownloadedSize);
+                }
+
                 lblProgressOverall.Text = t;
 
                 int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / max;
@@ -256,6 +268,7 @@ namespace Twitch_prime_downloader
             progressBar1.MinValue1 = 0;
             progressBar1.Value1 = 0;
             progressBar1.Value2 = 0;
+            currentDownloadedSize = 0L;
             editFrom.Enabled = false;
             editTo.Enabled = false;
             btnSetMaxChunkTo.Enabled = false;
