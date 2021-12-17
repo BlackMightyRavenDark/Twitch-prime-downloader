@@ -533,6 +533,83 @@ namespace Twitch_prime_downloader
             btnSearchChannelName.Enabled = true;
         }
 
+        private void btnSearchByUrls_Click(object sender, EventArgs e)
+        {
+            btnSearchByUrls.Enabled = false;
+
+            string[] urls = textBoxUrls.Lines;
+            if (urls.Length == 0)
+            {
+                MessageBox.Show("Введите ссылки!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnSearchByUrls.Enabled = true;
+                return;
+            }
+
+            tabControlMain.SelectedTab = tabPageLog;
+            lbLog.Items.Clear();
+            lbLog.Items.Add("Поиск видео по ссылкам...");
+            tabPageStreams.Text = "Стримы";
+
+            ClearFramesStream();
+
+            JArray jsonArray = new JArray();
+            for (int i = 0; i < urls.Length; i++)
+            {
+                if (string.IsNullOrEmpty(urls[i]) || string.IsNullOrWhiteSpace(urls[i]))
+                {
+                    lbLog.Items.Add($"{i + 1} / {urls.Length}: Empty URL!");
+                    continue;
+                }
+                string vodId = ExtractVodIdFromUrl(urls[i]);
+                if (string.IsNullOrEmpty(vodId) || string.IsNullOrWhiteSpace(vodId))
+                {
+                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED!");
+                    continue;
+                }
+
+                int errorCode = GetTwitchVodInfo_Kraken(vodId, out string infoStringJson);
+                if (errorCode == 200)
+                {
+                    JObject jObject = JObject.Parse(infoStringJson);
+
+                    jsonArray.Add(jObject);
+                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...OK");
+                }
+                else
+                {
+                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED! Error code {errorCode}");
+                }
+                Application.DoEvents();
+            }
+
+            if (jsonArray.Count > 0)
+            {
+                lbLog.Items.Add("Обработка данных...");
+                JObject json = new JObject();
+                json.Add(new JProperty("videos", jsonArray));
+                int count = ParseVideosListJSON(json.ToString());
+                if (count > 0)
+                {
+                    tabPageStreams.Text = $"Стримы ({count})";
+                    lbLog.Items.Add("Загрузка изображений...");
+                    DownloadImages();
+                    StackFramesStream();
+                    tabControlMain.SelectedTab = tabPageStreams;
+                    lbLog.Items.Add("Готово!");
+                }
+                else
+                {
+                    lbLog.Items.Add("Стримы не найдены!");
+                }
+            }
+            else
+            {
+                lbLog.Items.Add("Стримы не найдены!");
+            }
+
+            btnSearchByUrls.Enabled = true;
+        }
+
         private void Event_DownloadButtonClick(object sender)
         {
             if (string.IsNullOrEmpty(config.downloadingPath))
