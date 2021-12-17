@@ -25,6 +25,7 @@ namespace Twitch_prime_downloader
             public string lastUsedPath;
             public string channelsListFileName;
             public string browserExe;
+            public string urlsFileName;
             public int streamInfoGUIFontSize;
             public bool debugMode;
 
@@ -41,6 +42,7 @@ namespace Twitch_prime_downloader
                 downloadingPath = selfPath;
                 fileNameFormat = FILENAME_FORMAT_DEFAULT;
                 lastUsedPath = selfPath;
+                urlsFileName = selfPath + "tpd_urls.txt";
                 browserExe = "firefox.exe";
             }
 

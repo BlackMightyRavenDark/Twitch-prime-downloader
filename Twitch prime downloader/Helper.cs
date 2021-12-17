@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
@@ -6,6 +7,16 @@ namespace Twitch_prime_downloader
 {
     public static class Helper
     {
+        public static string ToText(this IEnumerable<string> collection)
+        {
+            string res = string.Empty;
+            foreach (string str in collection)
+            {
+                res += str + "\n";
+            }
+            return res;
+        }
+
         public static void LoadFromFile(this ComboBox comboBox, string fileName)
         {
             try
@@ -48,6 +59,12 @@ namespace Twitch_prime_downloader
                     System.Diagnostics.Debug.WriteLine(ex.StackTrace);
                 }
             }
+        }
+
+        public static void SaveToFile(this IEnumerable<string> collection, string fileName)
+        {
+            string t = collection.ToText();
+            File.WriteAllText(fileName, t);
         }
 
         public static bool SaveToFile(this Stream stream, string fileName, bool fromOrigin = true)

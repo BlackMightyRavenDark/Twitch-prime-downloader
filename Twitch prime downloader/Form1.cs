@@ -42,6 +42,12 @@ namespace Twitch_prime_downloader
                 }
             }
 
+            if (File.Exists(config.urlsFileName))
+            {
+                string[] strings = File.ReadAllLines(config.urlsFileName);
+                textBoxUrls.Lines = strings;
+            }
+
             foreach (string s in Environment.GetCommandLineArgs())
             {
                 if (s.ToLower().Equals("/debug"))
@@ -72,6 +78,16 @@ namespace Twitch_prime_downloader
             }
 
             cboxChannelName.SaveToFile(config.channelsListFileName);
+
+            if (File.Exists(config.urlsFileName))
+            {
+                File.Delete(config.urlsFileName);
+            }
+            string[] urls = textBoxUrls.Lines;
+            if (urls.Length > 0)
+            {
+                urls.SaveToFile(config.urlsFileName);
+            }
             config.Save();
         }
 
