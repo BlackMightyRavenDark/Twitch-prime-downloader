@@ -57,8 +57,7 @@ namespace Twitch_prime_downloader
             {
                 stream.Seek(0, SeekOrigin.Begin);
             }
-            bool res = FileDownloader.AppendStream(stream, fileStream);
-            fileStream.Close();
+            bool res = MultiThreadedDownloader.AppendStream(stream, fileStream);
             fileStream.Dispose();
             return res;
         }

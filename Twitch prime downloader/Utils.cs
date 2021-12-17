@@ -605,7 +605,7 @@ namespace Twitch_prime_downloader
                         playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server>", server)
                             .Replace("<stream_id>", aStream.streamId);
                     }
-                    int res = FileDownloader.GetContentLength(playlistUrl, out _);
+                    int res = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
                     return res;
                 }
             }
