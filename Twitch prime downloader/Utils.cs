@@ -758,6 +758,31 @@ namespace Twitch_prime_downloader
                 }
             }
         }
+        
+        public static string ExtractVodIdFromUrl(string url)
+        {
+            try
+            {
+                Uri uri = new Uri(url);
+                string host = !string.IsNullOrEmpty(uri.Host) ? uri.Host.ToLower() : null;
+                if (string.IsNullOrEmpty(host) || !host.Contains("twitch.tv"))
+                {
+                    return null;
+                }
+                if (!string.IsNullOrEmpty(uri.LocalPath) && uri.LocalPath.ToLower().StartsWith("/videos/"))
+                {
+                    string[] strings = uri.LocalPath.Split('/');
+                    string t = strings[strings.Length - 1];
+                    int n = t.IndexOf("&");
+                    return n < 0 ? t : t.Substring(0, n);
+                }
+                return null;            
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
 
         public static string FormatSize(long n)
         {

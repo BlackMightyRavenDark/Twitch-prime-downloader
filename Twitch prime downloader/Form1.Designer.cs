@@ -72,6 +72,10 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.textBoxUrls = new System.Windows.Forms.TextBox();
+            this.btnSearchByUrls = new System.Windows.Forms.Button();
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -83,6 +87,7 @@ namespace Twitch_prime_downloader
             this.tabPageStreams.SuspendLayout();
             this.tabPageDownload.SuspendLayout();
             this.contextMenuStreamImage.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControlMain
@@ -239,6 +244,7 @@ namespace Twitch_prime_downloader
             // tabPageSearch
             // 
             this.tabPageSearch.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPageSearch.Controls.Add(this.groupBox2);
             this.tabPageSearch.Controls.Add(this.groupBox1);
             this.tabPageSearch.Location = new System.Drawing.Point(4, 22);
             this.tabPageSearch.Name = "tabPageSearch";
@@ -524,6 +530,46 @@ namespace Twitch_prime_downloader
             this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
             this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.btnSearchByUrls);
+            this.groupBox2.Controls.Add(this.textBoxUrls);
+            this.groupBox2.Controls.Add(this.label6);
+            this.groupBox2.Location = new System.Drawing.Point(323, 16);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(352, 162);
+            this.groupBox2.TabIndex = 1;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Поиск видео по ссылкам";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(15, 17);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(181, 13);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "Введите ссылки на видео с твича:";
+            // 
+            // textBoxUrls
+            // 
+            this.textBoxUrls.Location = new System.Drawing.Point(18, 38);
+            this.textBoxUrls.Multiline = true;
+            this.textBoxUrls.Name = "textBoxUrls";
+            this.textBoxUrls.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBoxUrls.Size = new System.Drawing.Size(328, 89);
+            this.textBoxUrls.TabIndex = 1;
+            // 
+            // btnSearchByUrls
+            // 
+            this.btnSearchByUrls.Location = new System.Drawing.Point(271, 133);
+            this.btnSearchByUrls.Name = "btnSearchByUrls";
+            this.btnSearchByUrls.Size = new System.Drawing.Size(75, 23);
+            this.btnSearchByUrls.TabIndex = 2;
+            this.btnSearchByUrls.Text = "Искать";
+            this.btnSearchByUrls.UseVisualStyleBackColor = true;
+            this.btnSearchByUrls.Click += new System.EventHandler(this.btnSearchByUrls_Click);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -550,6 +596,8 @@ namespace Twitch_prime_downloader
             this.tabPageStreams.ResumeLayout(false);
             this.tabPageDownload.ResumeLayout(false);
             this.contextMenuStreamImage.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -597,5 +645,9 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.ToolStripMenuItem miCopyVideoUrl;
         private System.Windows.Forms.Button btnRestoreDefaultFilenameFormat;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button btnSearchByUrls;
+        private System.Windows.Forms.TextBox textBoxUrls;
+        private System.Windows.Forms.Label label6;
     }
 }
