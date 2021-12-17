@@ -390,7 +390,7 @@ namespace Twitch_prime_downloader
                 for (int i = 0; i < framesStream.Count; i++)
                 {
                     lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
-                    lbLog.Items.Add($"Загрузка изображений... {i + 1} / {framesStream.Count}");
+                    lbLog.Items.Add($"Скачивание изображений... {i + 1} / {framesStream.Count}");
                     
                     TwitchStreamInfo stream = framesStream[i].GetStreamInfo();
 
@@ -505,11 +505,14 @@ namespace Twitch_prime_downloader
                 btnSearchChannelName.Enabled = true;
                 return;
             }
+
             lbLog.Items.Clear();
             lbLog.Items.Add($"Скачивание списка стримов канала {channelName}...");
             tabControlMain.SelectedTab = tabPageLog;
             lbLog.Update();
             ClearFramesStream();
+            tabPageStreams.Text = "Стримы";
+
             int limit = 0;
             if (rbSearchLimit.Checked)
             {
@@ -518,6 +521,7 @@ namespace Twitch_prime_downloader
             int n = GetChannelVideosListJson(channelName, limit, out string resList);
             if (n > 0)
             {
+                tabPageStreams.Text = $"Стримы ({n})";
                 lbLog.Items.Add("Обработка данных...");
                 ParseVideosListJSON(resList);
                 if (tabControlMain.SelectedTab == tabPageStreams)
@@ -527,8 +531,12 @@ namespace Twitch_prime_downloader
                 lbLog.Items.Add("Скачивание изображений...");
                 DownloadImages();
                 tabControlMain.SelectedTab = tabPageStreams;
+                lbLog.Items.Add("Готово!");
             }
-            tabPageStreams.Text = $"Стримы ({n})";
+            else
+            {
+                lbLog.Items.Add("Стримы не найдены!");
+            }
 
             btnSearchChannelName.Enabled = true;
         }
@@ -591,7 +599,7 @@ namespace Twitch_prime_downloader
                 if (count > 0)
                 {
                     tabPageStreams.Text = $"Стримы ({count})";
-                    lbLog.Items.Add("Загрузка изображений...");
+                    lbLog.Items.Add("Скачивание изображений...");
                     DownloadImages();
                     StackFramesStream();
                     tabControlMain.SelectedTab = tabPageStreams;
