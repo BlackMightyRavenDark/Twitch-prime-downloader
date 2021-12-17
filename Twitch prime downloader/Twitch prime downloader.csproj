@@ -75,7 +75,7 @@
       <DependentUpon>FrameStream.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
-    <Compile Include="MultyThreadDownloader.cs" />
+    <Compile Include="MultiThreadedDownloader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreadDownload.cs" />

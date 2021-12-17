@@ -219,6 +219,16 @@ namespace Twitch_prime_downloader
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
+                case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
+                    MessageBox.Show($"{StreamInfo.title}\nФайл на сервере пуст!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                case FileDownloader.DOWNLOAD_ERROR_UNKNOWN:
+                    MessageBox.Show($"{StreamInfo.title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
                 default:
                     MessageBox.Show($"{StreamInfo.title}\nНеизвестная ошибка!" +
                         $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
