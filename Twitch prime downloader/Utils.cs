@@ -14,236 +14,6 @@ namespace Twitch_prime_downloader
 {
     public static class Utils
     {
-
-        public class MainConfiguration
-        {
-            public string selfPath;
-            public string fileName;
-            public string downloadingPath;
-            public string fileNameFormat;
-            public string tempPath;
-            public string lastUsedPath;
-            public string channelsListFileName;
-            public string browserExe;
-            public string urlsFileName;
-            public int streamInfoGUIFontSize;
-            public bool debugMode;
-
-            public MainConfiguration()
-            {
-                selfPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
-                fileName = selfPath + "tpd_config.json";
-                debugMode = false;
-            }
-
-            public void LoadDefaults()
-            {
-                channelsListFileName = selfPath + "tpd_channelList.txt";
-                downloadingPath = selfPath;
-                fileNameFormat = FILENAME_FORMAT_DEFAULT;
-                lastUsedPath = selfPath;
-                urlsFileName = selfPath + "tpd_urls.txt";
-                browserExe = "firefox.exe";
-            }
-
-            public void Load()
-            {
-                LoadDefaults();
-                if (File.Exists(fileName))
-                {
-                    JObject json = JObject.Parse(File.ReadAllText(fileName));
-                    JToken jt = json.Value<JToken>("downloadingPath");
-                    if (jt != null)
-                        downloadingPath = jt.Value<string>();
-                    jt = json.Value<JToken>("tempPath");
-                    if (jt != null)
-                        tempPath = jt.Value<string>();
-                    jt = json.Value<JToken>("lastUsedPath");
-                    if (jt != null)
-                        lastUsedPath = jt.Value<string>();
-                    jt = json.Value<JToken>("fileNameFormat");
-                    if (jt != null)
-                    {
-                        fileNameFormat = jt.Value<string>();
-                        if (string.IsNullOrEmpty(fileNameFormat))
-                            fileNameFormat = FILENAME_FORMAT_DEFAULT;
-                    }
-                    jt = json.Value<JToken>("browserExe");
-                    if (jt != null)
-                        browserExe = jt.Value<string>();
-                }
-
-
-            }
-
-            public void Save()
-            {
-                JObject json = new JObject();
-                json["downloadingPath"] = downloadingPath;
-                json["tempPath"] = tempPath;
-                json["fileNameFormat"] = fileNameFormat;
-                json["lastUsedPath"] = lastUsedPath;
-                json["browserExe"] = browserExe;
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-                File.WriteAllText(fileName, json.ToString());
-            }
-        }
-
-        public class TwitchGameInfo
-        {
-            public string title;
-            public string ImagePreviewSmallURL;
-            public string ImagePreviewMediumURL;
-            public string ImagePreviewLargeURL;
-            public Stream imageData = new MemoryStream();
-
-            ~TwitchGameInfo()
-            {
-                imageData?.Dispose();
-            }
-        }
-
-        public class TwitchUserInfo
-        {
-            public string displayName;
-            public string id;
-        }
-
-        public struct TwitchVodMutedSegment
-        {
-            public int offset;
-            public int duration;
-        }
-
-        public class TwitchVodMutedChunks
-        {
-            public List<int> chunkIds = new List<int>();
-            public List<TwitchVodMutedSegment> segments = new List<TwitchVodMutedSegment>();
-            public List<string> segmentList = new List<string>();
-            public DateTime totalLength = DateTime.MinValue;
-            public void Clear()
-            {
-                chunkIds.Clear();
-                segments.Clear();
-                segmentList.Clear();
-                totalLength = DateTime.MinValue;
-            }
-        }
-
-        public class TwitchStreamInfo
-        {
-            public string title;
-            public string videoId;
-            public string streamId;
-            public string videoUrl;
-            public DateTime length;
-            public int viewCount;
-            public string vodType;
-            public TwitchVodMutedChunks mutedChunks = new TwitchVodMutedChunks();
-            public DateTime dateCreation;
-            public DateTime dateDeletion;
-            public string imagePreviewTemplateUrl;
-            public string imageAnimatedPreviewUrl;
-            public Stream imageData = new MemoryStream();
-            public bool isPrime;
-            public TwitchUserInfo userInfo = new TwitchUserInfo();
-            public TwitchGameInfo gameInfo = new TwitchGameInfo();
-            public string infoStringJson;
-
-            public bool IsHighlight()
-            {
-                return vodType == "highlight";
-            }
-
-            ~TwitchStreamInfo()
-            {
-                imageData?.Dispose();
-            }
-        }
-
-        public class TwitchHelixOauthToken
-        {
-            public string accessToken = string.Empty;
-            public string tokenType = string.Empty;
-            public DateTime expireDate = DateTime.MinValue;
-
-            public void Reset()
-            {
-                accessToken = string.Empty;
-                tokenType = string.Empty;
-                expireDate = DateTime.MinValue;
-            }
-        }
-
-
-        public enum TwitchVodChunkState { CS_NONMUTED, CS_MUTED, CS_UNMUTED };
-
-        public class TwitchVodChunk
-        {
-            public string fileName;
-            public TwitchVodChunk(string fileName)
-            {
-                this.fileName = fileName;
-            }
-
-            public string GetName()
-            {
-                return fileName.Substring(0, fileName.IndexOf(
-                    GetState() == TwitchVodChunkState.CS_NONMUTED ? ".ts" : "-"));
-            }
-
-            public TwitchVodChunkState GetState()
-            {
-                if (fileName.EndsWith("-muted.ts"))
-                    return TwitchVodChunkState.CS_MUTED;
-                if (fileName.EndsWith("-unmuted.ts"))
-                    return TwitchVodChunkState.CS_UNMUTED;
-                return TwitchVodChunkState.CS_NONMUTED;
-            }
-
-            public void SetState(TwitchVodChunkState state)
-            {
-                switch (state)
-                {
-                    case TwitchVodChunkState.CS_MUTED:
-                        fileName = GetName() + "-muted.ts";
-                        break;
-
-                    case TwitchVodChunkState.CS_UNMUTED:
-                        fileName = GetName() + "-unmuted.ts";
-                        break;
-
-                    case TwitchVodChunkState.CS_NONMUTED:
-                        fileName = GetName() + ".ts";
-                        break;
-                }    
-            }
-
-            public TwitchVodChunkState NextState()
-            {
-                switch (GetState())
-                {
-                    case TwitchVodChunkState.CS_MUTED:
-                        SetState(TwitchVodChunkState.CS_NONMUTED);
-                        return TwitchVodChunkState.CS_NONMUTED;
-
-                    case TwitchVodChunkState.CS_NONMUTED:
-                        SetState(TwitchVodChunkState.CS_UNMUTED);
-                        return TwitchVodChunkState.CS_UNMUTED;
-
-                    case TwitchVodChunkState.CS_UNMUTED:
-                        SetState(TwitchVodChunkState.CS_MUTED);
-                        return TwitchVodChunkState.CS_MUTED;
-                }
-                return TwitchVodChunkState.CS_NONMUTED;
-            }
-        }
-        
-        public enum DOWNLOADING_MODE { DM_FILE, DM_CHUNKED };
-
-
-
         public static string TWITCH_CLIENT_ID = "gs7pui3law5lsi69yzi9qzyaqvlcsy";
         public static string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
         public static string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
@@ -285,7 +55,9 @@ namespace Twitch_prime_downloader
         public static Random random = new Random((int)DateTime.Now.Ticks);
 
         public const string FILENAME_FORMAT_DEFAULT = "<channel_name> [<year>-<month>-<day>] <video_title>";
-        
+
+        public enum DownloadingMode { WholeFile, Chunked };
+
         public static WebClient GetTwitchWebClient_Kraken(string clientId)
         {
             WebClient wc = new WebClient();
@@ -955,4 +727,230 @@ namespace Twitch_prime_downloader
         }
 
     }
+
+    public class MainConfiguration
+    {
+        public string selfPath;
+        public string fileName;
+        public string downloadingPath;
+        public string fileNameFormat;
+        public string tempPath;
+        public string lastUsedPath;
+        public string channelsListFileName;
+        public string browserExe;
+        public string urlsFileName;
+        public int streamInfoGUIFontSize;
+        public bool debugMode;
+
+        public MainConfiguration()
+        {
+            selfPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
+            fileName = selfPath + "tpd_config.json";
+            debugMode = false;
+        }
+
+        public void LoadDefaults()
+        {
+            channelsListFileName = selfPath + "tpd_channelList.txt";
+            downloadingPath = selfPath;
+            fileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+            lastUsedPath = selfPath;
+            urlsFileName = selfPath + "tpd_urls.txt";
+            browserExe = "firefox.exe";
+        }
+
+        public void Load()
+        {
+            LoadDefaults();
+            if (File.Exists(fileName))
+            {
+                JObject json = JObject.Parse(File.ReadAllText(fileName));
+                JToken jt = json.Value<JToken>("downloadingPath");
+                if (jt != null)
+                    downloadingPath = jt.Value<string>();
+                jt = json.Value<JToken>("tempPath");
+                if (jt != null)
+                    tempPath = jt.Value<string>();
+                jt = json.Value<JToken>("lastUsedPath");
+                if (jt != null)
+                    lastUsedPath = jt.Value<string>();
+                jt = json.Value<JToken>("fileNameFormat");
+                if (jt != null)
+                {
+                    fileNameFormat = jt.Value<string>();
+                    if (string.IsNullOrEmpty(fileNameFormat))
+                        fileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+                }
+                jt = json.Value<JToken>("browserExe");
+                if (jt != null)
+                    browserExe = jt.Value<string>();
+            }
+
+
+        }
+
+        public void Save()
+        {
+            JObject json = new JObject();
+            json["downloadingPath"] = downloadingPath;
+            json["tempPath"] = tempPath;
+            json["fileNameFormat"] = fileNameFormat;
+            json["lastUsedPath"] = lastUsedPath;
+            json["browserExe"] = browserExe;
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            File.WriteAllText(fileName, json.ToString());
+        }
+    }
+
+    public class TwitchGameInfo
+    {
+        public string title;
+        public string ImagePreviewSmallURL;
+        public string ImagePreviewMediumURL;
+        public string ImagePreviewLargeURL;
+        public Stream imageData = new MemoryStream();
+
+        ~TwitchGameInfo()
+        {
+            imageData?.Dispose();
+        }
+    }
+
+    public class TwitchUserInfo
+    {
+        public string displayName;
+        public string id;
+    }
+
+    public struct TwitchVodMutedSegment
+    {
+        public int offset;
+        public int duration;
+    }
+
+    public class TwitchVodMutedChunks
+    {
+        public List<int> chunkIds = new List<int>();
+        public List<TwitchVodMutedSegment> segments = new List<TwitchVodMutedSegment>();
+        public List<string> segmentList = new List<string>();
+        public DateTime totalLength = DateTime.MinValue;
+        public void Clear()
+        {
+            chunkIds.Clear();
+            segments.Clear();
+            segmentList.Clear();
+            totalLength = DateTime.MinValue;
+        }
+    }
+
+    public class TwitchStreamInfo
+    {
+        public string title;
+        public string videoId;
+        public string streamId;
+        public string videoUrl;
+        public DateTime length;
+        public int viewCount;
+        public string vodType;
+        public TwitchVodMutedChunks mutedChunks = new TwitchVodMutedChunks();
+        public DateTime dateCreation;
+        public DateTime dateDeletion;
+        public string imagePreviewTemplateUrl;
+        public string imageAnimatedPreviewUrl;
+        public Stream imageData = new MemoryStream();
+        public bool isPrime;
+        public TwitchUserInfo userInfo = new TwitchUserInfo();
+        public TwitchGameInfo gameInfo = new TwitchGameInfo();
+        public string infoStringJson;
+
+        public bool IsHighlight()
+        {
+            return vodType == "highlight";
+        }
+
+        ~TwitchStreamInfo()
+        {
+            imageData?.Dispose();
+        }
+    }
+
+    public class TwitchHelixOauthToken
+    {
+        public string accessToken = string.Empty;
+        public string tokenType = string.Empty;
+        public DateTime expireDate = DateTime.MinValue;
+
+        public void Reset()
+        {
+            accessToken = string.Empty;
+            tokenType = string.Empty;
+            expireDate = DateTime.MinValue;
+        }
+    }
+
+
+    public enum TwitchVodChunkState { CS_NONMUTED, CS_MUTED, CS_UNMUTED };
+
+    public class TwitchVodChunk
+    {
+        public string fileName;
+        public TwitchVodChunk(string fileName)
+        {
+            this.fileName = fileName;
+        }
+
+        public string GetName()
+        {
+            return fileName.Substring(0, fileName.IndexOf(
+                GetState() == TwitchVodChunkState.CS_NONMUTED ? ".ts" : "-"));
+        }
+
+        public TwitchVodChunkState GetState()
+        {
+            if (fileName.EndsWith("-muted.ts"))
+                return TwitchVodChunkState.CS_MUTED;
+            if (fileName.EndsWith("-unmuted.ts"))
+                return TwitchVodChunkState.CS_UNMUTED;
+            return TwitchVodChunkState.CS_NONMUTED;
+        }
+
+        public void SetState(TwitchVodChunkState state)
+        {
+            switch (state)
+            {
+                case TwitchVodChunkState.CS_MUTED:
+                    fileName = GetName() + "-muted.ts";
+                    break;
+
+                case TwitchVodChunkState.CS_UNMUTED:
+                    fileName = GetName() + "-unmuted.ts";
+                    break;
+
+                case TwitchVodChunkState.CS_NONMUTED:
+                    fileName = GetName() + ".ts";
+                    break;
+            }
+        }
+
+        public TwitchVodChunkState NextState()
+        {
+            switch (GetState())
+            {
+                case TwitchVodChunkState.CS_MUTED:
+                    SetState(TwitchVodChunkState.CS_NONMUTED);
+                    return TwitchVodChunkState.CS_NONMUTED;
+
+                case TwitchVodChunkState.CS_NONMUTED:
+                    SetState(TwitchVodChunkState.CS_UNMUTED);
+                    return TwitchVodChunkState.CS_UNMUTED;
+
+                case TwitchVodChunkState.CS_UNMUTED:
+                    SetState(TwitchVodChunkState.CS_MUTED);
+                    return TwitchVodChunkState.CS_MUTED;
+            }
+            return TwitchVodChunkState.CS_NONMUTED;
+        }
+    }
+
 }
