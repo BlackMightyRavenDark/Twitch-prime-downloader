@@ -21,7 +21,7 @@ namespace Twitch_prime_downloader
         private long fCurrentChunkFileSize;
         private long currentDownloadedSize;
         public string streamRoot;
-        private DOWNLOADING_MODE downloadingMode = DOWNLOADING_MODE.DM_FILE;
+        private DownloadingMode downloadingMode = DownloadingMode.WholeFile;
         private DateTime downloadStarted;
         public List<TwitchVodChunk> fChunks;
         public const int EXTRA_WIDTH = 450;
@@ -175,7 +175,7 @@ namespace Twitch_prime_downloader
                 int max = ChunkTo - ChunkFrom + 1;
                 percent = 100.0 / max * progressBar1.Value2;
                 string t;
-                if (threadDownload._downloadingMode == DOWNLOADING_MODE.DM_FILE)
+                if (threadDownload._downloadingMode == DownloadingMode.WholeFile)
                 {
                     t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
                         ", Размер файла: " + FormatSize(threadDownload.GetDownloadedStreamSize());
@@ -300,7 +300,7 @@ namespace Twitch_prime_downloader
             threadDownload.fChunkFrom = fChunkFrom;
             threadDownload.fChunkTo = ChunkTo;
 
-            if (downloadingMode == DOWNLOADING_MODE.DM_CHUNKED)
+            if (downloadingMode == DownloadingMode.Chunked)
             {
                 fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
                 lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
@@ -520,7 +520,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
-            downloadingMode = DOWNLOADING_MODE.DM_FILE;
+            downloadingMode = DownloadingMode.WholeFile;
             string fn = config.downloadingPath + FixFileName(FormatFileName(config.fileNameFormat, StreamInfo)) + ".ts";
             fOutputFilenameOrig = fn;
             lblOutputFilename.Text = $"Имя файла: {fOutputFilenameOrig}";
@@ -528,7 +528,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
-            downloadingMode = DOWNLOADING_MODE.DM_CHUNKED;
+            downloadingMode = DownloadingMode.Chunked;
             fOutputFilenameOrig = $"{config.downloadingPath}{FixFileName(FormatFileName(config.fileNameFormat, StreamInfo))}\\";
             lblOutputFilename.Text = $"Папка для скачивания: {fOutputFilenameOrig}";
         }

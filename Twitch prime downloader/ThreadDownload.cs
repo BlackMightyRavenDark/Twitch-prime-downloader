@@ -14,7 +14,7 @@ namespace Twitch_prime_downloader
         public int fChunkTo = 10;
         public long fCurrentChunkSize = 0L;
         private long fCurrentChunkBytesTransfered = 0L;
-        public DOWNLOADING_MODE _downloadingMode;
+        public DownloadingMode _downloadingMode;
         public int iDownload;
         public string fDownloadFilename;
         public long fDownloadedFileSize = 0L;
@@ -41,7 +41,7 @@ namespace Twitch_prime_downloader
         {
             context = (SynchronizationContext)par;
             
-            Stream fDownloadingStream = _downloadingMode == DOWNLOADING_MODE.DM_FILE ? File.OpenWrite(fDownloadFilename) : null;
+            Stream fDownloadingStream = _downloadingMode == DownloadingMode.WholeFile ? File.OpenWrite(fDownloadFilename) : null;
 
             fileDownloader = new FileDownloader();
             fileDownloader.Connecting += (s, url) =>
@@ -66,7 +66,7 @@ namespace Twitch_prime_downloader
                 stop = fCanceled;
             };
 
-            if (_downloadingMode == DOWNLOADING_MODE.DM_CHUNKED && !Directory.Exists(fDownloadFilename))
+            if (_downloadingMode == DownloadingMode.Chunked && !Directory.Exists(fDownloadFilename))
             {
                 Directory.CreateDirectory(fDownloadFilename);
             }
@@ -125,7 +125,7 @@ namespace Twitch_prime_downloader
                 }
 
                 mem.Position = 0L;
-                if (_downloadingMode == DOWNLOADING_MODE.DM_FILE)
+                if (_downloadingMode == DownloadingMode.WholeFile)
                 {
                     bool appended = MultiThreadedDownloader.AppendStream(mem, fDownloadingStream);
                     mem.Dispose();
