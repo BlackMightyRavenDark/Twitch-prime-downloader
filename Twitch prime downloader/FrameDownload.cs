@@ -380,16 +380,13 @@ namespace Twitch_prime_downloader
                 pictureBoxStreamImage.Image = Image.FromStream(aStreamInfo.imageData);
         }
 
-        public void SetChunks(List<TwitchVodChunk> chunks)
+        public void SetChunks(IEnumerable<TwitchVodChunk> chunks)
         {
-            for (int i = 0; i < chunks.Count; i++)
+            foreach (TwitchVodChunk chunk in chunks)
             {
-                TwitchVodChunk chunk = new TwitchVodChunk(chunks[i].fileName);
-
                 fChunks.Add(chunk);
                 lbFileList.Items.Add(chunk.fileName);
             }
-
         }
 
         private void SetChunkIndicators()
