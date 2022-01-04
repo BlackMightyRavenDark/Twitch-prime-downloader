@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Net;
@@ -657,7 +656,7 @@ namespace Twitch_prime_downloader
         }
     }
 
-    public enum TwitchVodChunkState { CS_NONMUTED, CS_MUTED, CS_UNMUTED };
+    public enum TwitchVodChunkState { NotMuted, Muted, Unmuted };
 
     public class TwitchVodChunk
     {
@@ -671,31 +670,35 @@ namespace Twitch_prime_downloader
         public string GetName()
         {
             return fileName.Substring(0, fileName.IndexOf(
-                GetState() == TwitchVodChunkState.CS_NONMUTED ? ".ts" : "-"));
+                GetState() == TwitchVodChunkState.NotMuted ? ".ts" : "-"));
         }
 
         public TwitchVodChunkState GetState()
         {
             if (fileName.EndsWith("-muted.ts"))
-                return TwitchVodChunkState.CS_MUTED;
-            if (fileName.EndsWith("-unmuted.ts"))
-                return TwitchVodChunkState.CS_UNMUTED;
-            return TwitchVodChunkState.CS_NONMUTED;
+            {
+                return TwitchVodChunkState.Muted;
+            }
+            else if (fileName.EndsWith("-unmuted.ts"))
+            {
+                return TwitchVodChunkState.Unmuted;
+            }
+            return TwitchVodChunkState.NotMuted;
         }
 
         public void SetState(TwitchVodChunkState state)
         {
             switch (state)
             {
-                case TwitchVodChunkState.CS_MUTED:
+                case TwitchVodChunkState.Muted:
                     fileName = GetName() + "-muted.ts";
                     break;
 
-                case TwitchVodChunkState.CS_UNMUTED:
+                case TwitchVodChunkState.Unmuted:
                     fileName = GetName() + "-unmuted.ts";
                     break;
 
-                case TwitchVodChunkState.CS_NONMUTED:
+                case TwitchVodChunkState.NotMuted:
                     fileName = GetName() + ".ts";
                     break;
             }
@@ -705,19 +708,19 @@ namespace Twitch_prime_downloader
         {
             switch (GetState())
             {
-                case TwitchVodChunkState.CS_MUTED:
-                    SetState(TwitchVodChunkState.CS_NONMUTED);
-                    return TwitchVodChunkState.CS_NONMUTED;
+                case TwitchVodChunkState.Muted:
+                    SetState(TwitchVodChunkState.NotMuted);
+                    return TwitchVodChunkState.NotMuted;
 
-                case TwitchVodChunkState.CS_NONMUTED:
-                    SetState(TwitchVodChunkState.CS_UNMUTED);
-                    return TwitchVodChunkState.CS_UNMUTED;
+                case TwitchVodChunkState.NotMuted:
+                    SetState(TwitchVodChunkState.Unmuted);
+                    return TwitchVodChunkState.Unmuted;
 
-                case TwitchVodChunkState.CS_UNMUTED:
-                    SetState(TwitchVodChunkState.CS_MUTED);
-                    return TwitchVodChunkState.CS_MUTED;
+                case TwitchVodChunkState.Unmuted:
+                    SetState(TwitchVodChunkState.Muted);
+                    return TwitchVodChunkState.Muted;
             }
-            return TwitchVodChunkState.CS_NONMUTED;
+            return TwitchVodChunkState.NotMuted;
         }
     }
 }

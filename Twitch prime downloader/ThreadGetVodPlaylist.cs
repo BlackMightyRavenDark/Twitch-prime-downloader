@@ -42,9 +42,9 @@ namespace Twitch_prime_downloader
                     for (int i = 0; i < PlaylistParsed.Length; i++)
                     {
                         TwitchVodChunk chunk = new TwitchVodChunk(PlaylistParsed[i]);
-                        if (chunk.GetState() == TwitchVodChunkState.CS_UNMUTED)
+                        if (chunk.GetState() == TwitchVodChunkState.Unmuted)
                         {
-                            chunk.SetState(TwitchVodChunkState.CS_MUTED);
+                            chunk.SetState(TwitchVodChunkState.Muted);
                         }
                         _chunks.Add(chunk);
                     }
