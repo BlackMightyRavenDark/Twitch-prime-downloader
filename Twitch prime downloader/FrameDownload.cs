@@ -284,7 +284,7 @@ namespace Twitch_prime_downloader
             {
                 progressBar1.Value1 = 0;
                 lblCurrentChunkName.Text = chunk.fileName;
-                lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.CS_NONMUTED ? Color.Black : Color.Red;
+                lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
                 lblProgressCurrentChunk.Text = ": Connecting...";
                 lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
             };
