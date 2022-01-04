@@ -242,7 +242,7 @@ namespace Twitch_prime_downloader
 
                 frd.streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
 
-                frd.SetChunks(thrObj.chunks);
+                frd.SetChunks(thrObj.Chunks);
 
                 frd.ChunkFrom = 0;
                 frd.ChunkTo = frd.fChunks.Count - 1;

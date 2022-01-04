@@ -12,9 +12,10 @@ namespace Twitch_prime_downloader
         public string PlaylistUrl { get; private set; }
         public string PlaylistString { get; private set; }
         public int ErrorCode { get; private set; }
-        public List<TwitchVodChunk> chunks = new List<TwitchVodChunk>();
+        private List<TwitchVodChunk> _chunks;
+        public TwitchVodChunk[] Chunks => _chunks.ToArray();
         public TwitchStreamInfo StreamInfo { get; private set; }
-        public List<string> resPlaylist;
+        public string[] PlaylistParsed { get; private set; }
         public List<object> controls = new List<object>();
         
         public delegate void ThreadCompletedDelegate(object sender, int errorCode);
@@ -23,9 +24,10 @@ namespace Twitch_prime_downloader
         public ThreadGetVodPlaylist(TwitchStreamInfo streamInfo)
         {
             StreamInfo = streamInfo;
+            _chunks = new List<TwitchVodChunk>();
         }
 
-        public void Work(object aContext)
+        public void Work(object context)
         {
             ErrorCode = GetStreamPlaylistUrl(StreamInfo, out string playlistUrl);
             if (ErrorCode == 200)
@@ -35,23 +37,23 @@ namespace Twitch_prime_downloader
                 if (ErrorCode == 200)
                 {
                     PlaylistString = playlistString;
-                    resPlaylist = PlaylistString.Split(new string[] { "\n" },
-                        StringSplitOptions.RemoveEmptyEntries).Where(s => s.EndsWith(".ts")).ToList();
-                    for (int i = 0; i < resPlaylist.Count; i++)
+                    PlaylistParsed = PlaylistString.Split(new string[] { "\n" },
+                        StringSplitOptions.RemoveEmptyEntries).Where(s => s.EndsWith(".ts")).ToArray();
+                    for (int i = 0; i < PlaylistParsed.Length; i++)
                     {
-                        TwitchVodChunk chunk = new TwitchVodChunk(resPlaylist[i]);
+                        TwitchVodChunk chunk = new TwitchVodChunk(PlaylistParsed[i]);
                         if (chunk.GetState() == TwitchVodChunkState.CS_UNMUTED)
                         {
                             chunk.SetState(TwitchVodChunkState.CS_MUTED);
                         }
-                        chunks.Add(chunk);
+                        _chunks.Add(chunk);
                     }
                 }
             }
 
-            if (ThreadCompleted != null && aContext != null)
+            if (ThreadCompleted != null && context != null)
             {
-                (aContext as SynchronizationContext).Send(OnComplete_Context, this);
+                (context as SynchronizationContext).Send(OnComplete_Context, this);
             }
         }
         
