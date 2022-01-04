@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using static Twitch_prime_downloader.TwitchApi;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
@@ -230,16 +231,16 @@ namespace Twitch_prime_downloader
             {
                 if (config.debugMode)
                 {
-                    memoDebug.Text = thrObj.playlistString;
+                    memoDebug.Text = thrObj.PlaylistString;
                 }
 
                 FrameDownload frd = new FrameDownload();
                 frd.Parent = panelDownloads;
                 frd.Location = new Point(0, 0);
                 frd.Close += FrameDownloadEvent_Close;
-                frd.SetStreamInfo(thrObj._streamInfo);
+                frd.SetStreamInfo(thrObj.StreamInfo);
 
-                frd.streamRoot = ExtractUrlFilePath(thrObj.playlistUrl);
+                frd.streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
 
                 frd.SetChunks(thrObj.chunks);
 
@@ -645,10 +646,9 @@ namespace Twitch_prime_downloader
 
             FrameStream frameStream = sender as FrameStream;
             frameStream.btnDownload.Enabled = false;
-            ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist();
-            threadGetVodPlaylist._streamInfo = frameStream.streamInfo;
+            ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist(frameStream.streamInfo);
             threadGetVodPlaylist.controls.Add(frameStream.btnDownload);
-            threadGetVodPlaylist.Completed += ThreadGetVodPlaylist_Complete;
+            threadGetVodPlaylist.ThreadCompleted += ThreadGetVodPlaylist_Complete;
 
             Thread thr = new Thread(threadGetVodPlaylist.Work);
             thr.Start(fContext);

@@ -80,6 +80,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreadDownload.cs" />
     <Compile Include="ThreadGetVodPlaylist.cs" />
+    <Compile Include="TwitchApi.cs" />
     <Compile Include="Utils.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
