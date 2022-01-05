@@ -12,6 +12,8 @@ namespace Twitch_prime_downloader
         public long BytesTransfered { get; private set; } = 0L;
         private long _rangeFrom = 0L;
         private long _rangeTo = 0L;
+        public string Accept { get; set; }
+        public WebHeaderCollection Headers { get; private set; } = new WebHeaderCollection();
         public int ProgressUpdateInterval { get; set; } = 10;
         public bool Stopped { get; private set; } = false;
         public int LastErrorCode { get; private set; } = DOWNLOAD_ERROR_UNKNOWN;
@@ -42,6 +44,8 @@ namespace Twitch_prime_downloader
 
             Connecting?.Invoke(this, Url);
             WebContent content = new WebContent();
+            content.Accept = Accept;
+            content.Headers = Headers;
             LastErrorCode = content.GetResponseStream(Url, _rangeFrom, _rangeTo);
             if (LastErrorCode != 200 && LastErrorCode != 206)
             {
@@ -77,6 +81,8 @@ namespace Twitch_prime_downloader
 
             Connecting?.Invoke(this, Url);
             WebContent content = new WebContent();
+            content.Accept = Accept;
+            content.Headers = Headers;
             LastErrorCode = content.GetResponseStream(Url, _rangeFrom, _rangeTo);
             if (LastErrorCode != 200 && LastErrorCode != 206)
             {
@@ -171,6 +177,9 @@ namespace Twitch_prime_downloader
     public sealed class WebContent : IDisposable
     {
         private HttpWebResponse webResponse = null;
+
+        public WebHeaderCollection Headers { get; set; }
+        public string Accept { get; set; }
         public long Length { get; private set; } = -1L;
         public Stream ContentData { get; private set; } = null;
 
@@ -225,6 +234,13 @@ namespace Twitch_prime_downloader
                     }
                     request.AddRange(rangeFrom, rangeTo);
                 }
+
+                request.Accept = Accept;
+                if (Headers != null)
+                {
+                    request.Headers = Headers;
+                }
+
                 webResponse = (HttpWebResponse)request.GetResponse();
                 stream = webResponse.GetResponseStream();
                 return 200;

@@ -28,9 +28,6 @@ namespace Twitch_prime_downloader
 
             ServicePointManager.DefaultConnectionLimit = 1000;
 
-            twitchClientIDs.Add("gs7pui3law5lsi69yzi9qzyaqvlcsy");
-            twitchClientIDs.Add("kimne78kx3ncx6brgo4mv6wki5h1ko");
-
             config.Load();
 
             if (File.Exists(config.channelsListFileName))
@@ -325,11 +322,8 @@ namespace Twitch_prime_downloader
                 return 0;
             }
             int sum = 0;
-            TwitchUserInfo userInfo = new TwitchUserInfo();
-            if (GetTwitchUserInfo_Helix(channelName, ref userInfo, out _) == 200)
+            if (GetTwitchUserInfo_Helix(channelName, out TwitchUserInfo userInfo, out _) == 200)
             {
-                string urlTemplate = "https://api.twitch.tv/kraken/channels/{0}" +
-                    "/videos?broadcast_type=all&limit=100&offset={1}";
                 int total = 0;
                 int offset = 0;
                 int max = 0;
@@ -337,7 +331,7 @@ namespace Twitch_prime_downloader
                 JArray jsonArr = new JArray();
                 do
                 {
-                    string url = string.Format(urlTemplate, userInfo.id, offset.ToString());
+                    string url = GetChannelVideosUrl_Kraken(userInfo.id, 100, offset);
                     errorCode = HttpsGet_Kraken(url, out string buf);
                     if (errorCode == 200)
                     {

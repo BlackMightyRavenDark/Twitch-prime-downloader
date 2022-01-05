@@ -16,10 +16,9 @@ namespace Twitch_prime_downloader
     {
         public static List<FrameStream> framesStream = new List<FrameStream>();
         public static List<FrameDownload> framesDownload = new List<FrameDownload>();
-        public static List<string> twitchClientIDs = new List<string>();
         public static List<string> twitchArchiveUrls = new List<string>();
         public static TwitchHelixOauthToken twitchHelixOauthToken = new TwitchHelixOauthToken();
-        
+
         public static MainConfiguration config = new MainConfiguration();
 
         public static Random random = new Random((int)DateTime.Now.Ticks);
@@ -35,19 +34,6 @@ namespace Twitch_prime_downloader
             wc.Headers.Add("Accept", TWITCH_ACCEPT_V5_STRING);
             wc.Encoding = Encoding.UTF8;
             return wc;
-        }
-
-        public static WebClient GetTwitchWebClient_Helix(string clientId)
-        {
-            if (GetHelixOauthToken(out string token) == 200)
-            {
-                WebClient wc = new WebClient();
-                wc.Headers.Add("Client-ID", clientId);
-                wc.Headers.Add("Authorization", "Bearer " + token);
-                wc.Encoding = Encoding.UTF8;
-                return wc;
-            }
-            return null;
         }
 
         public static int DownloadString(string url, out string resString)
@@ -116,45 +102,37 @@ namespace Twitch_prime_downloader
 
         public static int HttpsGet_Helix(string url, out string recvText)
         {
-            recvText = string.Empty;
-            int res = 400;
-            for (int i = 0; i < twitchClientIDs.Count && res != 200; i++)
+            int errorCode = GetHelixOauthToken(out string token);
+            if (errorCode == 200)
             {
-                WebClient wc = GetTwitchWebClient_Helix(twitchClientIDs[i]);
-                if (wc != null)
-                {
-                    res = DownloadString(wc, url, out recvText);
-                    wc.Dispose();
-                    if (res == 401)
-                    {
-                        twitchHelixOauthToken.Reset();
-                    }
-                }
+                FileDownloader d = new FileDownloader();
+                d.Url = url;
+                d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
+                d.Headers.Add("Authorization", "Bearer " + token);
+                errorCode = d.DownloadString(out recvText);
+                return errorCode;
             }
-
-            return res;
+            recvText = null;
+            return errorCode;
         }
 
         public static int HttpsGet_Kraken(string url, out string recvText)
         {
-            recvText = string.Empty;
-            int res = 400;
-            for (int i = 0; i < twitchClientIDs.Count && res != 200; i++)
+            WebClient wc = GetTwitchWebClient_Kraken(TWITCH_CLIENT_ID);
+            if (wc != null)
             {
-                WebClient wc = GetTwitchWebClient_Kraken(twitchClientIDs[i]);
-                if (wc != null)
-                {
-                    res = DownloadString(wc, url, out recvText);
-                    wc.Dispose();
-                }
+                int res = DownloadString(wc, url, out recvText);
+                wc.Dispose();
+                return res;
             }
 
-            return res;
+            recvText = null;
+            return 400;
         }
 
         public static int HttpsPost(string url, out string recvText)
         {
-            recvText = string.Empty;
+            recvText = null;
             WebClient client = new WebClient();
             NameValueCollection values = new NameValueCollection();
             values.Add("grant_type", "client_credentials");
