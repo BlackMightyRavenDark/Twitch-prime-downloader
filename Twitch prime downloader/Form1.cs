@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.TwitchApi;
@@ -314,7 +315,7 @@ namespace Twitch_prime_downloader
             return 0;
         }
 
-        public int GetChannelVideosListJson(string channelName, int maxVids, out string resJson)
+        private int GetChannelVideosListJson(string channelName, int maxVids, out string resJson)
         {
             resJson = null;
             if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName) || channelName.Contains(" "))
@@ -322,7 +323,8 @@ namespace Twitch_prime_downloader
                 return 0;
             }
             int sum = 0;
-            if (GetTwitchUserInfo_Helix(channelName, out TwitchUserInfo userInfo, out _) == 200)
+            TwitchApi twitchApi = new TwitchApi();
+            if (twitchApi.GetUserInfo_Helix(channelName, out TwitchUserInfo userInfo, out _) == 200)
             {
                 int total = 0;
                 int offset = 0;
@@ -331,8 +333,8 @@ namespace Twitch_prime_downloader
                 JArray jsonArr = new JArray();
                 do
                 {
-                    string url = GetChannelVideosUrl_Kraken(userInfo.id, 100, offset);
-                    errorCode = HttpsGet_Kraken(url, out string buf);
+                    string url = twitchApi.GetChannelVideosUrl_Kraken(userInfo.id, 100, offset);
+                    errorCode = twitchApi.HttpsGet_Kraken(url, out string buf);
                     if (errorCode == 200)
                     {
                         JObject json = JObject.Parse(buf);
@@ -360,8 +362,9 @@ namespace Twitch_prime_downloader
                                 {
                                     id = id.Remove(0, 1);
                                 }
-                                int err = GetTwitchVodInfo_Kraken(id, out string vodInfo);
-                                if (err == 200)
+
+                                int err = twitchApi.GetVodInfo_Kraken(id, out string vodInfo);
+                                if (err == 200 && !string.IsNullOrEmpty(vodInfo) && !string.IsNullOrWhiteSpace(vodInfo))
                                 {
                                     JObject j = JObject.Parse(vodInfo);
                                     if (j != null)
@@ -406,7 +409,10 @@ namespace Twitch_prime_downloader
                     TwitchStreamInfo stream = framesStream[i].GetStreamInfo();
 
                     string imgUrl = stream.imagePreviewTemplateUrl.Replace("{width}", "1920").Replace("{height}", "1080");
-                    if (DownloadData(imgUrl, stream.imageData))
+                    FileDownloader downloader = new FileDownloader();
+                    downloader.Url = imgUrl;
+                    
+                    if (downloader.Download(stream.imageData) == 200)
                     {
                         framesStream[i].imageStream.Image = Image.FromStream(stream.imageData);
                     }
@@ -417,7 +423,8 @@ namespace Twitch_prime_downloader
                         framesStream[i].imageStream.Image = bmp;
                     }
 
-                    if (DownloadData(stream.gameInfo.ImagePreviewSmallURL, stream.gameInfo.imageData))
+                    downloader.Url = stream.gameInfo.ImagePreviewSmallURL;
+                    if (downloader.Download(stream.gameInfo.imageData) == 200)
                     {
                         framesStream[i].imageGame.Image = Image.FromStream(stream.gameInfo.imageData);
                     }
@@ -586,7 +593,8 @@ namespace Twitch_prime_downloader
                     continue;
                 }
 
-                int errorCode = GetTwitchVodInfo_Kraken(vodId, out string infoStringJson);
+                TwitchApi twitchApi = new TwitchApi();
+                int errorCode = twitchApi.GetVodInfo_Kraken(vodId, out string infoStringJson);
                 if (errorCode == 200)
                 {
                     JObject jObject = JObject.Parse(infoStringJson);

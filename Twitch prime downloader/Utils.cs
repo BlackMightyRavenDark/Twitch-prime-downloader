@@ -17,7 +17,6 @@ namespace Twitch_prime_downloader
         public static List<FrameStream> framesStream = new List<FrameStream>();
         public static List<FrameDownload> framesDownload = new List<FrameDownload>();
         public static List<string> twitchArchiveUrls = new List<string>();
-        public static TwitchHelixOauthToken twitchHelixOauthToken = new TwitchHelixOauthToken();
 
         public static MainConfiguration config = new MainConfiguration();
 
@@ -27,107 +26,11 @@ namespace Twitch_prime_downloader
 
         public enum DownloadingMode { WholeFile, Chunked };
 
-        public static WebClient GetTwitchWebClient_Kraken(string clientId)
-        {
-            WebClient wc = new WebClient();
-            wc.Headers.Add("Client-ID", clientId);
-            wc.Headers.Add("Accept", TWITCH_ACCEPT_V5_STRING);
-            wc.Encoding = Encoding.UTF8;
-            return wc;
-        }
-
         public static int DownloadString(string url, out string resString)
         {
-            WebClient wc = new WebClient();
-            if (wc == null)
-            {
-                resString = string.Empty;
-                return 400;
-            }
-            int res = DownloadString(wc, url, out resString);
-            wc.Dispose();
-            return res;
-        }
-
-        public static int DownloadString(WebClient webClient, string url, out string resString)
-        {
-            if (webClient == null)
-            {
-                resString = "Client error";
-                return 400;
-            }
-
-            int errorCode;
-            string t;
-            try
-            {
-                t = webClient.DownloadString(url);
-                errorCode = 200;
-            }
-            catch (WebException e)
-            {
-                if (e.Status == WebExceptionStatus.ProtocolError)
-                {
-                    HttpWebResponse httpWebResponse = (HttpWebResponse)e.Response;
-                    errorCode = (int)httpWebResponse.StatusCode;
-                    t = httpWebResponse.StatusDescription;
-                }
-                else
-                {
-                    errorCode = 400;
-                    t = "Client error";
-                }
-            }
-            resString = t;
-            return errorCode;
-        }
-
-        public static bool DownloadData(string url, Stream stream)
-        {
-            WebClient webClient = new WebClient();
-            try
-            {
-                byte[] b = webClient.DownloadData(url);
-                stream.Write(b, 0, b.Length);
-                webClient.Dispose();
-                return true;
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine(e.Message);
-            }
-            webClient.Dispose();
-            return false;
-        }
-
-        public static int HttpsGet_Helix(string url, out string recvText)
-        {
-            int errorCode = GetHelixOauthToken(out string token);
-            if (errorCode == 200)
-            {
-                FileDownloader d = new FileDownloader();
-                d.Url = url;
-                d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
-                d.Headers.Add("Authorization", "Bearer " + token);
-                errorCode = d.DownloadString(out recvText);
-                return errorCode;
-            }
-            recvText = null;
-            return errorCode;
-        }
-
-        public static int HttpsGet_Kraken(string url, out string recvText)
-        {
-            WebClient wc = GetTwitchWebClient_Kraken(TWITCH_CLIENT_ID);
-            if (wc != null)
-            {
-                int res = DownloadString(wc, url, out recvText);
-                wc.Dispose();
-                return res;
-            }
-
-            recvText = null;
-            return 400;
+            FileDownloader d = new FileDownloader();
+            d.Url = url;
+            return d.DownloadString(out resString);
         }
 
         public static int HttpsPost(string url, out string recvText)
@@ -171,14 +74,12 @@ namespace Twitch_prime_downloader
             try
             {
                 streamWriter.Write(body);
-                streamWriter.Close();
                 streamWriter.Dispose();
             }
             catch
             {
                 if (streamWriter != null)
                 {
-                    streamWriter.Close();
                     streamWriter.Dispose();
                 }
                 return res;
@@ -190,7 +91,6 @@ namespace Twitch_prime_downloader
                 try
                 {
                     responseString = streamReader.ReadToEnd();
-                    streamReader.Close();
                     streamReader.Dispose();
                     res = (int)httpResponse.StatusCode;
                 }
@@ -198,7 +98,6 @@ namespace Twitch_prime_downloader
                 {
                     if (streamReader != null)
                     {
-                        streamReader.Close();
                         streamReader.Dispose();
                     }
                     return 400;
@@ -290,13 +189,14 @@ namespace Twitch_prime_downloader
             {
                 ParseMutedSegments(jt as JArray, stream.mutedChunks);
             }
-            int errorCode = IsChannelPrime(stream.userInfo.displayName.ToLower(), out bool prime);
+            int errorCode = IsChannelPrime(stream.userInfo.displayName, out bool prime);
             stream.isPrime = errorCode == 200 && prime;
 
             stream.gameInfo.title = json.Value<string>("game");
 
-            int n = GetTwitchGameInfo(Uri.EscapeDataString(stream.gameInfo.title), out string gameInfo);
-            if (n == 200)
+            TwitchApi twitchApi = new TwitchApi();
+            errorCode = twitchApi.GetGameInfo_Kraken(stream.gameInfo.title, out string gameInfo);
+            if (errorCode == 200)
             {
                 JObject jsonGame = JObject.Parse(gameInfo);
                 JArray ja = jsonGame.Value<JArray>("games");
@@ -411,11 +311,10 @@ namespace Twitch_prime_downloader
                 string fn = Path.GetFileNameWithoutExtension(fnOrig);
                 string ext = Path.GetExtension(fnOrig);
                 string fnNew;
-                int n = 1;
+                int n = 2;
                 do
                 {
-                    n++;
-                    fnNew = dir + fn + "_" + n.ToString() + ext;
+                    fnNew = $"{dir}{fn}_{n++}{ext}";
                 } while (File.Exists(fnNew));
                 return fnNew;
             }
