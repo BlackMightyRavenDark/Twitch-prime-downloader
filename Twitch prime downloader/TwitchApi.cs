@@ -5,34 +5,35 @@ using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
-    public class TwitchApi
+    public sealed class TwitchApi
     {
         public static string TWITCH_CLIENT_ID = "gs7pui3law5lsi69yzi9qzyaqvlcsy";
 
         /// <summary>
         /// Used for hidden / GQL API requests.
         /// </summary>
-        public static string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
-        public static string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
-        public static string TWITCH_HELIX_USERS_LOGIN_URL_TEMPLATE = "https://api.twitch.tv/helix/users?login={0}";
-        public static string TWITCH_USERS_URL = "https://api.twitch.tv/kraken/users?login={0}";
-        public static string TWITCH_CHANNEL_VIDEOS_URL = "https://api.twitch.tv/kraken/channels/{0}/videos";
-        public static string TWITCH_VIDEO_INFO_URL = "https://api.twitch.tv/kraken/videos/{0}";
-        public static string TWITCH_GAME_QUERY_URL = "https://api.twitch.tv/kraken/search/games?query={0}";
-        public static string TWITCH_ACCESS_TOKEN_VOD_URL = "https://api.twitch.tv/api/vods/{0}/access_token?client_id={1}";
-        public static string TWITCH_USHER_VOD_URL = "https://usher.ttvnw.net/vod/{0}.m3u8?" +
+        public const string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+
+        public const string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
+        public const string TWITCH_HELIX_USERS_LOGIN_URL_TEMPLATE = "https://api.twitch.tv/helix/users?login={0}";
+        public const string TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE = "https://api.twitch.tv/kraken/videos/{0}";
+        public const string TWITCH_KRAKEN_GAME_QUERY_URL_TEMPLATE = "https://api.twitch.tv/kraken/search/games?query={0}";
+        /*public const string TWITCH_USERS_URL_TEMPLATE = "https://api.twitch.tv/kraken/users?login={0}";
+        public const string TWITCH_CHANNEL_VIDEOS_URL_TEMPLATE = "https://api.twitch.tv/kraken/channels/{0}/videos";
+        public const string TWITCH_ACCESS_TOKEN_VOD_URL_TEMPLATE = "https://api.twitch.tv/api/vods/{0}/access_token?client_id={1}";
+        public const string TWITCH_USHER_VOD_URL_TEMPLATE = "https://usher.ttvnw.net/vod/{0}.m3u8?" +
                      "player=twitchweb&nauth={1}&nauthsig={2}&" +
-                     "$allow_audio_only=true&allow_source=true&type=any&p={3}";
+                     "$allow_audio_only=true&allow_source=true&type=any&p={3}";*/
 
         /// <summary>
         /// WARNING!!! Do not use the TWITCH GQL API if you are signed in!!!
         /// </summary>
         public const string TWITCH_GQL_API_URL = "https://gql.twitch.tv/gql";
 
-        public static string UNKNOWN_GAME_URL = "https://static-cdn.jtvnw.net/ttv-boxart/404_boxart.png";
+        public const string UNKNOWN_GAME_URL = "https://static-cdn.jtvnw.net/ttv-boxart/404_boxart.png";
 
-        public static string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "<server>/<stream_id>/chunked/index-dvr.m3u8";
-        public static string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "<server>/<stream_id>/chunked/highlight-<video_id>.m3u8";
+        public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "<server>/<stream_id>/chunked/index-dvr.m3u8";
+        public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "<server>/<stream_id>/chunked/highlight-<video_id>.m3u8";
 
         public TwitchHelixOauthToken HelixOauthToken { get; private set; } = new TwitchHelixOauthToken();
 
@@ -104,8 +105,8 @@ namespace Twitch_prime_downloader
                 {
                     JObject j = ja[0].Value<JObject>();
                     userInfo = new TwitchUserInfo();
-                    userInfo.displayName = j.Value<string>("display_name");
-                    userInfo.id = j.Value<string>("id");
+                    userInfo.DisplayName = j.Value<string>("display_name");
+                    userInfo.Id = j.Value<string>("id");
                     errorMessage = null;
                 }
                 else
@@ -125,7 +126,7 @@ namespace Twitch_prime_downloader
         {
             if (!string.IsNullOrEmpty(gameName) && !string.IsNullOrWhiteSpace(gameName))
             {
-                string req = string.Format(TWITCH_GAME_QUERY_URL, Uri.EscapeDataString(gameName.ToLower()));
+                string req = string.Format(TWITCH_KRAKEN_GAME_QUERY_URL_TEMPLATE, Uri.EscapeDataString(gameName.ToLower()));
                 return HttpsGet_Kraken(req, out resJson);
             }
             resJson = null;
@@ -134,30 +135,30 @@ namespace Twitch_prime_downloader
 
         public int GetVodInfo_Kraken(string videoId, out string resJson)
         {
-            string url = string.Format(TWITCH_VIDEO_INFO_URL, videoId);
+            string url = string.Format(TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE, videoId);
             return HttpsGet_Kraken(url, out resJson);
         }
 
-        public static int GetStreamPlaylistUrl(TwitchStreamInfo aStream, out string playlistUrl)
+        public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
         {
-            if (!string.IsNullOrEmpty(aStream.imageAnimatedPreviewUrl) && !string.IsNullOrWhiteSpace(aStream.imageAnimatedPreviewUrl))
+            if (!string.IsNullOrEmpty(vod.ImageAnimatedPreviewUrl) && !string.IsNullOrWhiteSpace(vod.ImageAnimatedPreviewUrl))
             {
-                int n = aStream.imageAnimatedPreviewUrl.IndexOf(".net/");
+                int n = vod.ImageAnimatedPreviewUrl.IndexOf(".net/");
                 if (n > 0)
                 {
-                    string server = aStream.imageAnimatedPreviewUrl.Substring(0, n + 4);
-                    if (aStream.vodType == "highlight")
+                    string server = vod.ImageAnimatedPreviewUrl.Substring(0, n + 4);
+                    if (vod.Type == "highlight")
                     {
                         playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server>", server)
-                            .Replace("<stream_id>", aStream.streamId).Replace("<video_id>", aStream.videoId);
+                            .Replace("<stream_id>", vod.StreamId).Replace("<video_id>", vod.VideoId);
                     }
                     else
                     {
                         playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server>", server)
-                            .Replace("<stream_id>", aStream.streamId);
+                            .Replace("<stream_id>", vod.StreamId);
                     }
-                    int res = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
-                    return res;
+                    int errorCode = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
+                    return errorCode;
                 }
             }
 
@@ -218,62 +219,62 @@ namespace Twitch_prime_downloader
         }
     }
 
-    public class TwitchGameInfo
+    public sealed class TwitchGameInfo
     {
-        public string title;
-        public string ImagePreviewSmallURL;
-        public string ImagePreviewMediumURL;
-        public string ImagePreviewLargeURL;
-        public Stream imageData = new MemoryStream();
+        public string Title { get; set; }
+        public string ImagePreviewSmallUrl { get; set; }
+        public string ImagePreviewMediumUrl { get; set; }
+        public string ImagePreviewLargeUrl { get; set; }
+        public Stream ImageData { get; set; } = new MemoryStream();
 
         ~TwitchGameInfo()
         {
-            imageData?.Dispose();
+            ImageData?.Dispose();
         }
     }
 
-    public class TwitchUserInfo
+    public sealed class TwitchUserInfo
     {
-        public string displayName;
-        public string id;
+        public string DisplayName { get; set; }
+        public string Id { get; set; }
     }
 
-    public class TwitchStreamInfo
+    public sealed class TwitchVod
     {
-        public string title;
-        public string videoId;
-        public string streamId;
-        public string videoUrl;
-        public DateTime length;
-        public int viewCount;
-        public string vodType;
-        public TwitchVodMutedChunks mutedChunks = new TwitchVodMutedChunks();
-        public DateTime dateCreation;
-        public DateTime dateDeletion;
-        public string imagePreviewTemplateUrl;
-        public string imageAnimatedPreviewUrl;
-        public Stream imageData = new MemoryStream();
-        public bool isPrime;
-        public TwitchUserInfo userInfo = new TwitchUserInfo();
-        public TwitchGameInfo gameInfo = new TwitchGameInfo();
-        public string infoStringJson;
+        public string Title { get; set; }
+        public string VideoId { get; set; }
+        public string StreamId { get; set; }
+        public string VideoUrl { get; set; }
+        public TimeSpan Length { get; set; }
+        public int ViewCount { get; set; }
+        public string Type { get; set; }
+        public TwitchVodMutedChunks MutedChunks { get; private set; } = new TwitchVodMutedChunks();
+        public DateTime DateCreation { get; set; }
+        public DateTime DateDeletion { get; set; }
+        public string ImagePreviewTemplateUrl { get; set; }
+        public string ImageAnimatedPreviewUrl { get; set; }
+        public Stream ImageData { get; set; } = new MemoryStream();
+        public bool IsPrime { get; set; }
+        public TwitchUserInfo UserInfo { get; private set; } = new TwitchUserInfo();
+        public TwitchGameInfo GameInfo { get; private set; } = new TwitchGameInfo();
+        public string InfoStringJson { get; set; }
 
         public bool IsHighlight()
         {
-            return vodType == "highlight";
+            return Type == "highlight";
         }
 
-        ~TwitchStreamInfo()
+        ~TwitchVod()
         {
-            imageData?.Dispose();
+            ImageData?.Dispose();
         }
     }
 
-    public class TwitchHelixOauthToken
+    public sealed class TwitchHelixOauthToken
     {
-        public static string TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE = "https://id.twitch.tv/oauth2/token?client_id={0}&" +
+        public const string TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE = "https://id.twitch.tv/oauth2/token?client_id={0}&" +
                       "client_secret={1}&grant_type=client_credentials";
-        public static string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
+        public const string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
 
         public string AccessToken { get; private set; }
         public string TokenType { get; private set; }

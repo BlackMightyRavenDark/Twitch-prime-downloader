@@ -8,11 +8,11 @@ namespace Twitch_prime_downloader
 {
     public partial class FrameStream : UserControl
     {
-        public TwitchStreamInfo streamInfo;
+        public TwitchVod StreamInfo { get; private set; }
         private int fGuiInfoFontSize = 10;
         private bool fShowStreaInfoGUI = true;
-        public static Color colorActive = IntToColor(0x909090);
-        public static Color colorInactive = IntToColor(0x303030);
+        public static readonly Color colorActive = IntToColor(0x909090);
+        public static readonly Color colorInactive = IntToColor(0x303030);
 
         public int InfoGuiFontSize
         {
@@ -37,10 +37,13 @@ namespace Twitch_prime_downloader
                 fShowStreaInfoGUI = value;
             }
         }
-        public event Action<object, MouseEventArgs> OnImgMouseDown;
-        public event Action<object> OnActivate;
-        public delegate void DownloadButtonPressDelegate(object sender);
-        public DownloadButtonPressDelegate DownloadButtonPress;
+
+        public delegate void ImageMouseDownDelegate(object sender, MouseEventArgs e);
+        public delegate void FrameActivatedDelegate(object sender);
+        public delegate void DownloadButtonPressedDelegate(object sender);
+        public ImageMouseDownDelegate ImageMouseDown;
+        public FrameActivatedDelegate Activated;
+        public DownloadButtonPressedDelegate DownloadButtonPressed;
         
         public FrameStream()
         {
@@ -52,21 +55,21 @@ namespace Twitch_prime_downloader
             myPath.Dispose();
         }
 
-        public TwitchStreamInfo GetStreamInfo()
+        public TwitchVod GetStreamInfo()
         {
-            return streamInfo;
+            return StreamInfo;
         }
 
-        public void SetStreamInfo(TwitchStreamInfo aStream)
+        public void SetStreamInfo(TwitchVod vod)
         {
-            streamInfo = aStream;
-            lblStreamTitle.Text = streamInfo.title;
-            lblChannelName.Text = streamInfo.userInfo.displayName;
-            lblGame.Text = streamInfo.gameInfo.title;
-            lblBroadcastType.Text = aStream.vodType;
-            if (aStream.mutedChunks.segments.Count > 0)
+            StreamInfo = vod;
+            lblStreamTitle.Text = StreamInfo.Title;
+            lblChannelName.Text = StreamInfo.UserInfo.DisplayName;
+            lblGameName.Text = StreamInfo.GameInfo.Title;
+            lblBroadcastType.Text = StreamInfo.Type;
+            if (StreamInfo.MutedChunks.segments.Count > 0)
             {
-                lblMutedChunks.Text = $"Muted segments: {aStream.mutedChunks.segments.Count}";
+                lblMutedChunks.Text = $"Muted segments: {StreamInfo.MutedChunks.segments.Count}";
                 lblMutedChunks.Left = Width - lblMutedChunks.Width;
                 lblMutedChunks.Visible = true;
             }
@@ -74,26 +77,22 @@ namespace Twitch_prime_downloader
             {
                 lblMutedChunks.Visible = false;
             }
-            lblPrime.Visible = aStream.isPrime;
+            lblPrime.Visible = StreamInfo.IsPrime;
         }
 
-
-        private void ImageStream_Paint(object sender, PaintEventArgs e)
+        private void imageStream_Paint(object sender, PaintEventArgs e)
         {
             if (ShowStreamInfoGUI)
             {
-                //Random rnd = new Random();
-                //int y = rnd.Next(0, (sender as PictureBox).Height / 2);
                 Font fnt = new Font("Lucida Console", fGuiInfoFontSize);
-                //e.Graphics.DrawString("pussy", fnt, Brushes.White, new Point(2, y));
 
-                string t = streamInfo.length.ToString("HH:mm:ss");
+                string t = StreamInfo.Length.ToString("h':'mm':'ss");
                 SizeF size = e.Graphics.MeasureString(t, fnt);
                 RectangleF r = new RectangleF(0, 0, size.Width, size.Height); 
                 e.Graphics.FillRectangle(Brushes.Black, r);
                 e.Graphics.DrawString(t, fnt, Brushes.White, r.X, r.Y);
                 
-                t = streamInfo.dateCreation.ToString("yyyy.MM.dd, HH:mm:ss");
+                t = StreamInfo.DateCreation.ToString("yyyy.MM.dd, HH:mm:ss");
                 size = e.Graphics.MeasureString(t, fnt);
                 r = new RectangleF(
                     (sender as PictureBox).Width - size.Width - 2,
@@ -101,10 +100,10 @@ namespace Twitch_prime_downloader
                     size.Width, size.Height);
                 e.Graphics.FillRectangle(Brushes.Black, r);
                 e.Graphics.DrawString(t, fnt, Brushes.White, new Point((int)r.X, (int)r.Y));
-                if (streamInfo.dateDeletion != DateTime.MinValue)
+                if (StreamInfo.DateDeletion != DateTime.MinValue)
                 {
                     int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
-                    t = "Будет удалён: " + streamInfo.dateDeletion.ToString("yyyy.MM.dd, HH:mm:ss");
+                    t = "Будет удалён: " + StreamInfo.DateDeletion.ToString("yyyy.MM.dd, HH:mm:ss");
                     size = e.Graphics.MeasureString(t, fnt);
                     r = new RectangleF((sender as PictureBox).Width - size.Width - 2, y, size.Width, size.Height);
                     e.Graphics.FillRectangle(Brushes.Black, r);
@@ -114,54 +113,47 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void ImageStream_MouseDown(object sender, MouseEventArgs e)
+        private void imageStream_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
-            if (OnImgMouseDown != null)
-                OnImgMouseDown(this, e);
+            Activated?.Invoke(this);
+            ImageMouseDown?.Invoke(this, e);
         }
 
         private void FrameStream_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
+            Activated?.Invoke(this);
         }
 
-        private void ImageGame_MouseDown(object sender, MouseEventArgs e)
+        private void imageGame_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
+            Activated?.Invoke(this);
         }
 
-        private void LabChannlName_MouseDown(object sender, MouseEventArgs e)
+        private void lblChannelName_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
+            Activated.Invoke(this);
         }
 
-        private void LabStreamTitle_MouseDown(object sender, MouseEventArgs e)
+        private void lblStreamTitle_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
+            Activated?.Invoke(this);
             if (e.Button == MouseButtons.Right)
-                contextMenuStrip1.Show(Cursor.Position.X, Cursor.Position.Y);
-
+            {
+                contextMenuStrip1.Show(Cursor.Position);
+            }
         }
 
-        private void BtnDownload_Click(object sender, EventArgs e)
+        private void btnDownload_Click(object sender, EventArgs e)
         {
-            DownloadButtonPress?.Invoke(this);
-            
+            DownloadButtonPressed?.Invoke(this);
         }
 
-        private void BtnDownload_MouseDown(object sender, MouseEventArgs e)
+        private void btnDownload_MouseDown(object sender, MouseEventArgs e)
         {
-            if (OnActivate != null)
-                OnActivate(this);
+            Activated.Invoke(this);
         }
 
-        private void BtnDownload_Paint(object sender, PaintEventArgs e)
+        private void btnDownload_Paint(object sender, PaintEventArgs e)
         {
             Button button = sender as Button;
             Color color = button.Enabled ? button.BackColor : Color.FromArgb(192, 192, 192);
@@ -178,42 +170,45 @@ namespace Twitch_prime_downloader
                 e.Graphics.DrawString(t, button.Font, brush, new Point(x, y));
                 brush.Dispose();
             }
-            
         }
 
         private void SetInfoGuiFontSize(int newFontSize)
         {
-            if (ShowStreamInfoGUI && fGuiInfoFontSize != newFontSize)
+            if (fGuiInfoFontSize != newFontSize)
             {
                 fGuiInfoFontSize = newFontSize;
-                imageStream.Refresh();
+                if (ShowStreamInfoGUI)
+                {
+                    imageStream.Refresh();
+                }
             }
         }
-        private void СкопироватьНаToolStripMenuItem_Click(object sender, EventArgs e)
+
+        private void copyStreamTitleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SetClipboardText(streamInfo.title);
+            SetClipboardText(StreamInfo.Title);
         }
 
-        private void CopyStreamDateToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyStreamDateToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SetClipboardText(streamInfo.dateCreation.ToString("[yyyy-MM-dd] "));
+            SetClipboardText(StreamInfo.DateCreation.ToString("[yyyy-MM-dd]"));
         }
 
-        private void CopyStreamTitlePlusDateToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyStreamTitlePlusDateToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SetClipboardText(streamInfo.dateCreation.ToString("[yyyy-MM-dd] ") + streamInfo.title);
+            SetClipboardText($"[{StreamInfo.DateCreation:yyyy-MM-dd}] {StreamInfo.Title}");
         }
 
         private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
         {
-            string t = $"Стрим: {streamInfo.title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}";
-            for (int i = 0; i < streamInfo.mutedChunks.segmentList.Count; i++)
+            string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}";
+            for (int i = 0; i < StreamInfo.MutedChunks.segmentList.Count; i++)
             {
-                t += streamInfo.mutedChunks.segmentList[i] + Environment.NewLine;
+                t += StreamInfo.MutedChunks.segmentList[i] + Environment.NewLine;
             }
 
-            double percent = 100.0 / streamInfo.length.Ticks * streamInfo.mutedChunks.totalLength.Ticks;
-            t += $"\nВсего выпилено: {streamInfo.mutedChunks.totalLength:HH:mm:ss} ({string.Format("{0:F2}", percent)}%)";
+            double percent = 100.0 / StreamInfo.Length.Ticks * StreamInfo.MutedChunks.totalLength.Ticks;
+            t += $"\nВсего выпилено: {StreamInfo.MutedChunks.totalLength:HH:mm:ss} ({string.Format("{0:F2}", percent)}%)";
             if (MessageBox.Show($"{t}\n\nСкопировать это прямо в буфер?", "Определятор выпиленного звука",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {

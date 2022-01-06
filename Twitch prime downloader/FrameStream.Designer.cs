@@ -31,10 +31,10 @@
             this.components = new System.ComponentModel.Container();
             this.lblStreamTitle = new System.Windows.Forms.Label();
             this.lblChannelName = new System.Windows.Forms.Label();
-            this.lblGame = new System.Windows.Forms.Label();
+            this.lblGameName = new System.Windows.Forms.Label();
             this.btnDownload = new System.Windows.Forms.Button();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.CopyStreamTitleНаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyStreamTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyStreamDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyStreamTitlePlusDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lblMutedChunks = new System.Windows.Forms.Label();
@@ -57,7 +57,7 @@
             this.lblStreamTitle.Size = new System.Drawing.Size(295, 40);
             this.lblStreamTitle.TabIndex = 0;
             this.lblStreamTitle.Text = "lblStreamTitle";
-            this.lblStreamTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.LabStreamTitle_MouseDown);
+            this.lblStreamTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblStreamTitle_MouseDown);
             // 
             // lblChannelName
             // 
@@ -68,17 +68,17 @@
             this.lblChannelName.Size = new System.Drawing.Size(84, 13);
             this.lblChannelName.TabIndex = 3;
             this.lblChannelName.Text = "lblChannelName";
-            this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.LabChannlName_MouseDown);
+            this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblChannelName_MouseDown);
             // 
-            // lblGame
+            // lblGameName
             // 
-            this.lblGame.AutoSize = true;
-            this.lblGame.ForeColor = System.Drawing.Color.Yellow;
-            this.lblGame.Location = new System.Drawing.Point(72, 238);
-            this.lblGame.Name = "lblGame";
-            this.lblGame.Size = new System.Drawing.Size(45, 13);
-            this.lblGame.TabIndex = 4;
-            this.lblGame.Text = "lblGame";
+            this.lblGameName.AutoSize = true;
+            this.lblGameName.ForeColor = System.Drawing.Color.Yellow;
+            this.lblGameName.Location = new System.Drawing.Point(72, 238);
+            this.lblGameName.Name = "lblGameName";
+            this.lblGameName.Size = new System.Drawing.Size(73, 13);
+            this.lblGameName.TabIndex = 4;
+            this.lblGameName.Text = "lblGameName";
             // 
             // btnDownload
             // 
@@ -90,39 +90,39 @@
             this.btnDownload.TabIndex = 5;
             this.btnDownload.Text = "Скачать";
             this.btnDownload.UseVisualStyleBackColor = false;
-            this.btnDownload.Click += new System.EventHandler(this.BtnDownload_Click);
-            this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.BtnDownload_Paint);
-            this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.BtnDownload_MouseDown);
+            this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
+            this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.btnDownload_Paint);
+            this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnDownload_MouseDown);
             // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.CopyStreamTitleНаToolStripMenuItem,
+            this.copyStreamTitleToolStripMenuItem,
             this.copyStreamDateToolStripMenuItem,
             this.copyStreamTitlePlusDateToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(236, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(236, 92);
             // 
-            // CopyStreamTitleНаToolStripMenuItem
+            // copyStreamTitleToolStripMenuItem
             // 
-            this.CopyStreamTitleНаToolStripMenuItem.Name = "CopyStreamTitleНаToolStripMenuItem";
-            this.CopyStreamTitleНаToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-            this.CopyStreamTitleНаToolStripMenuItem.Text = "Скопировать название";
-            this.CopyStreamTitleНаToolStripMenuItem.Click += new System.EventHandler(this.СкопироватьНаToolStripMenuItem_Click);
+            this.copyStreamTitleToolStripMenuItem.Name = "copyStreamTitleToolStripMenuItem";
+            this.copyStreamTitleToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.copyStreamTitleToolStripMenuItem.Text = "Скопировать название";
+            this.copyStreamTitleToolStripMenuItem.Click += new System.EventHandler(this.copyStreamTitleToolStripMenuItem_Click);
             // 
             // copyStreamDateToolStripMenuItem
             // 
             this.copyStreamDateToolStripMenuItem.Name = "copyStreamDateToolStripMenuItem";
             this.copyStreamDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.copyStreamDateToolStripMenuItem.Text = "Скопировать дату";
-            this.copyStreamDateToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamDateToolStripMenuItem_Click);
+            this.copyStreamDateToolStripMenuItem.Click += new System.EventHandler(this.copyStreamDateToolStripMenuItem_Click);
             // 
             // copyStreamTitlePlusDateToolStripMenuItem
             // 
             this.copyStreamTitlePlusDateToolStripMenuItem.Name = "copyStreamTitlePlusDateToolStripMenuItem";
             this.copyStreamTitlePlusDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.copyStreamTitlePlusDateToolStripMenuItem.Text = "Скопировать дату и название";
-            this.copyStreamTitlePlusDateToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamTitlePlusDateToolStripMenuItem_Click);
+            this.copyStreamTitlePlusDateToolStripMenuItem.Click += new System.EventHandler(this.copyStreamTitlePlusDateToolStripMenuItem_Click);
             // 
             // lblMutedChunks
             // 
@@ -158,7 +158,7 @@
             this.imageGame.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.imageGame.TabIndex = 2;
             this.imageGame.TabStop = false;
-            this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ImageGame_MouseDown);
+            this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.imageGame_MouseDown);
             // 
             // imageStream
             // 
@@ -168,8 +168,8 @@
             this.imageStream.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.imageStream.TabIndex = 1;
             this.imageStream.TabStop = false;
-            this.imageStream.Paint += new System.Windows.Forms.PaintEventHandler(this.ImageStream_Paint);
-            this.imageStream.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ImageStream_MouseDown);
+            this.imageStream.Paint += new System.Windows.Forms.PaintEventHandler(this.imageStream_Paint);
+            this.imageStream.MouseDown += new System.Windows.Forms.MouseEventHandler(this.imageStream_MouseDown);
             // 
             // lblBroadcastType
             // 
@@ -190,7 +190,7 @@
             this.Controls.Add(this.lblPrime);
             this.Controls.Add(this.lblMutedChunks);
             this.Controls.Add(this.btnDownload);
-            this.Controls.Add(this.lblGame);
+            this.Controls.Add(this.lblGameName);
             this.Controls.Add(this.lblChannelName);
             this.Controls.Add(this.imageGame);
             this.Controls.Add(this.imageStream);
@@ -212,10 +212,10 @@
         public System.Windows.Forms.PictureBox imageStream;
         public System.Windows.Forms.PictureBox imageGame;
         public System.Windows.Forms.Label lblChannelName;
-        public System.Windows.Forms.Label lblGame;
+        public System.Windows.Forms.Label lblGameName;
         public System.Windows.Forms.Button btnDownload;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem CopyStreamTitleНаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyStreamTitleToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyStreamDateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyStreamTitlePlusDateToolStripMenuItem;
         private System.Windows.Forms.Label lblMutedChunks;

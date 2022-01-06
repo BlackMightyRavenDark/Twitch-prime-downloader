@@ -12,7 +12,7 @@ namespace Twitch_prime_downloader
     { 
         private SynchronizationContext fContext = null;
         private ThreadDownload threadDownload = null;
-        private TwitchStreamInfo fStreamInfo;
+        private TwitchVod fStreamInfo;
         public string fOutputFilenameOrig;
         public string fOutputFileName;
         private int fChunkFrom = 0;
@@ -60,13 +60,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        public TwitchStreamInfo StreamInfo
-        {
-            get
-            {
-                return fStreamInfo;
-            }
-        }
+        public TwitchVod StreamInfo => fStreamInfo;
 
         public event Action<object> Close;
 
@@ -139,14 +133,14 @@ namespace Twitch_prime_downloader
         private void PictureBoxStreamImage_Paint(object sender, PaintEventArgs e)
         {
             Font fnt = new Font("arial", 12);
-            if (StreamInfo.length > DateTime.MinValue)
+            if (StreamInfo.Length > TimeSpan.MinValue)
             {
-                string t = StreamInfo.length.ToString("H:mm:ss");
+                string t = StreamInfo.Length.ToString("h':'mm':'ss");
                 SizeF sz = e.Graphics.MeasureString(t, fnt);
                 e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
                 e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
             }
-            if (StreamInfo.isPrime)
+            if (StreamInfo.IsPrime)
             {
                 SizeF sz = e.Graphics.MeasureString("$", fnt);
                 float x = (sender as PictureBox).Width - sz.Width;
@@ -207,42 +201,42 @@ namespace Twitch_prime_downloader
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;
 
-            string msgCaption = StreamInfo.isPrime ? "Скачиватор платного бесплатно" : "Скачивание";
+            string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
             int errorCode = (sender as ThreadDownload).lastErrorCode;
             switch (errorCode)
             {
                 case 200:
-                    MessageBox.Show($"{StreamInfo.title}\nСкачано успешно!", msgCaption,
+                    MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
             
                 case FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER:
-                    MessageBox.Show($"{StreamInfo.title}\nСкачивание успешно отменено", msgCaption,
+                    MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено", msgCaption,
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     break;
                 
                 case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
-                    MessageBox.Show($"{StreamInfo.title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!", 
+                    MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!", 
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
                 case ThreadDownload.ERROR_APPENDING_STREAM:
-                    MessageBox.Show($"{StreamInfo.title}\nОшибка объединения чанков!\nСкачивание прервано!",
+                    MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
                 case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
-                    MessageBox.Show($"{StreamInfo.title}\nФайл на сервере пуст!",
+                    MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
                 case FileDownloader.DOWNLOAD_ERROR_UNKNOWN:
-                    MessageBox.Show($"{StreamInfo.title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
+                    MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
                 default:
-                    MessageBox.Show($"{StreamInfo.title}\nНеизвестная ошибка!" +
+                    MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
                         $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
@@ -368,16 +362,18 @@ namespace Twitch_prime_downloader
             }
         }
 
-        public void SetStreamInfo(TwitchStreamInfo aStreamInfo)
+        public void SetStreamInfo(TwitchVod vod)
         {
-            fStreamInfo = aStreamInfo;
-            lblStreamTitle.Text = $"Стрим: {fStreamInfo.title}";
+            fStreamInfo = vod;
+            lblStreamTitle.Text = $"Стрим: {fStreamInfo.Title}";
             fOutputFilenameOrig = config.downloadingPath +
                 FixFileName(FormatFileName(config.fileNameFormat, fStreamInfo)) +
-                (aStreamInfo.IsHighlight() ? " [highlight].ts" : ".ts");
+                (vod.IsHighlight() ? " [highlight].ts" : ".ts");
             lblOutputFilename.Text = $"Имя файла: {fOutputFilenameOrig}";
-            if (aStreamInfo.imageData != null)
-                pictureBoxStreamImage.Image = Image.FromStream(aStreamInfo.imageData);
+            if (vod.ImageData != null)
+            {
+                pictureBoxStreamImage.Image = Image.FromStream(vod.ImageData);
+            }
         }
 
         public void SetChunks(IEnumerable<TwitchVodChunk> chunks)
@@ -486,13 +482,15 @@ namespace Twitch_prime_downloader
 
         private void CopyStreamTitleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SetClipboardText(StreamInfo.title);
+            SetClipboardText(StreamInfo.Title);
         }
 
         private void LblStreamTitle_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-                contextMenuStreamTitle.Show(Cursor.Position.X, Cursor.Position.Y);
+            {
+                contextMenuStreamTitle.Show(Cursor.Position);
+            }
         }
 
         private void BtnStopDownload_Click(object sender, EventArgs e)
