@@ -223,22 +223,28 @@ namespace Twitch_prime_downloader
         public int GetResponseStream(string url, long rangeFrom, long rangeTo, out Stream stream)
         {
             stream = null;
+            if (rangeTo > 0L)
+            {
+                if (rangeFrom > rangeTo)
+                {
+                    return FileDownloader.DOWNLOAD_ERROR_RANGE;
+                }
+            }
             try
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 if (rangeTo > 0L)
                 {
-                    if (rangeFrom > rangeTo)
-                    {
-                        return FileDownloader.DOWNLOAD_ERROR_RANGE;
-                    }
                     request.AddRange(rangeFrom, rangeTo);
                 }
 
                 request.Accept = Accept;
                 if (Headers != null)
                 {
-                    request.Headers = Headers;
+                    for (int i = 0; i < Headers.Count; i++)
+                    {
+                        request.Headers.Add(Headers.GetKey(i), Headers.Get(i));
+                    }
                 }
 
                 webResponse = (HttpWebResponse)request.GetResponse();

@@ -13,10 +13,7 @@ namespace Twitch_prime_downloader
         /// Used for hidden / GQL API requests.
         /// </summary>
         public static string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
-        public static string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
         public static string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
-        public static string TWITCH_HELIX_OAUTH_TOKEN = "https://id.twitch.tv/oauth2/token?client_id={0}&" +
-                      "client_secret={1}&grant_type=client_credentials";
         public static string TWITCH_HELIX_USERS_LOGIN_URL_TEMPLATE = "https://api.twitch.tv/helix/users?login={0}";
         public static string TWITCH_USERS_URL = "https://api.twitch.tv/kraken/users?login={0}";
         public static string TWITCH_CHANNEL_VIDEOS_URL = "https://api.twitch.tv/kraken/channels/{0}/videos";
@@ -37,25 +34,13 @@ namespace Twitch_prime_downloader
         public static string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "<server>/<stream_id>/chunked/index-dvr.m3u8";
         public static string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "<server>/<stream_id>/chunked/highlight-<video_id>.m3u8";
 
+        public TwitchHelixOauthToken HelixOauthToken { get; private set; } = new TwitchHelixOauthToken();
 
-        public static int GetHelixOauthToken(out string resToken)
+        public int GetHelixOauthToken(out string resToken)
         {
-            int res = 200;
-            if (twitchHelixOauthToken.expireDate <= DateTime.Now ||
-                string.IsNullOrEmpty(twitchHelixOauthToken.accessToken))
-            {
-                string req = string.Format(TWITCH_HELIX_OAUTH_TOKEN, TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET);
-                res = HttpsPost(req, out string buf);
-                if (res == 200)
-                {
-                    JObject j = JObject.Parse(buf);
-                    twitchHelixOauthToken.accessToken = j.Value<string>("access_token");
-                    twitchHelixOauthToken.expireDate =
-                        DateTime.Now.Add(TimeSpan.FromSeconds(j.Value<long>("expires_in")));
-                }
-            }
-            resToken = twitchHelixOauthToken.accessToken;
-            return res;
+            int errorCode = HelixOauthToken.Update(TWITCH_CLIENT_ID);
+            resToken = HelixOauthToken.AccessToken;
+            return errorCode;
         }
 
         /// <summary>
@@ -86,7 +71,7 @@ namespace Twitch_prime_downloader
             return json.ToString();
         }
 
-        public static string GetChannelVideosUrl_Kraken(string channelId, int maxVideos, int offset)
+        public string GetChannelVideosUrl_Kraken(string channelId, int maxVideos, int offset)
         {
             string urlTemplate = "https://api.twitch.tv/kraken/channels/{0}/videos?broadcast_type=all&limit={1}&offset={2}";
             string req = string.Format(urlTemplate, channelId, maxVideos.ToString(), offset.ToString());
@@ -99,7 +84,7 @@ namespace Twitch_prime_downloader
             return req;
         }
 
-        public static int GetTwitchUserInfo_Helix(string channelName,
+        public int GetUserInfo_Helix(string channelName,
                              out TwitchUserInfo userInfo, out string errorMessage)
         {
             userInfo = null;
@@ -136,21 +121,18 @@ namespace Twitch_prime_downloader
             return res;
         }
 
-        public static int GetTwitchGameInfo(string gameName, out string resJson)
+        public int GetGameInfo_Kraken(string gameName, out string resJson)
         {
             if (!string.IsNullOrEmpty(gameName) && !string.IsNullOrWhiteSpace(gameName))
             {
-                int n = HttpsGet_Kraken(string.Format(TWITCH_GAME_QUERY_URL, gameName), out resJson);
-                return n;
+                string req = string.Format(TWITCH_GAME_QUERY_URL, Uri.EscapeDataString(gameName.ToLower()));
+                return HttpsGet_Kraken(req, out resJson);
             }
-            else
-            {
-                resJson = string.Empty;
-                return 404;
-            }
+            resJson = null;
+            return 400;
         }
 
-        public static int GetTwitchVodInfo_Kraken(string videoId, out string resJson)
+        public int GetVodInfo_Kraken(string videoId, out string resJson)
         {
             string url = string.Format(TWITCH_VIDEO_INFO_URL, videoId);
             return HttpsGet_Kraken(url, out resJson);
@@ -196,7 +178,7 @@ namespace Twitch_prime_downloader
             {
                 return 400;
             }
-            string body = GenerateChannelTokenRequestBody(channelName);
+            string body = GenerateChannelTokenRequestBody(channelName.ToLower());
             int errorCode = HttpsPost(TWITCH_GQL_API_URL, body, out string token);
             if (errorCode == 200)
             {
@@ -206,6 +188,32 @@ namespace Twitch_prime_downloader
                 JToken jt = j.Value<JObject>("chansub").Value<JToken>("restricted_bitrates");
                 result = jt != null && (jt as JArray).Count > 0;
             }
+            return errorCode;
+        }
+
+        public int HttpsGet_Helix(string url, out string recvText)
+        {
+            int errorCode = GetHelixOauthToken(out string token);
+            if (errorCode == 200)
+            {
+                FileDownloader d = new FileDownloader();
+                d.Url = url;
+                d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
+                d.Headers.Add("Authorization", "Bearer " + token);
+                errorCode = d.DownloadString(out recvText);
+                return errorCode;
+            }
+            recvText = null;
+            return errorCode;
+        }
+
+        public int HttpsGet_Kraken(string url, out string recvText)
+        {
+            FileDownloader d = new FileDownloader();
+            d.Url = url;
+            d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
+            d.Accept = TWITCH_ACCEPT_V5_STRING;
+            int errorCode = d.DownloadString(out recvText);
             return errorCode;
         }
     }
@@ -263,15 +271,41 @@ namespace Twitch_prime_downloader
 
     public class TwitchHelixOauthToken
     {
-        public string accessToken = string.Empty;
-        public string tokenType = string.Empty;
-        public DateTime expireDate = DateTime.MinValue;
+        public static string TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE = "https://id.twitch.tv/oauth2/token?client_id={0}&" +
+                      "client_secret={1}&grant_type=client_credentials";
+        public static string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
+
+        public string AccessToken { get; private set; }
+        public string TokenType { get; private set; }
+        public DateTime ExpireDate { get; private set; } = DateTime.MinValue;
 
         public void Reset()
         {
-            accessToken = string.Empty;
-            tokenType = string.Empty;
-            expireDate = DateTime.MinValue;
+            AccessToken = null;
+            TokenType = null;
+            ExpireDate = DateTime.MinValue;
+        }
+
+        public int Update(string clientId)
+        {
+            int errorCode = 200;
+            if (ExpireDate <= DateTime.Now || string.IsNullOrEmpty(AccessToken))
+            {
+                string req = string.Format(TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE, clientId, TWITCH_CLIENT_SECRET);
+                errorCode = HttpsPost(req, out string buf);
+                if (errorCode == 200)
+                {
+                    JObject j = JObject.Parse(buf);
+                    if (j == null)
+                    {
+                        return 400;
+                    }
+                    AccessToken = j.Value<string>("access_token");
+                    long expiresIn = j.Value<long>("expires_in");
+                    ExpireDate = DateTime.Now.Add(TimeSpan.FromSeconds(expiresIn));
+                }
+            }
+            return errorCode;
         }
     }
 }
