@@ -212,7 +212,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void Event_FrameStreamEvent_Activate(object sender)
+        private void Event_FrameStreamEvent_Activated(object sender)
         {
             activeFrameStream = sender as FrameStream;
             for (int i = 0; i < framesStream.Count; i++)
@@ -286,7 +286,7 @@ namespace Twitch_prime_downloader
             JToken jToken = json.Value<JToken>("videos");
             if (jToken == null)
             {
-                TwitchStreamInfo stream = ParseStreamInfo(jToken.Value<string>());
+                TwitchVod stream = ParseVodInfo_Kraken(jToken.Value<string>());
             }
             else
             {
@@ -296,14 +296,14 @@ namespace Twitch_prime_downloader
                     lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                     lbLog.Items.Add($"Обработка данных... {i + 1} / {jsonArr.Count}");
 
-                    TwitchStreamInfo streamInfo = ParseStreamInfo(jsonArr[i].ToString());
+                    TwitchVod streamInfo = ParseVodInfo_Kraken(jsonArr[i].ToString());
 
                     FrameStream frameStream = new FrameStream();
                     frameStream.Parent = panelStreams;
                     frameStream.Location = new Point(0, 0);
-                    frameStream.OnActivate += Event_FrameStreamEvent_Activate;
-                    frameStream.OnImgMouseDown += StreamImageMouseDown;
-                    frameStream.DownloadButtonPress += Event_DownloadButtonClick;
+                    frameStream.Activated += Event_FrameStreamEvent_Activated;
+                    frameStream.ImageMouseDown += StreamImageMouseDown;
+                    frameStream.DownloadButtonPressed += Event_DownloadButtonClick;
                     frameStream.BackColor = FrameStream.colorInactive;
                     frameStream.SetStreamInfo(streamInfo);
                     framesStream.Add(frameStream);
@@ -315,7 +315,7 @@ namespace Twitch_prime_downloader
             return 0;
         }
 
-        private int GetChannelVideosListJson(string channelName, int maxVids, out string resJson)
+        private int GetChannelVideosListJson_Kraken(string channelName, int maxVids, out string resJson)
         {
             resJson = null;
             if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName) || channelName.Contains(" "))
@@ -333,7 +333,7 @@ namespace Twitch_prime_downloader
                 JArray jsonArr = new JArray();
                 do
                 {
-                    string url = twitchApi.GetChannelVideosUrl_Kraken(userInfo.id, 100, offset);
+                    string url = twitchApi.GetChannelVideosUrl_Kraken(userInfo.Id, 100, offset);
                     errorCode = twitchApi.HttpsGet_Kraken(url, out string buf);
                     if (errorCode == 200)
                     {
@@ -406,27 +406,27 @@ namespace Twitch_prime_downloader
                     lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                     lbLog.Items.Add($"Скачивание изображений... {i + 1} / {framesStream.Count}");
                     
-                    TwitchStreamInfo stream = framesStream[i].GetStreamInfo();
+                    TwitchVod vod = framesStream[i].GetStreamInfo();
 
-                    string imgUrl = stream.imagePreviewTemplateUrl.Replace("{width}", "1920").Replace("{height}", "1080");
+                    string imgUrl = vod.ImagePreviewTemplateUrl.Replace("{width}", "1920").Replace("{height}", "1080");
                     FileDownloader downloader = new FileDownloader();
                     downloader.Url = imgUrl;
                     
-                    if (downloader.Download(stream.imageData) == 200)
+                    if (downloader.Download(vod.ImageData) == 200)
                     {
-                        framesStream[i].imageStream.Image = Image.FromStream(stream.imageData);
+                        framesStream[i].imageStream.Image = Image.FromStream(vod.ImageData);
                     }
                     else
                     {
                         Bitmap bmp = GenerateErrorImage();
-                        bmp.Save(stream.imageData, ImageFormat.Bmp);
+                        bmp.Save(vod.ImageData, ImageFormat.Bmp);
                         framesStream[i].imageStream.Image = bmp;
                     }
 
-                    downloader.Url = stream.gameInfo.ImagePreviewSmallURL;
-                    if (downloader.Download(stream.gameInfo.imageData) == 200)
+                    downloader.Url = vod.GameInfo.ImagePreviewSmallUrl;
+                    if (downloader.Download(vod.GameInfo.ImageData) == 200)
                     {
-                        framesStream[i].imageGame.Image = Image.FromStream(stream.gameInfo.imageData);
+                        framesStream[i].imageGame.Image = Image.FromStream(vod.GameInfo.ImageData);
                     }
 
                     Application.DoEvents();
@@ -436,10 +436,10 @@ namespace Twitch_prime_downloader
 
         private void CopyImageURLToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            TwitchStreamInfo si = activeFrameStream.GetStreamInfo();
-            if (!string.IsNullOrEmpty(si.imagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(si.imagePreviewTemplateUrl))
+            TwitchVod si = activeFrameStream.GetStreamInfo();
+            if (!string.IsNullOrEmpty(si.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(si.ImagePreviewTemplateUrl))
             {
-                SetClipboardText(si.imagePreviewTemplateUrl);
+                SetClipboardText(si.ImagePreviewTemplateUrl);
             }
         }
 
@@ -450,10 +450,10 @@ namespace Twitch_prime_downloader
 
         private void CopyStreamInfoJSONToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            TwitchStreamInfo si = activeFrameStream.GetStreamInfo();
-            if (!string.IsNullOrEmpty(si.infoStringJson) && !string.IsNullOrWhiteSpace(si.infoStringJson))
+            TwitchVod si = activeFrameStream.GetStreamInfo();
+            if (!string.IsNullOrEmpty(si.InfoStringJson) && !string.IsNullOrWhiteSpace(si.InfoStringJson))
             {
-                SetClipboardText(si.infoStringJson);
+                SetClipboardText(si.InfoStringJson);
             }
             else
             {
@@ -536,7 +536,7 @@ namespace Twitch_prime_downloader
             {
                 limit = (int)numericUpDownSearchLimit.Value;
             }
-            int n = GetChannelVideosListJson(channelName, limit, out string resList);
+            int n = GetChannelVideosListJson_Kraken(channelName, limit, out string resList);
             if (n > 0)
             {
                 tabPageStreams.Text = $"Стримы ({n})";
@@ -648,7 +648,7 @@ namespace Twitch_prime_downloader
 
             FrameStream frameStream = sender as FrameStream;
             frameStream.btnDownload.Enabled = false;
-            ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist(frameStream.streamInfo);
+            ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist(frameStream.StreamInfo);
             threadGetVodPlaylist.controls.Add(frameStream.btnDownload);
             threadGetVodPlaylist.ThreadCompleted += ThreadGetVodPlaylist_Complete;
 
@@ -684,12 +684,12 @@ namespace Twitch_prime_downloader
             sfd.Filter = "jpg|*.jpg";
             sfd.DefaultExt = ".jpg";
             sfd.InitialDirectory = config.lastUsedPath;
-            string fn = FixFileName(FormatFileName(config.fileNameFormat, activeFrameStream.streamInfo));
+            string fn = FixFileName(FormatFileName(config.fileNameFormat, activeFrameStream.StreamInfo));
             sfd.FileName = fn + "_preview";
             if (sfd.ShowDialog() != DialogResult.Cancel)
             {
                 config.lastUsedPath = sfd.FileName;
-                activeFrameStream.streamInfo.imageData.SaveToFile(sfd.FileName);
+                activeFrameStream.StreamInfo.ImageData.SaveToFile(sfd.FileName);
             }
             sfd.Dispose();
         }
@@ -727,7 +727,7 @@ namespace Twitch_prime_downloader
             Process process = new Process();
             process.StartInfo.FileName = Path.GetFileName(config.browserExe);
             process.StartInfo.WorkingDirectory = Path.GetFullPath(config.browserExe);
-            process.StartInfo.Arguments = activeFrameStream.streamInfo.videoUrl;
+            process.StartInfo.Arguments = activeFrameStream.StreamInfo.VideoUrl;
             process.Start();
         }
 
@@ -743,7 +743,7 @@ namespace Twitch_prime_downloader
 
         private void miCopyVideoUrl_Click(object sender, EventArgs e)
         {
-            SetClipboardText(activeFrameStream.streamInfo.videoUrl);
+            SetClipboardText(activeFrameStream.StreamInfo.VideoUrl);
         }
 
         private void btnRestoreDefaultFilenameFormat_Click(object sender, EventArgs e)

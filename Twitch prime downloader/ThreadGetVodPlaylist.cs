@@ -14,14 +14,14 @@ namespace Twitch_prime_downloader
         public int ErrorCode { get; private set; }
         private List<TwitchVodChunk> _chunks;
         public TwitchVodChunk[] Chunks => _chunks.ToArray();
-        public TwitchStreamInfo StreamInfo { get; private set; }
+        public TwitchVod StreamInfo { get; private set; }
         public string[] PlaylistParsed { get; private set; }
         public List<object> controls = new List<object>();
         
         public delegate void ThreadCompletedDelegate(object sender, int errorCode);
         public ThreadCompletedDelegate ThreadCompleted;
 
-        public ThreadGetVodPlaylist(TwitchStreamInfo streamInfo)
+        public ThreadGetVodPlaylist(TwitchVod streamInfo)
         {
             StreamInfo = streamInfo;
             _chunks = new List<TwitchVodChunk>();
@@ -29,7 +29,7 @@ namespace Twitch_prime_downloader
 
         public void Work(object context)
         {
-            ErrorCode = GetStreamPlaylistUrl(StreamInfo, out string playlistUrl);
+            ErrorCode = GetVodPlaylistUrl(StreamInfo, out string playlistUrl);
             if (ErrorCode == 200)
             {
                 PlaylistUrl = playlistUrl;

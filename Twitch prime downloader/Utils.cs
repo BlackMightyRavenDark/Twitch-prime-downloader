@@ -18,9 +18,9 @@ namespace Twitch_prime_downloader
         public static List<FrameDownload> framesDownload = new List<FrameDownload>();
         public static List<string> twitchArchiveUrls = new List<string>();
 
-        public static MainConfiguration config = new MainConfiguration();
+        public static readonly MainConfiguration config = new MainConfiguration();
 
-        public static Random random = new Random((int)DateTime.Now.Ticks);
+        public static readonly Random random = new Random((int)DateTime.Now.Ticks);
 
         public const string FILENAME_FORMAT_DEFAULT = "<channel_name> [<year>-<month>-<day>] <video_title>";
 
@@ -146,82 +146,82 @@ namespace Twitch_prime_downloader
             return res;
         }
 
-        public static TwitchStreamInfo ParseStreamInfo(string jsonString)
+        public static TwitchVod ParseVodInfo_Kraken(string jsonString)
         {
-            TwitchStreamInfo stream = new TwitchStreamInfo();
+            TwitchVod vod = new TwitchVod();
             JObject json = JObject.Parse(jsonString);
             string title = json.Value<string>("title").Replace("\n", string.Empty);
             while (title.EndsWith(" "))
             {
                 title = title.Remove(title.Length - 1);
             }
-            stream.title = title;
-            stream.videoId = json.Value<string>("_id");
-            if (stream.videoId.ToLower().StartsWith("v"))
+            vod.Title = title;
+            vod.VideoId = json.Value<string>("_id");
+            if (vod.VideoId.ToLower().StartsWith("v"))
             {
-                stream.videoId = stream.videoId.Remove(0, 1);
+                vod.VideoId = vod.VideoId.Remove(0, 1);
             }
-            stream.imagePreviewTemplateUrl = json.Value<JObject>("preview").Value<string>("template");
-            if (stream.imagePreviewTemplateUrl.Contains(".tv/_404/404_"))
+            vod.ImagePreviewTemplateUrl = json.Value<JObject>("preview").Value<string>("template");
+            if (vod.ImagePreviewTemplateUrl.Contains(".tv/_404/404_"))
             {
-                stream.imagePreviewTemplateUrl = json.Value<JObject>("preview").Value<string>("large");
+                vod.ImagePreviewTemplateUrl = json.Value<JObject>("preview").Value<string>("large");
             }
-            stream.imageAnimatedPreviewUrl = json.Value<string>("animated_preview_url");
-            stream.streamId = ExtractStreamIDFromImageURL(stream.imageAnimatedPreviewUrl);
-            stream.userInfo.displayName = json.Value<JObject>("channel").Value<string>("display_name");
-            stream.videoUrl = json.Value<string>("url");
-            stream.vodType = json.Value<string>("broadcast_type");
-            stream.length = DateTime.MinValue + TimeSpan.FromSeconds(int.Parse(json.Value<string>("length")));
+            vod.ImageAnimatedPreviewUrl = json.Value<string>("animated_preview_url");
+            vod.StreamId = ExtractStreamIDFromImageURL(vod.ImageAnimatedPreviewUrl);
+            vod.UserInfo.DisplayName = json.Value<JObject>("channel").Value<string>("display_name");
+            vod.VideoUrl = json.Value<string>("url");
+            vod.Type = json.Value<string>("broadcast_type");
+            vod.Length = TimeSpan.FromSeconds(int.Parse(json.Value<string>("length")));
             string t = json.Value<string>("created_at");
-            stream.dateCreation = TwitchTimeToDateTime(t, false);
+            vod.DateCreation = TwitchTimeToDateTime(t, false);
             JToken jt = json.Value<JToken>("delete_at");
             if (jt != null)
             {
                 t = jt.Value<string>();
-                stream.dateDeletion = TwitchTimeToDateTime(t, false);
+                vod.DateDeletion = TwitchTimeToDateTime(t, false);
             }
             else
             {
-                stream.dateDeletion = DateTime.MinValue;
+                vod.DateDeletion = DateTime.MinValue;
             }
             jt = json.Value<JToken>("muted_segments");
             if (jt != null)
             {
-                ParseMutedSegments(jt as JArray, stream.mutedChunks);
+                ParseMutedSegments(jt as JArray, vod.MutedChunks);
             }
-            int errorCode = IsChannelPrime(stream.userInfo.displayName, out bool prime);
-            stream.isPrime = errorCode == 200 && prime;
+            int errorCode = IsChannelPrime(vod.UserInfo.DisplayName, out bool prime);
+            vod.IsPrime = errorCode == 200 && prime;
 
-            stream.gameInfo.title = json.Value<string>("game");
+            vod.GameInfo.Title = json.Value<string>("game");
 
             TwitchApi twitchApi = new TwitchApi();
-            errorCode = twitchApi.GetGameInfo_Kraken(stream.gameInfo.title, out string gameInfo);
+            errorCode = twitchApi.GetGameInfo_Kraken(vod.GameInfo.Title, out string gameInfo);
             if (errorCode == 200)
             {
                 JObject jsonGame = JObject.Parse(gameInfo);
                 JArray ja = jsonGame.Value<JArray>("games");
                 if (ja != null && ja.Count > 0)
                 {
-                    stream.gameInfo.ImagePreviewSmallURL = ja[0].Value<JObject>("box").Value<string>("small");
-                    stream.gameInfo.ImagePreviewMediumURL = ja[0].Value<JObject>("box").Value<string>("medium");
-                    stream.gameInfo.ImagePreviewLargeURL = ja[0].Value<JObject>("box").Value<string>("large");
+                    vod.GameInfo.ImagePreviewSmallUrl = ja[0].Value<JObject>("box").Value<string>("small");
+                    vod.GameInfo.ImagePreviewMediumUrl = ja[0].Value<JObject>("box").Value<string>("medium");
+                    vod.GameInfo.ImagePreviewLargeUrl = ja[0].Value<JObject>("box").Value<string>("large");
                 }
                 else
                 {
-                    stream.gameInfo.ImagePreviewSmallURL = UNKNOWN_GAME_URL;
-                    stream.gameInfo.ImagePreviewMediumURL = UNKNOWN_GAME_URL;
-                    stream.gameInfo.ImagePreviewLargeURL = UNKNOWN_GAME_URL;
+                    vod.GameInfo.ImagePreviewSmallUrl = UNKNOWN_GAME_URL;
+                    vod.GameInfo.ImagePreviewMediumUrl = UNKNOWN_GAME_URL;
+                    vod.GameInfo.ImagePreviewLargeUrl = UNKNOWN_GAME_URL;
                 }
             }
             else
             {
-                stream.gameInfo.ImagePreviewSmallURL = UNKNOWN_GAME_URL;
-                stream.gameInfo.ImagePreviewMediumURL = UNKNOWN_GAME_URL;
-                stream.gameInfo.ImagePreviewLargeURL = UNKNOWN_GAME_URL;
+                vod.GameInfo.ImagePreviewSmallUrl = UNKNOWN_GAME_URL;
+                vod.GameInfo.ImagePreviewMediumUrl = UNKNOWN_GAME_URL;
+                vod.GameInfo.ImagePreviewLargeUrl = UNKNOWN_GAME_URL;
             }
-            stream.infoStringJson = jsonString;
+            vod.InfoStringJson = jsonString;
 
-            return stream;
+            return vod;
         }
 
         public static void ParseMutedSegments(JArray jArray, TwitchVodMutedChunks mutedChunks)
@@ -418,13 +418,13 @@ namespace Twitch_prime_downloader
             return n < 10 ? $"0{n}" : n.ToString();
         }
 
-        public static string FormatFileName(string fmt, TwitchStreamInfo streamInfo)
+        public static string FormatFileName(string fmt, TwitchVod twitchVod)
         {
-            return fmt.Replace("<year>", LeadZero(streamInfo.dateCreation.Year))
-                .Replace("<month>", LeadZero(streamInfo.dateCreation.Month))
-                .Replace("<day>", LeadZero(streamInfo.dateCreation.Day))
-                .Replace("<video_title>", streamInfo.title)
-                .Replace("<channel_name>", streamInfo.userInfo.displayName);
+            return fmt.Replace("<year>", LeadZero(twitchVod.DateCreation.Year))
+                .Replace("<month>", LeadZero(twitchVod.DateCreation.Month))
+                .Replace("<day>", LeadZero(twitchVod.DateCreation.Day))
+                .Replace("<video_title>", twitchVod.Title)
+                .Replace("<channel_name>", twitchVod.UserInfo.DisplayName);
         }
 
         public static string FixFileName(string fn)
@@ -433,10 +433,9 @@ namespace Twitch_prime_downloader
                 .Replace("?", "\u2753").Replace(":", "\uFE55").Replace("<", "\u227A").Replace(">", "\u227B")
                 .Replace("\"", "\u201C").Replace("*", "\uFE61").Replace("^", "\u2303").Replace("\n", string.Empty);
         }
-
     }
 
-    public class MainConfiguration
+    public sealed class MainConfiguration
     {
         public string selfPath;
         public string fileName;
@@ -493,8 +492,6 @@ namespace Twitch_prime_downloader
                 if (jt != null)
                     browserExe = jt.Value<string>();
             }
-
-
         }
 
         public void Save()
@@ -517,7 +514,7 @@ namespace Twitch_prime_downloader
         public int duration;
     }
 
-    public class TwitchVodMutedChunks
+    public sealed class TwitchVodMutedChunks
     {
         public List<int> chunkIds = new List<int>();
         public List<TwitchVodMutedSegment> segments = new List<TwitchVodMutedSegment>();
@@ -535,7 +532,7 @@ namespace Twitch_prime_downloader
 
     public enum TwitchVodChunkState { NotMuted, Muted, Unmuted };
 
-    public class TwitchVodChunk
+    public sealed class TwitchVodChunk
     {
         public string fileName;
 
