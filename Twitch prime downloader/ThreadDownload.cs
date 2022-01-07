@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
-    public class ThreadDownload
+    public sealed class ThreadDownload
     {
         private bool canceled = false;
         private bool terminated = false;
@@ -85,7 +84,7 @@ namespace Twitch_prime_downloader
             do
             {
                 MemoryStream mem = new MemoryStream();
-                fileDownloader.Url = _streamRoot + _chunks[iDownload].fileName;
+                fileDownloader.Url = _streamRoot + _chunks[iDownload].FileName;
 
                 #region Download chunk
                 LastErrorCode = fileDownloader.Download(mem);
@@ -105,7 +104,7 @@ namespace Twitch_prime_downloader
 
                         synchronizationContext.Send(ChunkChanged_Context, this);
 
-                        fileDownloader.Url = _streamRoot + _chunks[iDownload].fileName;
+                        fileDownloader.Url = _streamRoot + _chunks[iDownload].FileName;
                         mem = new MemoryStream();
                         LastErrorCode = fileDownloader.Download(mem);
                         if (LastErrorCode != 200 || canceled || terminated)
@@ -144,8 +143,8 @@ namespace Twitch_prime_downloader
                 }
                 else
                 {
-                    string chunkFileExtension = Path.GetExtension(_chunks[iDownload].fileName);
-                    string chunkFileName = $"{DownloadingFilePath}chunk{iDownload + 1}_{_chunks[iDownload].fileName}{chunkFileExtension}";
+                    string chunkFileExtension = Path.GetExtension(_chunks[iDownload].FileName);
+                    string chunkFileName = $"{DownloadingFilePath}chunk{iDownload + 1}_{_chunks[iDownload].FileName}{chunkFileExtension}";
                     Stream stream = File.OpenWrite(chunkFileName);
                     bool appended = MultiThreadedDownloader.AppendStream(mem, stream);
                     stream.Dispose();

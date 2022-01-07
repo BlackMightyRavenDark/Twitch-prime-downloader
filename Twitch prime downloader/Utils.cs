@@ -24,8 +24,6 @@ namespace Twitch_prime_downloader
 
         public const string FILENAME_FORMAT_DEFAULT = "<channel_name> [<year>-<month>-<day>] <video_title>";
 
-        public enum DownloadingMode { WholeFile, Chunked };
-
         public static int DownloadString(string url, out string resString)
         {
             FileDownloader d = new FileDownloader();
@@ -233,7 +231,7 @@ namespace Twitch_prime_downloader
                 {
                     int offset = jArray[i].Value<int>("offset");
                     int dur = jArray[i].Value<int>("duration");
-                    mutedChunks.segments.Add(new TwitchVodMutedSegment() { offset = offset, duration = dur });
+                    mutedChunks.segments.Add(new TwitchVodMutedSegment(offset, dur));
                     mutedChunks.totalLength = new DateTime(mutedChunks.totalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
                     DateTime start = DateTime.MinValue + TimeSpan.FromSeconds(offset);
                     DateTime end = DateTime.MinValue + TimeSpan.FromSeconds(offset + dur);
@@ -474,23 +472,33 @@ namespace Twitch_prime_downloader
                 JObject json = JObject.Parse(File.ReadAllText(fileName));
                 JToken jt = json.Value<JToken>("downloadingPath");
                 if (jt != null)
+                {
                     downloadingPath = jt.Value<string>();
+                }
                 jt = json.Value<JToken>("tempPath");
                 if (jt != null)
+                {
                     tempPath = jt.Value<string>();
+                }
                 jt = json.Value<JToken>("lastUsedPath");
                 if (jt != null)
+                {
                     lastUsedPath = jt.Value<string>();
+                }
                 jt = json.Value<JToken>("fileNameFormat");
                 if (jt != null)
                 {
                     fileNameFormat = jt.Value<string>();
                     if (string.IsNullOrEmpty(fileNameFormat))
+                    {
                         fileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+                    }
                 }
                 jt = json.Value<JToken>("browserExe");
                 if (jt != null)
+                {
                     browserExe = jt.Value<string>();
+                }
             }
         }
 
@@ -503,15 +511,23 @@ namespace Twitch_prime_downloader
             json["lastUsedPath"] = lastUsedPath;
             json["browserExe"] = browserExe;
             if (File.Exists(fileName))
+            {
                 File.Delete(fileName);
+            }
             File.WriteAllText(fileName, json.ToString());
         }
     }
 
-    public struct TwitchVodMutedSegment
+    public sealed class TwitchVodMutedSegment
     {
-        public int offset;
-        public int duration;
+        public int Offset { get; private set; }
+        public int Duration { get; private set; }
+
+        public TwitchVodMutedSegment(int offset, int duration)
+        {
+            Offset = offset;
+            Duration = duration;
+        }
     }
 
     public sealed class TwitchVodMutedChunks
@@ -534,26 +550,26 @@ namespace Twitch_prime_downloader
 
     public sealed class TwitchVodChunk
     {
-        public string fileName;
+        public string FileName { get; private set; }
 
         public TwitchVodChunk(string fileName)
         {
-            this.fileName = fileName;
+            FileName = fileName;
         }
 
         public string GetName()
         {
-            return fileName.Substring(0, fileName.IndexOf(
+            return FileName.Substring(0, FileName.IndexOf(
                 GetState() == TwitchVodChunkState.NotMuted ? ".ts" : "-"));
         }
 
         public TwitchVodChunkState GetState()
         {
-            if (fileName.EndsWith("-muted.ts"))
+            if (FileName.EndsWith("-muted.ts"))
             {
                 return TwitchVodChunkState.Muted;
             }
-            else if (fileName.EndsWith("-unmuted.ts"))
+            else if (FileName.EndsWith("-unmuted.ts"))
             {
                 return TwitchVodChunkState.Unmuted;
             }
@@ -565,15 +581,15 @@ namespace Twitch_prime_downloader
             switch (state)
             {
                 case TwitchVodChunkState.Muted:
-                    fileName = GetName() + "-muted.ts";
+                    FileName = GetName() + "-muted.ts";
                     break;
 
                 case TwitchVodChunkState.Unmuted:
-                    fileName = GetName() + "-unmuted.ts";
+                    FileName = GetName() + "-unmuted.ts";
                     break;
 
                 case TwitchVodChunkState.NotMuted:
-                    fileName = GetName() + ".ts";
+                    FileName = GetName() + ".ts";
                     break;
             }
         }
@@ -597,4 +613,6 @@ namespace Twitch_prime_downloader
             return TwitchVodChunkState.NotMuted;
         }
     }
+
+    public enum DownloadingMode { WholeFile, Chunked };
 }
