@@ -273,6 +273,12 @@ namespace Twitch_prime_downloader
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
+            if (downloadingMode == DownloadingMode.Chunked)
+            {
+                fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
+                lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
+            }
+
             threadDownload = new ThreadDownload(fOutputFileName, downloadingMode);
             threadDownload.WorkProgress += ThreadDownload_Progress;
             threadDownload.WorkStarted += ThreadDownload_WorkStarted;
@@ -301,12 +307,6 @@ namespace Twitch_prime_downloader
             threadDownload._chunks = fChunks;
             threadDownload.ChunkFrom = fChunkFrom;
             threadDownload.ChunkTo = ChunkTo;
-
-            if (downloadingMode == DownloadingMode.Chunked)
-            {
-                fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
-                lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
-            }
 
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
