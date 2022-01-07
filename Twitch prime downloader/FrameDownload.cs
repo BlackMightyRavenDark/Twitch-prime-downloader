@@ -28,6 +28,7 @@ namespace Twitch_prime_downloader
         private int fcstId = 0;
         private int oldX;
         private bool drag = false;
+        private bool needToStop;
 
         public int TotalChunksCount
         {
@@ -150,7 +151,7 @@ namespace Twitch_prime_downloader
             fnt.Dispose();
         }
 
-        private void ThreadDownload_WorkStart(object sender, long iFileSize, int chunkId)
+        private void ThreadDownload_WorkStarted(object sender, long iFileSize, int chunkId)
         {
             fCurrentChunkFileSize = iFileSize;
             fCurrentChunkID = chunkId;
@@ -159,7 +160,7 @@ namespace Twitch_prime_downloader
             lblProgressCurrentChunk.Text = $": 0 / {FormatSize(iFileSize)}";
         }
 
-        private void ThreadDownload_WorkEnd(object sender, long bytesTransfered, int errorCode)
+        private void ThreadDownload_WorkFinished(object sender, long bytesTransfered, int errorCode)
         {
             if (errorCode == 200)
             {
@@ -169,10 +170,10 @@ namespace Twitch_prime_downloader
                 int max = ChunkTo - ChunkFrom + 1;
                 percent = 100.0 / max * progressBar1.Value2;
                 string t;
-                if (threadDownload._downloadingMode == DownloadingMode.WholeFile)
+                if (threadDownload.DownloadingMode == DownloadingMode.WholeFile)
                 {
                     t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
-                        ", Размер файла: " + FormatSize(threadDownload.GetDownloadedStreamSize());
+                        ", Размер файла: " + FormatSize(threadDownload.DownloadedFileSize);
                 }
                 else
                 {
@@ -188,7 +189,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void OnThreadDownload_Progress(object sender, long bytesTransfered)
+        private void ThreadDownload_Progress(object sender, long bytesTransfered)
         {
             double percent = 100.0 / fCurrentChunkFileSize * bytesTransfered;
             progressBar1.Value1 = (int)percent;
@@ -196,50 +197,52 @@ namespace Twitch_prime_downloader
                 $" ({string.Format("{0:F2}", percent)}%)";
         }
 
-        private void OnThreadCompleted(object sender)
+        private void ThreadDownloading_Completed(object sender, int errorCode)
         {
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;
 
             string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
-            int errorCode = (sender as ThreadDownload).lastErrorCode;
-            switch (errorCode)
+            if (errorCode != ThreadDownload.ERROR_DOWNLOAD_TERMINATED)
             {
-                case 200:
-                    MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    break;
-            
-                case FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER:
-                    MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено", msgCaption,
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    break;
-                
-                case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
-                    MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!", 
-                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                switch (errorCode)
+                {
+                    case 200:
+                        MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
 
-                case ThreadDownload.ERROR_APPENDING_STREAM:
-                    MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
-                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                    case FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER:
+                        MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        break;
 
-                case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
-                    MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
-                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                    case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
+                        MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!",
+                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
 
-                case FileDownloader.DOWNLOAD_ERROR_UNKNOWN:
-                    MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                    case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
+                        MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
+                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
 
-                default:
-                    MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
-                        $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                    case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
+                        MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
+                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+
+                    case FileDownloader.DOWNLOAD_ERROR_UNKNOWN:
+                        MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+
+                    default:
+                        MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
+                            $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                }
             }
 
             editFrom.Enabled = true;
@@ -253,6 +256,7 @@ namespace Twitch_prime_downloader
         private void StartDownload()
         {
             btnStartDownload.Enabled = false;
+            needToStop = false;
             downloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
@@ -269,11 +273,11 @@ namespace Twitch_prime_downloader
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            threadDownload = new ThreadDownload();
-            threadDownload.WorkProgress += OnThreadDownload_Progress;
-            threadDownload.WorkStart += ThreadDownload_WorkStart;
-            threadDownload.WorkEnd += ThreadDownload_WorkEnd;
-            threadDownload.OnComplete += OnThreadCompleted;
+            threadDownload = new ThreadDownload(fOutputFileName, downloadingMode);
+            threadDownload.WorkProgress += ThreadDownload_Progress;
+            threadDownload.WorkStarted += ThreadDownload_WorkStarted;
+            threadDownload.WorkFinished += ThreadDownload_WorkFinished;
+            threadDownload.Completed += ThreadDownloading_Completed;
             threadDownload.Connecting += (object sender, TwitchVodChunk chunk) =>
             {
                 progressBar1.Value1 = 0;
@@ -281,6 +285,10 @@ namespace Twitch_prime_downloader
                 lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
                 lblProgressCurrentChunk.Text = ": Connecting...";
                 lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
+            };
+            threadDownload.CancelTest += (object sender, ref bool stop) =>
+            {
+                stop = needToStop;
             };
             threadDownload.ChunkChanged += (s, id) =>
             {
@@ -291,16 +299,14 @@ namespace Twitch_prime_downloader
 
             threadDownload._streamRoot = streamRoot;
             threadDownload._chunks = fChunks;
-            threadDownload.fChunkFrom = fChunkFrom;
-            threadDownload.fChunkTo = ChunkTo;
+            threadDownload.ChunkFrom = fChunkFrom;
+            threadDownload.ChunkTo = ChunkTo;
 
             if (downloadingMode == DownloadingMode.Chunked)
             {
                 fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
                 lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
             }
-            threadDownload.fDownloadFilename = fOutputFileName;
-            threadDownload._downloadingMode = downloadingMode;
 
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
@@ -310,8 +316,7 @@ namespace Twitch_prime_downloader
 
         public void StopDownload()
         {
-            if (threadDownload != null)
-                threadDownload.Cancel();
+            needToStop = true;
         }
 
         public void AbortDownload()
