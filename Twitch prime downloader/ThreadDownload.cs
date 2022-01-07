@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using static Twitch_prime_downloader.Utils;
@@ -8,87 +7,94 @@ namespace Twitch_prime_downloader
 {
     public class ThreadDownload
     {
-        private bool fCanceled = false;
-        private bool fTerminated = false;
-        public int fChunkFrom = 0;
-        public int fChunkTo = 10;
-        public long fCurrentChunkSize = 0L;
-        private long fCurrentChunkBytesTransfered = 0L;
-        public DownloadingMode _downloadingMode;
-        public int iDownload;
-        public string fDownloadFilename;
-        public long fDownloadedFileSize = 0L;
-        public FileDownloader fileDownloader = null;
+        private bool canceled = false;
+        private bool terminated = false;
+        public int ChunkFrom { get; set; } = 0;
+        public int ChunkTo { get; set; } = 10;
+        public long CurrentChunkSize { get; private set; } = 0L;
+        public long CurrentChunkBytesTransfered { get; private set; } = 0L;
+        public DownloadingMode DownloadingMode { get; private set; }
+        private int iDownload;
+        public string DownloadingFilePath { get; private set; }
+        public long DownloadedFileSize { get; private set; } = 0L;
         public string _streamRoot;
         public List<TwitchVodChunk> _chunks;
-        public int lastErrorCode;
-        public const int ERROR_APPENDING_STREAM = -100;
+        public int LastErrorCode { get; private set; }
 
-        private SynchronizationContext context;
+        public const int ERROR_DOWNLOAD_TERMINATED = -100;
+
         public delegate void ConnectingDelegate(object sender, TwitchVodChunk chunk);
-        public delegate void WorkStartDelegate(object sender, long fileSize, int chunkId);
+        public delegate void WorkStartedDelegate(object sender, long fileSize, int chunkId);
         public delegate void WorkProgressDelegate(object sender, long transferedSize);
-        public delegate void WorkEndDelegate(object sender, long transferedSize, int errorCode);
+        public delegate void WorkFinishedDelegate(object sender, long transferedSize, int errorCode);
+        public delegate void CancelTestDelegate(object sender, ref bool stop);
         public delegate void ChunkChangedDelegate(object sender, int chunkId);
+        public delegate void CompletedDelegate(object sender, int errorCode);
         public ConnectingDelegate Connecting;
-        public WorkStartDelegate WorkStart;
+        public WorkStartedDelegate WorkStarted;
         public WorkProgressDelegate WorkProgress;
-        public event Action<object> OnComplete;
-        public WorkEndDelegate WorkEnd;
+        public WorkFinishedDelegate WorkFinished;
+        public CancelTestDelegate CancelTest;
         public ChunkChangedDelegate ChunkChanged;
+        public CompletedDelegate Completed;
 
-        public void Work(object par)
+        public ThreadDownload(string downloadingFilePath, DownloadingMode downloadingMode)
         {
-            context = (SynchronizationContext)par;
-            
-            Stream fDownloadingStream = _downloadingMode == DownloadingMode.WholeFile ? File.OpenWrite(fDownloadFilename) : null;
+            DownloadingFilePath = downloadingFilePath;
+            DownloadingMode = downloadingMode;
+        }
 
-            fileDownloader = new FileDownloader();
+        public void Work(object context)
+        {
+            SynchronizationContext synchronizationContext = context != null ? (SynchronizationContext)context : null;
+
+            Stream downloadingStream = DownloadingMode == DownloadingMode.WholeFile ? File.OpenWrite(DownloadingFilePath) : null;
+
+            FileDownloader fileDownloader = new FileDownloader();
             fileDownloader.Connecting += (s, url) =>
             {
-                if (context != null)
-                    context.Send(OnConnecting_Context, this);
+                synchronizationContext.Send(Connecting_Context, this);
             };
-            fileDownloader.WorkStarted += (s, max) =>
+            fileDownloader.WorkStarted += (s, contentLen) =>
             {
-                fCurrentChunkSize = max;
-                if (context != null)
-                    context.Send(WorkStart_Context, this);
+                CurrentChunkSize = contentLen;
+                CurrentChunkBytesTransfered = 0L;
+                synchronizationContext.Send(WorkStart_Context, this);
             };
-            fileDownloader.WorkProgress += (s, bytes, max) =>
+            fileDownloader.WorkProgress += (s, bytes, contentLen) =>
             {
-                fCurrentChunkBytesTransfered += bytes;
-                if (context != null)
-                    context.Send(OnWorkProgress_Context, this);
+                CurrentChunkBytesTransfered = bytes;
+                synchronizationContext.Send(WorkProgress_Context, this);
             };
             fileDownloader.CancelTest += (object s, ref bool stop) =>
             {
-                stop = fCanceled;
+                CancelTest?.Invoke(this, ref canceled);
+                stop = canceled;
             };
 
-            if (_downloadingMode == DownloadingMode.Chunked && !Directory.Exists(fDownloadFilename))
+            if (DownloadingMode == DownloadingMode.Chunked && !Directory.Exists(DownloadingFilePath))
             {
-                Directory.CreateDirectory(fDownloadFilename);
+                Directory.CreateDirectory(DownloadingFilePath);
             }
 
-            fCanceled = false;
-            fTerminated = false;
-            fDownloadedFileSize = 0L;
-            iDownload = fChunkFrom;
-            lastErrorCode = 400;
+            canceled = false;
+            terminated = false;
+            DownloadedFileSize = 0L;
+            iDownload = ChunkFrom;
+            LastErrorCode = 400;
             do
             {
                 MemoryStream mem = new MemoryStream();
                 fileDownloader.Url = _streamRoot + _chunks[iDownload].fileName;
 
                 #region Download chunk
-                lastErrorCode = fileDownloader.Download(mem);
-                if (fCanceled || fTerminated)
+                LastErrorCode = fileDownloader.Download(mem);
+                if (canceled || terminated)
                 {
                     mem.Dispose();
                     break;
                 }
-                if (lastErrorCode != 200)
+                if (LastErrorCode != 200)
                 {
                     mem.Dispose();
 
@@ -97,19 +103,18 @@ namespace Twitch_prime_downloader
                     {
                         _chunks[iDownload].NextState();
 
-                        if (context != null)
-                            context.Send(OnChunkChanged_Context, this);
+                        synchronizationContext.Send(ChunkChanged_Context, this);
 
                         fileDownloader.Url = _streamRoot + _chunks[iDownload].fileName;
                         mem = new MemoryStream();
-                        lastErrorCode = fileDownloader.Download(mem);
-                        if (lastErrorCode != 200 || fCanceled || fTerminated)
+                        LastErrorCode = fileDownloader.Download(mem);
+                        if (LastErrorCode != 200 || canceled || terminated)
                         {
                             mem.Dispose();
                             errors++;
                         }
-                    } while (errors < 8 && lastErrorCode != 200 && !fCanceled && !fTerminated);
-                    if (lastErrorCode != 200 || fCanceled || fTerminated)
+                    } while (errors < 8 && LastErrorCode != 200 && !canceled && !terminated);
+                    if (LastErrorCode != 200 || canceled || terminated)
                     {
                         mem.Dispose();
                         break;
@@ -117,30 +122,30 @@ namespace Twitch_prime_downloader
                 }
                 #endregion
 
-                if (mem.Length != fCurrentChunkSize)
+                if (mem.Length != CurrentChunkSize)
                 {
-                    lastErrorCode = FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ;
+                    LastErrorCode = FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ;
                     mem.Dispose();
                     break;
                 }
 
                 mem.Position = 0L;
-                if (_downloadingMode == DownloadingMode.WholeFile)
+                if (DownloadingMode == DownloadingMode.WholeFile)
                 {
-                    bool appended = MultiThreadedDownloader.AppendStream(mem, fDownloadingStream);
+                    bool appended = MultiThreadedDownloader.AppendStream(mem, downloadingStream);
                     mem.Dispose();
                     if (!appended)
                     {
-                        lastErrorCode = ERROR_APPENDING_STREAM;
+                        LastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
                         break;
                     }
 
-                    fDownloadedFileSize = fDownloadingStream.Length;
+                    DownloadedFileSize = downloadingStream.Length;
                 }
                 else
                 {
                     string chunkFileExtension = Path.GetExtension(_chunks[iDownload].fileName);
-                    string chunkFileName = $"{fDownloadFilename}chunk{iDownload + 1}_{_chunks[iDownload].fileName}{chunkFileExtension}";
+                    string chunkFileName = $"{DownloadingFilePath}chunk{iDownload + 1}_{_chunks[iDownload].fileName}{chunkFileExtension}";
                     Stream stream = File.OpenWrite(chunkFileName);
                     bool appended = MultiThreadedDownloader.AppendStream(mem, stream);
                     stream.Dispose();
@@ -148,82 +153,66 @@ namespace Twitch_prime_downloader
 
                     if (!appended)
                     {
-                        lastErrorCode = ERROR_APPENDING_STREAM;
+                        LastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
                     }
                 }
-
-                if (context != null)
-                    context.Send(WorkEnd_Context, this);
+                synchronizationContext.Send(WorkFinished_Context, this);
 
                 iDownload++;
-            } while (iDownload <= fChunkTo && !fCanceled && !fTerminated && lastErrorCode == 200);
-            if (fDownloadingStream != null)
+            } while (iDownload <= ChunkTo && !canceled && !terminated && LastErrorCode == 200);
+            downloadingStream?.Dispose();
+
+            if (terminated)
             {
-                fDownloadingStream.Dispose();
+                LastErrorCode = ERROR_DOWNLOAD_TERMINATED;
+                return;
             }
 
-            if (!fTerminated)
+            if (canceled)
             {
-                if (fCanceled)
-                    lastErrorCode = FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER;
-                if (context != null)
-                {
-                    context.Send(OnWorkProgress_Context, this);
-                    context.Send(OnCompleted, this);
-                }
+                LastErrorCode = FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER;
             }
-            else
+            if (synchronizationContext != null)
             {
-                lastErrorCode = FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER;
+                synchronizationContext.Send(WorkProgress_Context, this);
+                synchronizationContext.Send(Completed_Context, this);
             }
-        }
-
-
-        public void Cancel()
-        {
-            fTerminated = false;
-            fCanceled = true;
         }
 
         public void Abort()
         {
-            fTerminated = true;
-            fCanceled = true;
+            terminated = true;
+            canceled = true;
         }
 
-        private void OnConnecting_Context(object sender)
+        private void Connecting_Context(object sender)
         {
             Connecting?.Invoke(sender, _chunks[iDownload]);
         }
 
-        private void OnWorkProgress_Context(object sender)
+        private void WorkStart_Context(object sender)
         {
-            WorkProgress?.Invoke(sender, fileDownloader.BytesTransfered);
+            WorkStarted?.Invoke(sender, CurrentChunkSize, iDownload);
         }
 
-        private void OnChunkChanged_Context(object sender)
+        private void WorkProgress_Context(object sender)
+        {
+            WorkProgress?.Invoke(sender, CurrentChunkBytesTransfered);
+        }
+
+        private void WorkFinished_Context(object sender)
+        {
+            WorkFinished?.Invoke(sender, CurrentChunkBytesTransfered, LastErrorCode);
+        }
+
+        private void ChunkChanged_Context(object sender)
         {
             ChunkChanged?.Invoke(sender, iDownload);
         }
 
-        private void OnCompleted(object sender)
+        private void Completed_Context(object sender)
         {
-            OnComplete?.Invoke(sender);
-        }
-
-        private void WorkStart_Context(object sender)
-        {
-            WorkStart?.Invoke(sender, fCurrentChunkSize, iDownload);
-        }
-
-        private void WorkEnd_Context(object sender)
-        {
-            WorkEnd?.Invoke(sender, fCurrentChunkBytesTransfered, lastErrorCode);
-        }            
-            
-        public long GetDownloadedStreamSize()
-        {
-            return fDownloadedFileSize;
+            Completed?.Invoke(sender, LastErrorCode);
         }
     }
 }
