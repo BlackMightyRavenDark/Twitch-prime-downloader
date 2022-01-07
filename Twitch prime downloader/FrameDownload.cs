@@ -287,7 +287,7 @@ namespace Twitch_prime_downloader
             threadDownload.Connecting += (object sender, TwitchVodChunk chunk) =>
             {
                 progressBar1.Value1 = 0;
-                lblCurrentChunkName.Text = chunk.fileName;
+                lblCurrentChunkName.Text = chunk.FileName;
                 lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
                 lblProgressCurrentChunk.Text = ": Connecting...";
                 lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
@@ -298,9 +298,10 @@ namespace Twitch_prime_downloader
             };
             threadDownload.ChunkChanged += (s, id) =>
             {
-                fChunks[id].fileName = (s as ThreadDownload)._chunks[id].fileName;
+                fChunks.RemoveAt(id);
+                fChunks.Insert(id, new TwitchVodChunk((s as ThreadDownload)._chunks[id].FileName));
                 lbFileList.Items.RemoveAt(id);
-                lbFileList.Items.Insert(id, fChunks[id].fileName);
+                lbFileList.Items.Insert(id, fChunks[id].FileName);
             };
 
             threadDownload._streamRoot = streamRoot;
@@ -386,7 +387,7 @@ namespace Twitch_prime_downloader
             foreach (TwitchVodChunk chunk in chunks)
             {
                 fChunks.Add(chunk);
-                lbFileList.Items.Add(chunk.fileName);
+                lbFileList.Items.Add(chunk.FileName);
             }
         }
 
@@ -394,8 +395,7 @@ namespace Twitch_prime_downloader
         {
             lblProgressCurrentChunk.Text = string.Empty;
             progressBar1.Value1 = 0;
-            lblProgressOverall.Text = "Всего чанков: " + TotalChunksCount.ToString() +
-                ", Скачивать: " + (fChunkTo - fChunkFrom + 1).ToString();
+            lblProgressOverall.Text = $"Всего чанков: {TotalChunksCount}, Скачивать: {fChunkTo - fChunkFrom + 1}";
             progressBar1.MinValue2 = 0;
             progressBar1.Value2 = 0;
             progressBar1.MaxValue2 = fChunkTo - fChunkFrom;
