@@ -18,8 +18,8 @@ namespace Twitch_prime_downloader
         public string[] PlaylistParsed { get; private set; }
         public List<object> controls = new List<object>();
         
-        public delegate void ThreadCompletedDelegate(object sender, int errorCode);
-        public ThreadCompletedDelegate ThreadCompleted;
+        public delegate void CompletedDelegate(object sender, int errorCode);
+        public CompletedDelegate Completed;
 
         public ThreadGetVodPlaylist(TwitchVod streamInfo)
         {
@@ -51,7 +51,7 @@ namespace Twitch_prime_downloader
                 }
             }
 
-            if (ThreadCompleted != null && context != null)
+            if (Completed != null && context != null)
             {
                 (context as SynchronizationContext).Send(OnComplete_Context, this);
             }
@@ -59,7 +59,7 @@ namespace Twitch_prime_downloader
         
         private void OnComplete_Context(object obj)
         {
-            ThreadCompleted.Invoke(obj, ErrorCode);
+            Completed.Invoke(obj, ErrorCode);
         }
     }
 }

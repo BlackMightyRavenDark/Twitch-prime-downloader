@@ -353,7 +353,6 @@
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FrameDownload_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseUp);
             this.Resize += new System.EventHandler(this.FrameDownload_Resize);
             this.grpDownloadRange.ResumeLayout(false);
             this.grpDownloadRange.PerformLayout();

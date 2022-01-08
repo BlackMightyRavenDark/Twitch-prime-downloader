@@ -5,17 +5,15 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
-using static Twitch_prime_downloader.TwitchApi;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
     public partial class Form1 : Form
     {
-        private SynchronizationContext fContext = null;
+        private SynchronizationContext synchronizationContext = null;
         private FrameStream activeFrameStream = null;
 
         public Form1()
@@ -25,7 +23,7 @@ namespace Twitch_prime_downloader
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            fContext = SynchronizationContext.Current;
+            synchronizationContext = SynchronizationContext.Current;
 
             ServicePointManager.DefaultConnectionLimit = 1000;
 
@@ -189,7 +187,7 @@ namespace Twitch_prime_downloader
             scrollBarDownloads.Enabled = false;
         }
 
-        private void FrameDownloadEvent_Close(object sender)
+        private void OnFrameDownload_Closed(object sender)
         {
             int i;
             for (i = 0; i < framesDownload.Count; i++)
@@ -212,7 +210,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void Event_FrameStreamEvent_Activated(object sender)
+        private void OnFrameStream_Activated(object sender)
         {
             activeFrameStream = sender as FrameStream;
             for (int i = 0; i < framesStream.Count; i++)
@@ -222,7 +220,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void ThreadGetVodPlaylist_Complete(object sender, int errorCode)
+        private void OnThreadGetVodPlaylist_Completed(object sender, int errorCode)
         {
             ThreadGetVodPlaylist thrObj = sender as ThreadGetVodPlaylist;
             if (errorCode == 200)
@@ -232,18 +230,17 @@ namespace Twitch_prime_downloader
                     memoDebug.Text = thrObj.PlaylistString;
                 }
 
-                FrameDownload frd = new FrameDownload();
+                string streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
+                FrameDownload frd = new FrameDownload(streamRoot);
                 frd.Parent = panelDownloads;
                 frd.Location = new Point(0, 0);
-                frd.Close += FrameDownloadEvent_Close;
+                frd.Closed += OnFrameDownload_Closed;
                 frd.SetStreamInfo(thrObj.StreamInfo);
-
-                frd.streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
 
                 frd.SetChunks(thrObj.Chunks);
 
                 frd.ChunkFrom = 0;
-                frd.ChunkTo = frd.fChunks.Count - 1;
+                frd.ChunkTo = frd.Chunks.Length - 1;
 
                 framesDownload.Add(frd);
 
@@ -272,7 +269,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void StreamImageMouseDown(object sender, MouseEventArgs e)
+        private void OnStreamImageMouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -301,9 +298,9 @@ namespace Twitch_prime_downloader
                     FrameStream frameStream = new FrameStream();
                     frameStream.Parent = panelStreams;
                     frameStream.Location = new Point(0, 0);
-                    frameStream.Activated += Event_FrameStreamEvent_Activated;
-                    frameStream.ImageMouseDown += StreamImageMouseDown;
-                    frameStream.DownloadButtonPressed += Event_DownloadButtonClick;
+                    frameStream.Activated += OnFrameStream_Activated;
+                    frameStream.ImageMouseDown += OnStreamImageMouseDown;
+                    frameStream.DownloadButtonPressed += OnDownloadButtonClick;
                     frameStream.BackColor = FrameStream.colorInactive;
                     frameStream.SetStreamInfo(streamInfo);
                     framesStream.Add(frameStream);
@@ -501,7 +498,7 @@ namespace Twitch_prime_downloader
             cboxChannelName.SelectedIndex = n > cboxChannelName.Items.Count - 1 ? n - 1 : cboxChannelName.Items.Count - 1;
             if (cboxChannelName.Items.Count == 0)
             {
-                cboxChannelName.Text = string.Empty;
+                cboxChannelName.Text = null;
             }
         }
         
@@ -637,7 +634,7 @@ namespace Twitch_prime_downloader
             btnSearchByUrls.Enabled = true;
         }
 
-        private void Event_DownloadButtonClick(object sender)
+        private void OnDownloadButtonClick(object sender)
         {
             if (string.IsNullOrEmpty(config.downloadingPath))
             {
@@ -650,10 +647,10 @@ namespace Twitch_prime_downloader
             frameStream.btnDownload.Enabled = false;
             ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist(frameStream.StreamInfo);
             threadGetVodPlaylist.controls.Add(frameStream.btnDownload);
-            threadGetVodPlaylist.ThreadCompleted += ThreadGetVodPlaylist_Complete;
+            threadGetVodPlaylist.Completed += OnThreadGetVodPlaylist_Completed;
 
             Thread thr = new Thread(threadGetVodPlaylist.Work);
-            thr.Start(fContext);
+            thr.Start(synchronizationContext);
         }
 
         private void btnSelectDownloadingPath_Click(object sender, EventArgs e)

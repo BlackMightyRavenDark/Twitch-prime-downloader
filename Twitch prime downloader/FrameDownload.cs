@@ -12,62 +12,38 @@ namespace Twitch_prime_downloader
     { 
         private SynchronizationContext fContext = null;
         private ThreadDownload threadDownload = null;
-        private TwitchVod fStreamInfo;
-        public string fOutputFilenameOrig;
-        public string fOutputFileName;
-        private int fChunkFrom = 0;
-        private int fChunkTo = 10;
-        private int fCurrentChunkID = 0;
-        private long fCurrentChunkFileSize;
-        private long currentDownloadedSize;
-        public string streamRoot;
-        private DownloadingMode downloadingMode = DownloadingMode.WholeFile;
-        private DateTime downloadStarted;
-        public List<TwitchVodChunk> fChunks;
+        public TwitchVod StreamInfo { get; private set; }
+        public string OutputFilenameOrig { get; set; }
+        public string OutputFileName { get; private set; }
+        private int _chunkFrom = 0;
+        private int _chunkTo = 10;
+        private int _currentChunkId = 0;
+        public int ChunkFrom { get { return _chunkFrom; } set { SetChunkFrom(value); } }
+        public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
+        public long CurrentChunkFileSize { get; private set; }
+        public long DownloadedSize { get; private set; }
+        public string StreamRootUrl { get; private set; }
+        public DownloadingMode DownloadingMode { get; private set; } = DownloadingMode.WholeFile;
+        public DateTime DownloadStarted { get; private set; }
+        private List<TwitchVodChunk> _chunks;
+        public TwitchVodChunk[] Chunks => _chunks.ToArray();
+
         public const int EXTRA_WIDTH = 450;
         private int fcstId = 0;
         private int oldX;
-        private bool drag = false;
         private bool needToStop;
 
-        public int TotalChunksCount
-        {
-            get
-            {
-                return fChunks.Count;
-            }
-        }
+        public int TotalChunksCount => _chunks.Count;
 
-        public int ChunkFrom
-        {
-            set
-            {
-                SetChunkFrom(value);
-            }
-            get
-            {
-                return fChunkFrom;
-            }
-        }
-        public int ChunkTo
-        {
-            set
-            {
-                SetChunkTo(value);
-            }
-            get
-            {
-                return fChunkTo;
-            }
-        }
+        public delegate void ClosedDelegate(object sender);
+        public ClosedDelegate Closed;
 
-        public TwitchVod StreamInfo => fStreamInfo;
-
-        public event Action<object> Close;
-
-        public FrameDownload()
+        public FrameDownload(string streamRootUrl)
         {
             InitializeComponent();
+
+            StreamRootUrl = streamRootUrl;
+
             OnFrameCreate();
         }
 
@@ -75,20 +51,17 @@ namespace Twitch_prime_downloader
         {
             fContext = SynchronizationContext.Current;
 
-            fChunks = new List<TwitchVodChunk>();
-            progressBar1.MaxValue2 = fChunkTo;
-            lblCurrentChunkName.Text = string.Empty;
-            lblProgressCurrentChunk.Text = string.Empty;
-            lblElapsedTime.Text = string.Empty;
+            _chunks = new List<TwitchVodChunk>();
+            progressBar1.MaxValue2 = ChunkTo;
+            lblCurrentChunkName.Text = null;
+            lblProgressCurrentChunk.Text = null;
+            lblElapsedTime.Text = null;
             imgScrollBar.Top = Height - imgScrollBar.Height;
         }
 
         public void FrameDispose()
         {
-            if (threadDownload != null)
-            {
-                threadDownload.Abort();
-            }
+            threadDownload?.Abort();
         }
 
         private void FrameDownload_Resize(object sender, EventArgs e)
@@ -126,7 +99,7 @@ namespace Twitch_prime_downloader
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 FrameDispose();
-                Close?.Invoke(this);
+                Closed?.Invoke(this);
                 Dispose();               
             }
         }
@@ -151,22 +124,22 @@ namespace Twitch_prime_downloader
             fnt.Dispose();
         }
 
-        private void ThreadDownload_WorkStarted(object sender, long iFileSize, int chunkId)
+        private void ThreadDownload_WorkStarted(object sender, long fileSize, int chunkId)
         {
-            fCurrentChunkFileSize = iFileSize;
-            fCurrentChunkID = chunkId;
+            CurrentChunkFileSize = fileSize;
+            _currentChunkId = chunkId;
             progressBar1.Value1 = 0;
             progressBar1.MaxValue1 = 100;
-            lblProgressCurrentChunk.Text = $": 0 / {FormatSize(iFileSize)}";
+            lblProgressCurrentChunk.Text = $": 0 / {FormatSize(fileSize)}";
         }
 
         private void ThreadDownload_WorkFinished(object sender, long bytesTransfered, int errorCode)
         {
             if (errorCode == 200)
             {
-                double percent = 100.0 / fCurrentChunkFileSize * bytesTransfered;
+                double percent = 100.0 / CurrentChunkFileSize * bytesTransfered;
                 progressBar1.Value1 = (int)percent;
-                progressBar1.Value2 = fCurrentChunkID - ChunkFrom + 1;
+                progressBar1.Value2 = _currentChunkId - ChunkFrom + 1;
                 int max = ChunkTo - ChunkFrom + 1;
                 percent = 100.0 / max * progressBar1.Value2;
                 string t;
@@ -177,9 +150,9 @@ namespace Twitch_prime_downloader
                 }
                 else
                 {
-                    currentDownloadedSize += bytesTransfered;
+                    DownloadedSize += bytesTransfered;
                     t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
-                        ", Размер скачанного: " + FormatSize(currentDownloadedSize);
+                        ", Размер скачанного: " + FormatSize(DownloadedSize);
                 }
 
                 lblProgressOverall.Text = t;
@@ -191,9 +164,9 @@ namespace Twitch_prime_downloader
 
         private void ThreadDownload_Progress(object sender, long bytesTransfered)
         {
-            double percent = 100.0 / fCurrentChunkFileSize * bytesTransfered;
+            double percent = 100.0 / CurrentChunkFileSize * bytesTransfered;
             progressBar1.Value1 = (int)percent;
-            lblProgressCurrentChunk.Text = $": {FormatSize(bytesTransfered)} / {FormatSize(fCurrentChunkFileSize)}" +
+            lblProgressCurrentChunk.Text = $": {FormatSize(bytesTransfered)} / {FormatSize(CurrentChunkFileSize)}" +
                 $" ({string.Format("{0:F2}", percent)}%)";
         }
 
@@ -257,29 +230,29 @@ namespace Twitch_prime_downloader
         {
             btnStartDownload.Enabled = false;
             needToStop = false;
-            downloadStarted = DateTime.Now;
+            DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
-            fOutputFileName = GetNumberedFileName(fOutputFilenameOrig);
-            lblOutputFilename.Text = "Имя файла: " + fOutputFileName;
+            OutputFileName = GetNumberedFileName(OutputFilenameOrig);
+            lblOutputFilename.Text = "Имя файла: " + OutputFileName;
             lblProgressOverall.Text = $"Скачано чанков: 0 / {ChunkTo - ChunkFrom + 1} (0.00%), Размер файла: 0 bytes";
             progressBar1.MinValue1 = 0;
             progressBar1.Value1 = 0;
             progressBar1.Value2 = 0;
-            currentDownloadedSize = 0L;
+            DownloadedSize = 0L;
             editFrom.Enabled = false;
             editTo.Enabled = false;
             btnSetMaxChunkTo.Enabled = false;
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            if (downloadingMode == DownloadingMode.Chunked)
+            if (DownloadingMode == DownloadingMode.Chunked)
             {
-                fOutputFileName = GetNumberedDirectoryName(fOutputFilenameOrig);
-                lblOutputFilename.Text = $"Папка для скачивания: {fOutputFileName}";
+                OutputFileName = GetNumberedDirectoryName(OutputFilenameOrig);
+                lblOutputFilename.Text = $"Папка для скачивания: {OutputFileName}";
             }
 
-            threadDownload = new ThreadDownload(fOutputFileName, downloadingMode);
+            threadDownload = new ThreadDownload(OutputFileName, DownloadingMode);
             threadDownload.WorkProgress += ThreadDownload_Progress;
             threadDownload.WorkStarted += ThreadDownload_WorkStarted;
             threadDownload.WorkFinished += ThreadDownload_WorkFinished;
@@ -298,15 +271,15 @@ namespace Twitch_prime_downloader
             };
             threadDownload.ChunkChanged += (s, id) =>
             {
-                fChunks.RemoveAt(id);
-                fChunks.Insert(id, new TwitchVodChunk((s as ThreadDownload)._chunks[id].FileName));
+                _chunks.RemoveAt(id);
+                _chunks.Insert(id, new TwitchVodChunk((s as ThreadDownload)._chunks[id].FileName));
                 lbFileList.Items.RemoveAt(id);
-                lbFileList.Items.Insert(id, fChunks[id].FileName);
+                lbFileList.Items.Insert(id, _chunks[id].FileName);
             };
 
-            threadDownload._streamRoot = streamRoot;
-            threadDownload._chunks = fChunks;
-            threadDownload.ChunkFrom = fChunkFrom;
+            threadDownload._streamRoot = StreamRootUrl;
+            threadDownload._chunks = _chunks;
+            threadDownload.ChunkFrom = _chunkFrom;
             threadDownload.ChunkTo = ChunkTo;
 
             imgFcst.Visible = true;
@@ -336,21 +309,12 @@ namespace Twitch_prime_downloader
             if (e.Button == MouseButtons.Left)
             {
                 oldX = e.X;
-                drag = true;
-            }
-        }
-
-        private void FrameDownload_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                drag = false;
             }
         }
 
         private void FrameDownload_MouseMove(object sender, MouseEventArgs e)
         {
-            if (drag)
+            if (e.Button == MouseButtons.Left)
             {
                 int newX = Left + e.X - oldX;
                 if (newX > 0)
@@ -370,12 +334,12 @@ namespace Twitch_prime_downloader
 
         public void SetStreamInfo(TwitchVod vod)
         {
-            fStreamInfo = vod;
-            lblStreamTitle.Text = $"Стрим: {fStreamInfo.Title}";
-            fOutputFilenameOrig = config.downloadingPath +
-                FixFileName(FormatFileName(config.fileNameFormat, fStreamInfo)) +
+            StreamInfo = vod;
+            lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
+            OutputFilenameOrig = config.downloadingPath +
+                FixFileName(FormatFileName(config.fileNameFormat, StreamInfo)) +
                 (vod.IsHighlight() ? " [highlight].ts" : ".ts");
-            lblOutputFilename.Text = $"Имя файла: {fOutputFilenameOrig}";
+            lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
             if (vod.ImageData != null)
             {
                 pictureBoxStreamImage.Image = Image.FromStream(vod.ImageData);
@@ -386,51 +350,54 @@ namespace Twitch_prime_downloader
         {
             foreach (TwitchVodChunk chunk in chunks)
             {
-                fChunks.Add(chunk);
+                _chunks.Add(chunk);
                 lbFileList.Items.Add(chunk.FileName);
             }
         }
 
         private void SetChunkIndicators()
         {
-            lblProgressCurrentChunk.Text = string.Empty;
+            lblProgressCurrentChunk.Text = null;
             progressBar1.Value1 = 0;
-            lblProgressOverall.Text = $"Всего чанков: {TotalChunksCount}, Скачивать: {fChunkTo - fChunkFrom + 1}";
+            lblProgressOverall.Text = $"Всего чанков: {TotalChunksCount}, Скачивать: {ChunkTo - ChunkFrom + 1}";
             progressBar1.MinValue2 = 0;
             progressBar1.Value2 = 0;
-            progressBar1.MaxValue2 = fChunkTo - fChunkFrom;
-
+            progressBar1.MaxValue2 = ChunkTo - ChunkFrom;
         }
 
         private void SetChunkFrom(int chunkId)
         {
-            if (chunkId != fChunkFrom)
+            if (chunkId != _chunkFrom)
             {
                 if (chunkId < 0)
-                    chunkId = 0;
-                else if (chunkId >= TotalChunksCount)
-                    chunkId = TotalChunksCount - 1;
-                fChunkFrom = chunkId;
-                if (fChunkTo < fChunkFrom)
                 {
-                    fChunkTo = fChunkFrom;
-                    editTo.Text = (fChunkTo + 1).ToString();
+                    chunkId = 0;
                 }
-                editFrom.Text = (fChunkFrom + 1).ToString();
+                else if (chunkId >= TotalChunksCount)
+                {
+                    chunkId = TotalChunksCount - 1;
+                }
+                _chunkFrom = chunkId;
+                if (_chunkTo < _chunkFrom)
+                {
+                    _chunkTo = _chunkFrom;
+                    editTo.Text = (_chunkTo + 1).ToString();
+                }
+                editFrom.Text = (_chunkFrom + 1).ToString();
                 SetChunkIndicators();
             }
         }
 
         private void SetChunkTo(int chunkId)
         {
-            if (chunkId != fChunkTo)
+            if (chunkId != _chunkTo)
             {
-                fChunkTo = chunkId;
-                editTo.Text = (fChunkTo + 1).ToString();
-                if (fChunkTo < fChunkFrom)
+                _chunkTo = chunkId;
+                editTo.Text = (_chunkTo + 1).ToString();
+                if (_chunkTo < _chunkFrom)
                 {
-                    fChunkFrom = fChunkTo;
-                    editFrom.Text = (fChunkFrom + 1).ToString();
+                    _chunkFrom = _chunkTo;
+                    editFrom.Text = (_chunkFrom + 1).ToString();
                 }
                 SetChunkIndicators();
             }
@@ -438,21 +405,21 @@ namespace Twitch_prime_downloader
 
         private void EditFrom_Leave(object sender, EventArgs e)
         {
-            fChunkFrom = int.Parse(editFrom.Text) - 1;
-            if (fChunkFrom < 0)
+            _chunkFrom = int.Parse(editFrom.Text) - 1;
+            if (_chunkFrom < 0)
             {
-                fChunkFrom = 0;
+                _chunkFrom = 0;
                 editFrom.Text = "1";
             }
-            else if (fChunkFrom >= TotalChunksCount)
+            else if (_chunkFrom >= TotalChunksCount)
             {
-                fChunkFrom = TotalChunksCount - 1;
-                editFrom.Text = (fChunkFrom + 1).ToString();
+                _chunkFrom = TotalChunksCount - 1;
+                editFrom.Text = (_chunkFrom + 1).ToString();
             }
-            if (fChunkFrom > fChunkTo)
+            if (_chunkFrom > _chunkTo)
             {
-                fChunkTo = fChunkFrom;
-                editTo.Text = (fChunkTo + 1).ToString();
+                _chunkTo = _chunkFrom;
+                editTo.Text = (_chunkTo + 1).ToString();
             }
 
             SetChunkIndicators();
@@ -460,21 +427,21 @@ namespace Twitch_prime_downloader
 
         private void EditTo_Leave(object sender, EventArgs e)
         {
-            fChunkTo = int.Parse(editTo.Text) - 1;
-            if (fChunkTo < 0)
+            _chunkTo = int.Parse(editTo.Text) - 1;
+            if (_chunkTo < 0)
             {
-                fChunkTo = 0;
+                _chunkTo = 0;
                 editTo.Text = "1";
             }
-            if (fChunkTo >= TotalChunksCount)
+            if (_chunkTo >= TotalChunksCount)
             {
-                fChunkTo = TotalChunksCount - 1;
-                editTo.Text = (fChunkTo + 1).ToString();
+                _chunkTo = TotalChunksCount - 1;
+                editTo.Text = (_chunkTo + 1).ToString();
             }
-            else if (fChunkTo < fChunkFrom)
+            else if (_chunkTo < _chunkFrom)
             { 
-                fChunkFrom = fChunkTo;
-                editFrom.Text = (fChunkFrom + 1).ToString();
+                _chunkFrom = _chunkTo;
+                editFrom.Text = (_chunkFrom + 1).ToString();
             }
 
             SetChunkIndicators();
@@ -505,32 +472,34 @@ namespace Twitch_prime_downloader
 
         private void timerElapsed_Tick(object sender, EventArgs e)
         {
-            DateTime elapsed = new DateTime((DateTime.Now - downloadStarted).Ticks);
-            lblElapsedTime.Text = "Прошло времени: " + elapsed.ToString("H:mm:ss");
+            DateTime elapsedTime = new DateTime((DateTime.Now - DownloadStarted).Ticks);
+            lblElapsedTime.Text = $"Прошло времени: {elapsedTime:H:mm:ss}";
         }
 
         private void timerFcst_Tick(object sender, EventArgs e)
         {
             fcstId++;
             if (fcstId > 7)
+            {
                 fcstId = 0;
+            }
             var res = Resources.ResourceManager.GetObject($"fcst_istra_0{fcstId + 1}");
             imgFcst.Image = (Bitmap)res;
         }
 
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
-            downloadingMode = DownloadingMode.WholeFile;
+            DownloadingMode = DownloadingMode.WholeFile;
             string fn = config.downloadingPath + FixFileName(FormatFileName(config.fileNameFormat, StreamInfo)) + ".ts";
-            fOutputFilenameOrig = fn;
-            lblOutputFilename.Text = $"Имя файла: {fOutputFilenameOrig}";
+            OutputFilenameOrig = fn;
+            lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
         }
 
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
-            downloadingMode = DownloadingMode.Chunked;
-            fOutputFilenameOrig = $"{config.downloadingPath}{FixFileName(FormatFileName(config.fileNameFormat, StreamInfo))}\\";
-            lblOutputFilename.Text = $"Папка для скачивания: {fOutputFilenameOrig}";
+            DownloadingMode = DownloadingMode.Chunked;
+            OutputFilenameOrig = $"{config.downloadingPath}{FixFileName(FormatFileName(config.fileNameFormat, StreamInfo))}\\";
+            lblOutputFilename.Text = $"Папка для скачивания: {OutputFilenameOrig}";
         }
 
         private void imgScrollBar_Paint(object sender, PaintEventArgs e)
