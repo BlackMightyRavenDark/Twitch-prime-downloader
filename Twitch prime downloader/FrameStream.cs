@@ -9,34 +9,13 @@ namespace Twitch_prime_downloader
     public partial class FrameStream : UserControl
     {
         public TwitchVod StreamInfo { get; private set; }
-        private int fGuiInfoFontSize = 10;
-        private bool fShowStreaInfoGUI = true;
+        private int _hudInfoFontSize = 10;
+        private bool _showStreamInfoHud = true;
+        public int HudInfoFontSize { get { return _hudInfoFontSize; } set { SetInfoGuiFontSize(value); } }
+        public bool ShowStreaInfoHud { get { return _showStreamInfoHud; } set { SetShowInfoHud(value); } }
+
         public static readonly Color colorActive = IntToColor(0x909090);
         public static readonly Color colorInactive = IntToColor(0x303030);
-
-        public int InfoGuiFontSize
-        {
-            get
-            {
-                return fGuiInfoFontSize;
-            }
-            set
-            {
-                SetInfoGuiFontSize(value);
-            }
-
-        }
-        public bool ShowStreamInfoGUI
-        {
-            get
-            {
-                return fShowStreaInfoGUI;
-            }
-            set
-            {
-                fShowStreaInfoGUI = value;
-            }
-        }
 
         public delegate void ImageMouseDownDelegate(object sender, MouseEventArgs e);
         public delegate void FrameActivatedDelegate(object sender);
@@ -82,9 +61,9 @@ namespace Twitch_prime_downloader
 
         private void imageStream_Paint(object sender, PaintEventArgs e)
         {
-            if (ShowStreamInfoGUI)
+            if (ShowStreaInfoHud)
             {
-                Font fnt = new Font("Lucida Console", fGuiInfoFontSize);
+                Font fnt = new Font("Lucida Console", HudInfoFontSize);
 
                 string t = StreamInfo.Length.ToString("h':'mm':'ss");
                 SizeF size = e.Graphics.MeasureString(t, fnt);
@@ -174,13 +153,22 @@ namespace Twitch_prime_downloader
 
         private void SetInfoGuiFontSize(int newFontSize)
         {
-            if (fGuiInfoFontSize != newFontSize)
+            if (_hudInfoFontSize != newFontSize)
             {
-                fGuiInfoFontSize = newFontSize;
-                if (ShowStreamInfoGUI)
+                _hudInfoFontSize = newFontSize;
+                if (ShowStreaInfoHud)
                 {
                     imageStream.Refresh();
                 }
+            }
+        }
+
+        private void SetShowInfoHud(bool flag)
+        {
+            if (_showStreamInfoHud != flag)
+            {
+                _showStreamInfoHud = flag;
+                imageStream.Refresh();
             }
         }
 
