@@ -52,18 +52,23 @@ namespace Twitch_prime_downloader
             FileDownloader fileDownloader = new FileDownloader();
             fileDownloader.Connecting += (s, url) =>
             {
-                synchronizationContext.Send(Connecting_Context, this);
+                synchronizationContext?.Send(Connecting_Context, this);
             };
             fileDownloader.WorkStarted += (s, contentLen) =>
             {
                 CurrentChunkSize = contentLen;
                 CurrentChunkBytesTransfered = 0L;
-                synchronizationContext.Send(WorkStart_Context, this);
+                synchronizationContext?.Send(WorkStart_Context, this);
             };
             fileDownloader.WorkProgress += (s, bytes, contentLen) =>
             {
                 CurrentChunkBytesTransfered = bytes;
-                synchronizationContext.Send(WorkProgress_Context, this);
+                synchronizationContext?.Send(WorkProgress_Context, this);
+            };
+            fileDownloader.WorkFinished += (s, bytes, contentLen, errCode) =>
+            {
+                CurrentChunkBytesTransfered = bytes;
+                synchronizationContext?.Send(WorkProgress_Context, this);
             };
             fileDownloader.CancelTest += (object s, ref bool stop) =>
             {
