@@ -31,74 +31,17 @@ namespace Twitch_prime_downloader
             return d.DownloadString(out resString);
         }
 
-        public static int HttpsPost(string url, out string recvText)
+        public static int HttpsPost(string url, out string responseString)
         {
-            recvText = null;
-            WebClient client = new WebClient();
-            NameValueCollection values = new NameValueCollection();
-            values.Add("grant_type", "client_credentials");
-            int errorCode;
             try
             {
-                byte[] response = client.UploadValues(url, values);
-                recvText = Encoding.UTF8.GetString(response);
-                errorCode = 200;
-            }
-            catch (WebException e)
-            {
-                if (e.Status == WebExceptionStatus.ProtocolError)
-                {
-                    HttpWebResponse httpWebResponse = (HttpWebResponse)e.Response;
-                    errorCode = (int)httpWebResponse.StatusCode;
-                }
-                else
-                {
-                    errorCode = 400;
-                }
-            }
-            client.Dispose();
-            return errorCode;
-        }
-
-        public static int HttpsPost(string aUrl, string body, out string responseString)
-        {
-            responseString = "Client error";
-            int res = 400;
-            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(aUrl);
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Headers.Add("Client-ID", TWITCH_CLIENT_ID_PRIVATE);
-            httpWebRequest.Method = "POST";
-            StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
-            try
-            {
-                streamWriter.Write(body);
-                streamWriter.Dispose();
-            }
-            catch
-            {
-                if (streamWriter != null)
-                {
-                    streamWriter.Dispose();
-                }
-                return res;
-            }
-            try
-            {
+                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpWebRequest.Method = "POST";
                 HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream());
-                try
+                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
                     responseString = streamReader.ReadToEnd();
-                    streamReader.Dispose();
-                    res = (int)httpResponse.StatusCode;
-                }
-                catch
-                {
-                    if (streamReader != null)
-                    {
-                        streamReader.Dispose();
-                    }
-                    return 400;
+                    return (int)httpResponse.StatusCode;
                 }
             }
             catch (WebException ex)
@@ -107,8 +50,55 @@ namespace Twitch_prime_downloader
                 {
                     HttpWebResponse httpWebResponse = (HttpWebResponse)ex.Response;
                     responseString = ex.Message;
-                    res = (int)httpWebResponse.StatusCode;
+                    return (int)httpWebResponse.StatusCode;
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+
+            responseString = "Client error";
+            return 400;
+        }
+
+        public static int HttpsPost(string url, string body, out string responseString)
+        {
+            responseString = "Client error";
+            int res = 400;
+            try
+            {
+                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpWebRequest.ContentType = "application/json";
+                httpWebRequest.Headers.Add("Client-ID", TWITCH_CLIENT_ID_PRIVATE);
+                httpWebRequest.Method = "POST";
+                using (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                {
+                    streamWriter.Write(body);
+                }
+                HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                try
+                {
+                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                    {
+                        responseString = streamReader.ReadToEnd();
+                        res = (int)httpResponse.StatusCode;
+                    }
+                }
+                catch (WebException ex)
+                {
+                    if (ex.Status == WebExceptionStatus.ProtocolError)
+                    {
+                        HttpWebResponse httpWebResponse = (HttpWebResponse)ex.Response;
+                        responseString = ex.Message;
+                        res = (int)httpWebResponse.StatusCode;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                res = ex.HResult;
             }
             return res;
         }
@@ -287,7 +277,6 @@ namespace Twitch_prime_downloader
 
             return string.Format("{0} {1:D3} {2:D3} {3:D3} bytes", gb, mb, kb, b);
         }
-
 
         public static string ExtractUrlFilePath(string url)
         {
