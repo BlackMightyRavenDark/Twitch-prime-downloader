@@ -106,25 +106,33 @@ namespace Twitch_prime_downloader
 
         private void PictureBoxStreamImage_Paint(object sender, PaintEventArgs e)
         {
-            Font fnt = new Font("arial", 12);
-            if (StreamInfo.Length > TimeSpan.MinValue)
+            try
             {
-                string t = StreamInfo.Length.ToString("h':'mm':'ss");
-                SizeF sz = e.Graphics.MeasureString(t, fnt);
-                e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
-                e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
+                using (Font fnt = new Font("Arial", 12.0f))
+                {
+                    if (StreamInfo.Length > TimeSpan.MinValue)
+                    {
+                        string t = StreamInfo.Length.ToString("h':'mm':'ss");
+                        SizeF sz = e.Graphics.MeasureString(t, fnt);
+                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
+                        e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
+                    }
+                    if (StreamInfo.IsPrime)
+                    {
+                        SizeF sz = e.Graphics.MeasureString("$", fnt);
+                        float x = (sender as PictureBox).Width - sz.Width;
+                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(x, 0.0f, sz.Width, sz.Height));
+                        e.Graphics.DrawString("$", fnt, Brushes.Lime, x, 0.0f);
+                    }
+                }
             }
-            if (StreamInfo.IsPrime)
+            catch (Exception ex)
             {
-                SizeF sz = e.Graphics.MeasureString("$", fnt);
-                float x = (sender as PictureBox).Width - sz.Width;
-                e.Graphics.FillRectangle(Brushes.Black, new RectangleF(x, 0.0f, sz.Width, sz.Height));
-                e.Graphics.DrawString("$", fnt, Brushes.Lime, x, 0.0f);
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
             }
-            fnt.Dispose();
         }
 
-        private void ThreadDownload_WorkStarted(object sender, long fileSize, int chunkId)
+        private void ThreadDownloading_WorkStarted(object sender, long fileSize, int chunkId)
         {
             CurrentChunkFileSize = fileSize;
             _currentChunkId = chunkId;
@@ -133,7 +141,7 @@ namespace Twitch_prime_downloader
             lblProgressCurrentChunk.Text = $": 0 / {FormatSize(fileSize)}";
         }
 
-        private void ThreadDownload_WorkFinished(object sender, long bytesTransfered, int errorCode)
+        private void ThreadDownloading_WorkFinished(object sender, long bytesTransfered, int errorCode)
         {
             if (errorCode == 200)
             {
@@ -162,7 +170,7 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void ThreadDownload_Progress(object sender, long bytesTransfered)
+        private void ThreadDownloading_Progress(object sender, long bytesTransfered)
         {
             double percent = 100.0 / CurrentChunkFileSize * bytesTransfered;
             progressBar1.Value1 = (int)percent;
@@ -253,9 +261,9 @@ namespace Twitch_prime_downloader
             }
 
             threadDownload = new ThreadDownload(OutputFileName, DownloadingMode);
-            threadDownload.WorkProgress += ThreadDownload_Progress;
-            threadDownload.WorkStarted += ThreadDownload_WorkStarted;
-            threadDownload.WorkFinished += ThreadDownload_WorkFinished;
+            threadDownload.WorkProgress += ThreadDownloading_Progress;
+            threadDownload.WorkStarted += ThreadDownloading_WorkStarted;
+            threadDownload.WorkFinished += ThreadDownloading_WorkFinished;
             threadDownload.Completed += ThreadDownloading_Completed;
             threadDownload.Connecting += (object sender, TwitchVodChunk chunk) =>
             {
