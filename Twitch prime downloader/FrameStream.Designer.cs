@@ -68,7 +68,7 @@
             this.lblChannelName.Size = new System.Drawing.Size(84, 13);
             this.lblChannelName.TabIndex = 3;
             this.lblChannelName.Text = "lblChannelName";
-            this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblChannelName_MouseDown);
+            this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // lblGameName
             // 
@@ -79,6 +79,7 @@
             this.lblGameName.Size = new System.Drawing.Size(73, 13);
             this.lblGameName.TabIndex = 4;
             this.lblGameName.Text = "lblGameName";
+            this.lblGameName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // btnDownload
             // 
@@ -92,7 +93,7 @@
             this.btnDownload.UseVisualStyleBackColor = false;
             this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
             this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.btnDownload_Paint);
-            this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnDownload_MouseDown);
+            this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // contextMenuStrip1
             // 
@@ -101,7 +102,7 @@
             this.copyStreamDateToolStripMenuItem,
             this.copyStreamTitlePlusDateToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(236, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(236, 70);
             // 
             // copyStreamTitleToolStripMenuItem
             // 
@@ -149,6 +150,7 @@
             this.lblPrime.TabIndex = 7;
             this.lblPrime.Text = "$";
             this.toolTip1.SetToolTip(this.lblPrime, "Очень платное видео");
+            this.lblPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // imageGame
             // 
@@ -158,7 +160,7 @@
             this.imageGame.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.imageGame.TabIndex = 2;
             this.imageGame.TabStop = false;
-            this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.imageGame_MouseDown);
+            this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // imageStream
             // 
@@ -180,6 +182,7 @@
             this.lblBroadcastType.Size = new System.Drawing.Size(89, 13);
             this.lblBroadcastType.TabIndex = 8;
             this.lblBroadcastType.Text = "lblBroadcastType";
+            this.lblBroadcastType.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // FrameStream
             // 

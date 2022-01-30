@@ -402,8 +402,8 @@ namespace Twitch_prime_downloader
                 {
                     lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                     lbLog.Items.Add($"Скачивание изображений... {i + 1} / {framesStream.Count}");
-                    
-                    TwitchVod vod = framesStream[i].GetStreamInfo();
+
+                    TwitchVod vod = framesStream[i].StreamInfo;
 
                     string imgUrl = vod.ImagePreviewTemplateUrl.Replace("{width}", "1920").Replace("{height}", "1080");
                     FileDownloader downloader = new FileDownloader();
@@ -431,12 +431,12 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void CopyImageURLToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            TwitchVod si = activeFrameStream.GetStreamInfo();
-            if (!string.IsNullOrEmpty(si.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(si.ImagePreviewTemplateUrl))
+            TwitchVod vod = activeFrameStream.StreamInfo;
+            if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
-                SetClipboardText(si.ImagePreviewTemplateUrl);
+                SetClipboardText(vod.ImagePreviewTemplateUrl);
             }
         }
 
@@ -445,12 +445,12 @@ namespace Twitch_prime_downloader
             config.downloadingPath = textBox_DownloadingPath.Text;
         }
 
-        private void CopyStreamInfoJSONToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyStreamInfoJsonToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            TwitchVod si = activeFrameStream.GetStreamInfo();
-            if (!string.IsNullOrEmpty(si.InfoStringJson) && !string.IsNullOrWhiteSpace(si.InfoStringJson))
+            TwitchVod vod = activeFrameStream.StreamInfo;
+            if (!string.IsNullOrEmpty(vod.InfoStringJson) && !string.IsNullOrWhiteSpace(vod.InfoStringJson))
             {
-                SetClipboardText(si.InfoStringJson);
+                SetClipboardText(vod.InfoStringJson);
             }
             else
             {
