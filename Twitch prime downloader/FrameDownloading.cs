@@ -8,9 +8,8 @@ using Twitch_prime_downloader.Properties;
 
 namespace Twitch_prime_downloader
 {
-    public partial class FrameDownload : UserControl
+    public partial class FrameDownloading : UserControl
     { 
-        private SynchronizationContext fContext = null;
         private ThreadDownload threadDownload = null;
         public TwitchVod StreamInfo { get; private set; }
         public string OutputFilenameOrig { get; set; }
@@ -38,7 +37,7 @@ namespace Twitch_prime_downloader
         public delegate void ClosedDelegate(object sender);
         public ClosedDelegate Closed;
 
-        public FrameDownload(string streamRootUrl)
+        public FrameDownloading(string streamRootUrl)
         {
             InitializeComponent();
 
@@ -49,8 +48,6 @@ namespace Twitch_prime_downloader
 
         public void OnFrameCreate()
         {
-            fContext = SynchronizationContext.Current;
-
             _chunks = new List<TwitchVodChunk>();
             progressBar1.MaxValue2 = ChunkTo;
             lblCurrentChunkName.Text = null;
@@ -300,19 +297,14 @@ namespace Twitch_prime_downloader
             imgFcst.Left = progressBar1.Left;
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
+
             Thread thr = new Thread(threadDownload.Work);
-            thr.Start(fContext);
+            thr.Start(SynchronizationContext.Current);
         }
 
         public void StopDownload()
         {
             needToStop = true;
-        }
-
-        public void AbortDownload()
-        {
-            if (threadDownload != null)
-                threadDownload.Abort();
         }
 
         private void BtnStartDownload_Click(object sender, EventArgs e)
@@ -499,8 +491,8 @@ namespace Twitch_prime_downloader
             {
                 fcstId = 0;
             }
-            var res = Resources.ResourceManager.GetObject($"fcst_istra_0{fcstId + 1}");
-            imgFcst.Image = (Bitmap)res;
+
+            imgFcst.Image = (Bitmap)Resources.ResourceManager.GetObject($"fcst_istra_0{fcstId + 1}");
         }
 
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)

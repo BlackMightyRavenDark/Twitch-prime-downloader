@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
-using System.Collections.Specialized;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.TwitchApi;
@@ -15,7 +13,7 @@ namespace Twitch_prime_downloader
     public static class Utils
     {
         public static List<FrameStream> framesStream = new List<FrameStream>();
-        public static List<FrameDownload> framesDownload = new List<FrameDownload>();
+        public static List<FrameDownloading> framesDownloading = new List<FrameDownloading>();
         public static List<string> twitchArchiveUrls = new List<string>();
 
         public static readonly MainConfiguration config = new MainConfiguration();
