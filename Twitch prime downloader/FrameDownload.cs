@@ -84,6 +84,13 @@ namespace Twitch_prime_downloader
 
             lblFilelist.Left = grpDownloadRange.Left + grpDownloadRange.Width + 10;
             lbFileList.Left = lblFilelist.Left;
+
+            int max = ChunkTo - ChunkFrom + 1;
+            if (max > 0)
+            {
+                int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / max;
+                imgFcst.Left = x;
+            }
         }
 
         private void FrameDownload_Paint(object sender, PaintEventArgs e)
@@ -290,6 +297,7 @@ namespace Twitch_prime_downloader
             threadDownload.ChunkFrom = _chunkFrom;
             threadDownload.ChunkTo = ChunkTo;
 
+            imgFcst.Left = progressBar1.Left;
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
             Thread thr = new Thread(threadDownload.Work);
