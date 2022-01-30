@@ -27,16 +27,20 @@ namespace Twitch_prime_downloader
         public FrameStream()
         {
             InitializeComponent();
-            GraphicsPath myPath = new GraphicsPath();
-            myPath.AddEllipse(0, 0, btnDownload.Width, btnDownload.Height);
-            Region myRegion = new Region(myPath);
-            btnDownload.Region = myRegion;
-            myPath.Dispose();
-        }
 
-        public TwitchVod GetStreamInfo()
-        {
-            return StreamInfo;
+            try
+            {
+                using (GraphicsPath graphicsPath = new GraphicsPath())
+                {
+                    graphicsPath.AddEllipse(0, 0, btnDownload.Width, btnDownload.Height);
+                    Region region = new Region(graphicsPath);
+                    btnDownload.Region = region;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            }
         }
 
         public void SetStreamInfo(TwitchVod vod)
@@ -63,32 +67,39 @@ namespace Twitch_prime_downloader
         {
             if (ShowStreaInfoHud)
             {
-                Font fnt = new Font("Lucida Console", HudInfoFontSize);
-
-                string t = StreamInfo.Length.ToString("h':'mm':'ss");
-                SizeF size = e.Graphics.MeasureString(t, fnt);
-                RectangleF r = new RectangleF(0, 0, size.Width, size.Height); 
-                e.Graphics.FillRectangle(Brushes.Black, r);
-                e.Graphics.DrawString(t, fnt, Brushes.White, r.X, r.Y);
-                
-                t = StreamInfo.DateCreation.ToString("yyyy.MM.dd, HH:mm:ss");
-                size = e.Graphics.MeasureString(t, fnt);
-                r = new RectangleF(
-                    (sender as PictureBox).Width - size.Width - 2,
-                    (sender as PictureBox).Height - size.Height - 2,
-                    size.Width, size.Height);
-                e.Graphics.FillRectangle(Brushes.Black, r);
-                e.Graphics.DrawString(t, fnt, Brushes.White, new Point((int)r.X, (int)r.Y));
-                if (StreamInfo.DateDeletion != DateTime.MinValue)
+                try
                 {
-                    int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
-                    t = "Будет удалён: " + StreamInfo.DateDeletion.ToString("yyyy.MM.dd, HH:mm:ss");
-                    size = e.Graphics.MeasureString(t, fnt);
-                    r = new RectangleF((sender as PictureBox).Width - size.Width - 2, y, size.Width, size.Height);
-                    e.Graphics.FillRectangle(Brushes.Black, r);
-                    e.Graphics.DrawString(t, fnt, Brushes.Yellow, new Point((int)r.X, (int)r.Y));
+                    using (Font fnt = new Font("Lucida Console", HudInfoFontSize))
+                    {
+                        string t = StreamInfo.Length.ToString("h':'mm':'ss");
+                        SizeF size = e.Graphics.MeasureString(t, fnt);
+                        RectangleF r = new RectangleF(0, 0, size.Width, size.Height);
+                        e.Graphics.FillRectangle(Brushes.Black, r);
+                        e.Graphics.DrawString(t, fnt, Brushes.White, r.X, r.Y);
+
+                        t = StreamInfo.DateCreation.ToString("yyyy.MM.dd, HH:mm:ss");
+                        size = e.Graphics.MeasureString(t, fnt);
+                        r = new RectangleF(
+                            (sender as PictureBox).Width - size.Width - 2,
+                            (sender as PictureBox).Height - size.Height - 2,
+                            size.Width, size.Height);
+                        e.Graphics.FillRectangle(Brushes.Black, r);
+                        e.Graphics.DrawString(t, fnt, Brushes.White, new Point((int)r.X, (int)r.Y));
+                        if (StreamInfo.DateDeletion > DateTime.MinValue)
+                        {
+                            int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
+                            t = "Будет удалён: " + StreamInfo.DateDeletion.ToString("yyyy.MM.dd, HH:mm:ss");
+                            size = e.Graphics.MeasureString(t, fnt);
+                            r = new RectangleF((sender as PictureBox).Width - size.Width - 2, y, size.Width, size.Height);
+                            e.Graphics.FillRectangle(Brushes.Black, r);
+                            e.Graphics.DrawString(t, fnt, Brushes.Yellow, new Point((int)r.X, (int)r.Y));
+                        }
+                    }
                 }
-                fnt.Dispose();
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+                }
             }
         }
 
@@ -103,16 +114,6 @@ namespace Twitch_prime_downloader
             Activated?.Invoke(this);
         }
 
-        private void imageGame_MouseDown(object sender, MouseEventArgs e)
-        {
-            Activated?.Invoke(this);
-        }
-
-        private void lblChannelName_MouseDown(object sender, MouseEventArgs e)
-        {
-            Activated.Invoke(this);
-        }
-
         private void lblStreamTitle_MouseDown(object sender, MouseEventArgs e)
         {
             Activated?.Invoke(this);
@@ -125,11 +126,6 @@ namespace Twitch_prime_downloader
         private void btnDownload_Click(object sender, EventArgs e)
         {
             DownloadButtonPressed?.Invoke(this);
-        }
-
-        private void btnDownload_MouseDown(object sender, MouseEventArgs e)
-        {
-            Activated.Invoke(this);
         }
 
         private void btnDownload_Paint(object sender, PaintEventArgs e)
