@@ -1,6 +1,6 @@
 ﻿namespace Twitch_prime_downloader
 {
-    partial class FrameDownload
+    partial class FrameDownloading
     {
         /// <summary> 
         /// Required designer variable.

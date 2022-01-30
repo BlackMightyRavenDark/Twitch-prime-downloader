@@ -65,7 +65,7 @@ namespace Twitch_prime_downloader
             this.tabPageStreams = new System.Windows.Forms.TabPage();
             this.panelStreams = new System.Windows.Forms.Panel();
             this.scrollBarStreams = new System.Windows.Forms.VScrollBar();
-            this.tabPageDownload = new System.Windows.Forms.TabPage();
+            this.tabPageDownloading = new System.Windows.Forms.TabPage();
             this.scrollBarDownloads = new System.Windows.Forms.VScrollBar();
             this.panelDownloads = new System.Windows.Forms.Panel();
             this.contextMenuStreamImage = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -86,7 +86,7 @@ namespace Twitch_prime_downloader
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchLimit)).BeginInit();
             this.tabPageLog.SuspendLayout();
             this.tabPageStreams.SuspendLayout();
-            this.tabPageDownload.SuspendLayout();
+            this.tabPageDownloading.SuspendLayout();
             this.contextMenuStreamImage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,7 +100,7 @@ namespace Twitch_prime_downloader
             this.tabControlMain.Controls.Add(this.tabPageSearch);
             this.tabControlMain.Controls.Add(this.tabPageLog);
             this.tabControlMain.Controls.Add(this.tabPageStreams);
-            this.tabControlMain.Controls.Add(this.tabPageDownload);
+            this.tabControlMain.Controls.Add(this.tabPageDownloading);
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.SelectedIndex = 0;
@@ -483,17 +483,17 @@ namespace Twitch_prime_downloader
             this.scrollBarStreams.TabIndex = 1;
             this.scrollBarStreams.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrollBarStreams_Scroll);
             // 
-            // tabPageDownload
+            // tabPageDownloading
             // 
-            this.tabPageDownload.BackColor = System.Drawing.Color.DimGray;
-            this.tabPageDownload.Controls.Add(this.scrollBarDownloads);
-            this.tabPageDownload.Controls.Add(this.panelDownloads);
-            this.tabPageDownload.Location = new System.Drawing.Point(4, 22);
-            this.tabPageDownload.Name = "tabPageDownload";
-            this.tabPageDownload.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDownload.Size = new System.Drawing.Size(818, 482);
-            this.tabPageDownload.TabIndex = 6;
-            this.tabPageDownload.Text = "Скачивание";
+            this.tabPageDownloading.BackColor = System.Drawing.Color.DimGray;
+            this.tabPageDownloading.Controls.Add(this.scrollBarDownloads);
+            this.tabPageDownloading.Controls.Add(this.panelDownloads);
+            this.tabPageDownloading.Location = new System.Drawing.Point(4, 22);
+            this.tabPageDownloading.Name = "tabPageDownloading";
+            this.tabPageDownloading.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageDownloading.Size = new System.Drawing.Size(818, 482);
+            this.tabPageDownloading.TabIndex = 6;
+            this.tabPageDownloading.Text = "Скачивание";
             // 
             // scrollBarDownloads
             // 
@@ -528,7 +528,7 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1,
             this.openVideoInBrowserToolStripMenuItem});
             this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-            this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 142);
+            this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 120);
             // 
             // miCopyVideoUrl
             // 
@@ -596,7 +596,7 @@ namespace Twitch_prime_downloader
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchLimit)).EndInit();
             this.tabPageLog.ResumeLayout(false);
             this.tabPageStreams.ResumeLayout(false);
-            this.tabPageDownload.ResumeLayout(false);
+            this.tabPageDownloading.ResumeLayout(false);
             this.contextMenuStreamImage.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -625,7 +625,7 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnSearchChannelName;
         private System.Windows.Forms.ComboBox cboxChannelName;
-        private System.Windows.Forms.TabPage tabPageDownload;
+        private System.Windows.Forms.TabPage tabPageDownloading;
         private System.Windows.Forms.Panel panelDownloads;
         private System.Windows.Forms.Button btnAddChannel;
         private System.Windows.Forms.Button btnRemoveChannel;
