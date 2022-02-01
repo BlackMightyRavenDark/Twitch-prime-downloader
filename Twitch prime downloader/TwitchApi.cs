@@ -15,7 +15,8 @@ namespace Twitch_prime_downloader
         public const string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
 
         public const string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
-        public const string TWITCH_HELIX_USERS_LOGIN_URL_TEMPLATE = "https://api.twitch.tv/helix/users?login={0}";
+        public const string TWITCH_HELIX_VIDEOS_ENDPOINT_URL = "https://api.twitch.tv/helix/videos";
+        public const string TWITCH_HELIX_USERS_ENDPOINT_URL = "https://api.twitch.tv/helix/users";
         public const string TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE = "https://api.twitch.tv/kraken/videos/{0}";
         public const string TWITCH_KRAKEN_GAME_QUERY_URL_TEMPLATE = "https://api.twitch.tv/kraken/search/games?query={0}";
         /*public const string TWITCH_USERS_URL_TEMPLATE = "https://api.twitch.tv/kraken/users?login={0}";
@@ -32,8 +33,8 @@ namespace Twitch_prime_downloader
 
         public const string UNKNOWN_GAME_URL = "https://static-cdn.jtvnw.net/ttv-boxart/404_boxart.png";
 
-        public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "<server>/<stream_id>/chunked/index-dvr.m3u8";
-        public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "<server>/<stream_id>/chunked/highlight-<video_id>.m3u8";
+        public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/index-dvr.m3u8";
+        public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/highlight-<video_id>.m3u8";
 
         public TwitchHelixOauthToken HelixOauthToken { get; private set; } = new TwitchHelixOauthToken();
 
@@ -72,6 +73,57 @@ namespace Twitch_prime_downloader
             return json.ToString();
         }
 
+        /// <summary>
+        /// WARNING!!! Do not use this body if you are signed in!!!
+        /// </summary>
+        public static string GenerateVodGameInfoRequestBody(string vodId)
+        {
+            const string hashValue = "38bbbbd9ae2e0150f335e208b05cf09978e542b464a78c2d4952673cd02ea42b";
+            JObject jPersistedQuery = new JObject();
+            jPersistedQuery["version"] = 1;
+            jPersistedQuery["sha256Hash"] = hashValue;
+
+            JObject jExtensions = new JObject();
+            jExtensions.Add(new JProperty("persistedQuery", jPersistedQuery));
+
+            JObject jVariables = new JObject();
+            jVariables["videoID"] = vodId;
+            jVariables["hasVideoID"] = true;
+
+            JObject json = new JObject();
+            json["operationName"] = "WatchTrackQuery";
+            json.Add(new JProperty("variables", jVariables));
+            json.Add(new JProperty("extensions", jExtensions));
+
+            return json.ToString();
+        }
+
+        /// <summary>
+        /// WARNING!!! Do not use this body if you are signed in!!!
+        /// </summary>
+        public static JArray GenerateVodInfoRequestBody(string vodId, string channelLogin)
+        {
+            const string hashValue = "cb3b1eb2f2d2b2f65b8389ba446ec521d76c3aa44f5424a1b1d235fe21eb4806";
+            JObject jPersistedQuery = new JObject();
+            jPersistedQuery["version"] = 1;
+            jPersistedQuery["sha256Hash"] = hashValue;
+
+            JObject jExtensions = new JObject();
+            jExtensions.Add(new JProperty("persistedQuery", jPersistedQuery));
+
+            JObject jVariables = new JObject();
+            jVariables["channelLogin"] = channelLogin;
+            jVariables["videoID"] = vodId;
+            
+            JObject json = new JObject();
+            json["operationName"] = "VideoMetadata";
+            json.Add(new JProperty("variables", jVariables));
+            json.Add(new JProperty("extensions", jExtensions));
+
+            JArray jArray = new JArray() { json };
+            return jArray;
+        }
+
         public string GetChannelVideosUrl_Kraken(string channelId, int maxVideos, int offset)
         {
             string urlTemplate = "https://api.twitch.tv/kraken/channels/{0}/videos?broadcast_type=all&limit={1}&offset={2}";
@@ -79,16 +131,25 @@ namespace Twitch_prime_downloader
             return req;
         }
 
+        public string GetChannelVideosRequestUrl_Helix(string channelId, int videosPerPage, string pageToken)
+        {
+            string url = $"{TWITCH_HELIX_VIDEOS_ENDPOINT_URL}?user_id={channelId}&first={videosPerPage}";
+            if (!string.IsNullOrEmpty(pageToken) && !string.IsNullOrWhiteSpace(pageToken))
+            {
+                url += $"&{pageToken}";
+            }
+            return url;
+        }
+
         public static string GetUserInfoRequestUrl_Helix(string userLogin)
         {
-            string req = string.Format(TWITCH_HELIX_USERS_LOGIN_URL_TEMPLATE, userLogin);
-            return req;
+            string url = $"{TWITCH_HELIX_USERS_ENDPOINT_URL}?login={userLogin}";
+            return url;
         }
 
         public int GetUserInfo_Helix(string channelName,
-                             out TwitchUserInfo userInfo, out string errorMessage)
+                             TwitchUserInfo userInfo, out string errorMessage)
         {
-            userInfo = null;
             if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
             {
                 errorMessage = "Empty channel name";
@@ -104,9 +165,25 @@ namespace Twitch_prime_downloader
                 if (ja != null && ja.Count > 0)
                 {
                     JObject j = ja[0].Value<JObject>();
-                    userInfo = new TwitchUserInfo();
+                    userInfo.Login = j.Value<string>("login");
                     userInfo.DisplayName = j.Value<string>("display_name");
                     userInfo.Id = j.Value<string>("id");
+                    userInfo.Description = j.Value<string>("description");
+                    userInfo.ViewCount = j.Value<int>("view_count");
+                    userInfo.DateCreated = TwitchTimeToDateTime(j.Value<string>("created_at"), true);
+                    string broadcasterType = j.Value<string>("broadcaster_type");
+                    if (broadcasterType == "partner")
+                    {
+                        userInfo.BroadcasterType = TwitchBroadcasterType.Partner;
+                    }
+                    else if (broadcasterType == "affiliate")
+                    {
+                        userInfo.BroadcasterType = TwitchBroadcasterType.Affiliate;
+                    }
+                    else
+                    {
+                        userInfo.BroadcasterType = TwitchBroadcasterType.None;
+                    }
                     errorMessage = null;
                 }
                 else
@@ -139,22 +216,34 @@ namespace Twitch_prime_downloader
             return HttpsGet_Kraken(url, out resJson);
         }
 
+        /// <summary>
+        /// WARNING!!! Do not use this method if you are signed in!!!
+        /// </summary>
+        public VideoMetadataResult GetVodMetadata(string vodId, string channelLogin)
+        {
+            JArray body = GenerateVodInfoRequestBody(vodId, channelLogin);
+            int errorCode = HttpsPost(TWITCH_GQL_API_URL, body.ToString(), out string response);
+            JArray res = errorCode == 200 ? JArray.Parse(response) : null;
+            return new VideoMetadataResult(res, errorCode);
+        }
+
         public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
         {
-            if (!string.IsNullOrEmpty(vod.ImageAnimatedPreviewUrl) && !string.IsNullOrWhiteSpace(vod.ImageAnimatedPreviewUrl))
+            if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
-                int n = vod.ImageAnimatedPreviewUrl.IndexOf(".net/");
+                int n = vod.ImagePreviewTemplateUrl.IndexOf("_vods/");
                 if (n > 0)
                 {
-                    string server = vod.ImageAnimatedPreviewUrl.Substring(0, n + 4);
+                    string t = vod.ImagePreviewTemplateUrl.Substring(n + 6);
+                    string serverId = t.Substring(0, t.IndexOf("/"));
                     if (vod.Type == "highlight")
                     {
-                        playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server>", server)
+                        playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server_id>", serverId)
                             .Replace("<stream_id>", vod.StreamId).Replace("<video_id>", vod.VideoId);
                     }
                     else
                     {
-                        playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server>", server)
+                        playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server_id>", serverId)
                             .Replace("<stream_id>", vod.StreamId);
                     }
                     int errorCode = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
@@ -235,9 +324,16 @@ namespace Twitch_prime_downloader
 
     public sealed class TwitchUserInfo
     {
+        public string Login { get; set; }
         public string DisplayName { get; set; }
         public string Id { get; set; }
+        public TwitchBroadcasterType BroadcasterType { get; set; }
+        public string Description { get; set; }
+        public int ViewCount { get; set; }
+        public DateTime DateCreated { get; set; }
     }
+
+    public enum TwitchBroadcasterType { Partner, Affiliate, None }
 
     public sealed class TwitchVod
     {
@@ -307,6 +403,18 @@ namespace Twitch_prime_downloader
                 }
             }
             return errorCode;
+        }
+    }
+
+    public class VideoMetadataResult
+    {
+        public int ErrorCode { get; private set; }
+        public JArray Data { get; private set; }
+
+        public VideoMetadataResult(JArray data, int errorCode)
+        {
+            Data = data;
+            ErrorCode = errorCode;
         }
     }
 }

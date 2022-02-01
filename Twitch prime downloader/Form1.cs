@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using static Twitch_prime_downloader.TwitchApi;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
@@ -318,7 +319,8 @@ namespace Twitch_prime_downloader
             }
             int sum = 0;
             TwitchApi twitchApi = new TwitchApi();
-            if (twitchApi.GetUserInfo_Helix(channelName, out TwitchUserInfo userInfo, out _) == 200)
+            TwitchUserInfo userInfo = new TwitchUserInfo();
+            if (twitchApi.GetUserInfo_Helix(channelName, userInfo, out _) == 200)
             {
                 int total = 0;
                 int offset = 0;
@@ -391,6 +393,54 @@ namespace Twitch_prime_downloader
             return sum;
         }
 
+        private int GetChannelVideoList_Helix(string channelName, int maxVideos, out string videoList)
+        {
+            videoList = null;
+            TwitchApi api = new TwitchApi();
+            TwitchUserInfo userInfo = new TwitchUserInfo();
+            int errorCode = api.GetUserInfo_Helix(channelName, userInfo, out _);
+            if (errorCode == 200)
+            {
+                errorCode = api.HelixOauthToken.Update(TWITCH_CLIENT_ID);
+                if (errorCode == 200)
+                {
+                    string url = api.GetChannelVideosRequestUrl_Helix(userInfo.Id, maxVideos, null);
+                    FileDownloader d = new FileDownloader();
+                    d.Url = url;
+                    d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
+                    d.Headers.Add("Authorization", "Bearer " + api.HelixOauthToken.AccessToken);
+                    errorCode = d.DownloadString(out videoList);
+                }
+            }
+            return errorCode;
+        }
+
+        private int ParseVideosList_Helix(string aJsonString)
+        {
+            JObject json = JObject.Parse(aJsonString);
+            JArray jsonArr = json.Value<JArray>("data");
+            for (int i = 0; i < jsonArr.Count; i++)
+            {
+                lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
+                lbLog.Items.Add($"Обработка данных... {i + 1} / {jsonArr.Count}");
+
+                TwitchVod vod = ParseVodInfo_Helix(jsonArr[i].ToString());
+
+                FrameStream frameStream = new FrameStream();
+                frameStream.Parent = panelStreams;
+                frameStream.Location = new Point(0, 0);
+                frameStream.Activated += OnFrameStream_Activated;
+                frameStream.ImageMouseDown += OnStreamImageMouseDown;
+                frameStream.DownloadButtonPressed += OnDownloadButtonClick;
+                frameStream.BackColor = FrameStream.colorInactive;
+                frameStream.SetStreamInfo(vod);
+                framesStream.Add(frameStream);
+
+                Application.DoEvents();
+            }
+            return jsonArr.Count;
+        }
+
         private void DownloadImages()
         {
             if (framesStream.Count > 0)
@@ -402,7 +452,7 @@ namespace Twitch_prime_downloader
 
                     TwitchVod vod = framesStream[i].StreamInfo;
 
-                    string imgUrl = vod.ImagePreviewTemplateUrl.Replace("{width}", "1920").Replace("{height}", "1080");
+                    string imgUrl = vod.ImagePreviewTemplateUrl.Replace("%{width}", "1920").Replace("%{height}", "1080");
                     FileDownloader downloader = new FileDownloader();
                     downloader.Url = imgUrl;
                     
@@ -525,17 +575,17 @@ namespace Twitch_prime_downloader
             ClearFramesStream();
             tabPageStreams.Text = "Стримы";
 
-            int limit = 0;
+            int limit = 100;
             if (rbSearchLimit.Checked)
             {
                 limit = (int)numericUpDownSearchLimit.Value;
             }
-            int n = GetChannelVideosListJson_Kraken(channelName, limit, out string resList);
-            if (n > 0)
+            int errorCode = GetChannelVideoList_Helix(channelName, limit, out string resList);
+            if (errorCode == 200)
             {
-                tabPageStreams.Text = $"Стримы ({n})";
                 lbLog.Items.Add("Обработка данных...");
-                ParseVideosListJSON(resList);
+                int count = ParseVideosList_Helix(resList);
+                tabPageStreams.Text = $"Стримы ({count})";
                 if (tabControlMain.SelectedTab == tabPageStreams)
                 {
                     StackFramesStream();
