@@ -368,10 +368,10 @@ namespace Twitch_prime_downloader
             this.rbSearchAll.Checked = true;
             this.rbSearchAll.Location = new System.Drawing.Point(8, 18);
             this.rbSearchAll.Name = "rbSearchAll";
-            this.rbSearchAll.Size = new System.Drawing.Size(77, 17);
+            this.rbSearchAll.Size = new System.Drawing.Size(76, 17);
             this.rbSearchAll.TabIndex = 0;
             this.rbSearchAll.TabStop = true;
-            this.rbSearchAll.Text = "Все видео";
+            this.rbSearchAll.Text = "100 видео";
             this.rbSearchAll.UseVisualStyleBackColor = true;
             // 
             // btnAddChannel

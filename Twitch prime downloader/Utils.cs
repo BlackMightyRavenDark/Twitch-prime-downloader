@@ -116,7 +116,8 @@ namespace Twitch_prime_downloader
                 {
                     res = url.Remove(0, n + 5);
                     n = res.IndexOf("/");
-                    res = res.Substring(0, n);
+                    string t = res.Substring(n + 1);
+                    res = t.Substring(0, t.IndexOf('/'));
                 }
                 else
                 {
@@ -207,6 +208,69 @@ namespace Twitch_prime_downloader
             }
             vod.InfoStringJson = jsonString;
 
+            return vod;
+        }
+
+        public static TwitchVod ParseVodInfo_Helix(string vodInfoJson)
+        {
+            TwitchVod vod = new TwitchVod();
+            JObject json = JObject.Parse(vodInfoJson);
+            vod.Title = json.Value<string>("title");
+            string userLogin = json.Value<string>("user_login");
+            TwitchApi api = new TwitchApi();
+            _ = api.GetUserInfo_Helix(userLogin, vod.UserInfo, out _);
+            vod.VideoId = json.Value<string>("id");
+            vod.DateCreation = TwitchTimeToDateTime(json.Value<string>("created_at"), false);
+            TimeSpan vodlifeTime = TimeSpan.FromDays(vod.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60.0 : 14.0);
+            vod.DateDeletion = new DateTime(vod.DateCreation.Ticks + vodlifeTime.Ticks);
+            vod.ImagePreviewTemplateUrl = json.Value<string>("thumbnail_url");
+            vod.StreamId = ExtractStreamIDFromImageURL(vod.ImagePreviewTemplateUrl);
+            vod.ViewCount = json.Value<int>("view_count");
+            vod.Type = json.Value<string>("type");
+            VideoMetadataResult videoMetadata = api.GetVodMetadata(vod.VideoId, userLogin);
+            if (videoMetadata.ErrorCode == 200)
+            {
+                JObject jVideo = videoMetadata.Data[0].Value<JObject>("data").Value<JObject>("video");
+                int seconds = jVideo.Value<int>("lengthSeconds");
+                vod.Length = TimeSpan.FromSeconds(seconds);
+                JObject jGame = jVideo.Value<JObject>("game");
+                if (jGame != null)
+                {
+                    vod.GameInfo.ImagePreviewSmallUrl =
+                        jGame.Value<string>("boxArtURL");
+                    vod.GameInfo.Title = jGame.Value<string>("name");
+                    int errorCode = api.GetGameInfo_Kraken(vod.GameInfo.Title, out string gameInfo);
+                    if (errorCode == 200)
+                    {
+                        JObject jsonGame = JObject.Parse(gameInfo);
+                        JArray ja = jsonGame.Value<JArray>("games");
+                        if (ja != null && ja.Count > 0)
+                        {
+                            vod.GameInfo.ImagePreviewSmallUrl = ja[0].Value<JObject>("box").Value<string>("small");
+                            vod.GameInfo.ImagePreviewMediumUrl = ja[0].Value<JObject>("box").Value<string>("medium");
+                            vod.GameInfo.ImagePreviewLargeUrl = ja[0].Value<JObject>("box").Value<string>("large");
+                        }
+                        else
+                        {
+                            vod.GameInfo.ImagePreviewSmallUrl = UNKNOWN_GAME_URL;
+                            vod.GameInfo.ImagePreviewMediumUrl = UNKNOWN_GAME_URL;
+                            vod.GameInfo.ImagePreviewLargeUrl = UNKNOWN_GAME_URL;
+                        }
+                    }
+                    else
+                    {
+                        vod.GameInfo.ImagePreviewSmallUrl = UNKNOWN_GAME_URL;
+                        vod.GameInfo.ImagePreviewMediumUrl = UNKNOWN_GAME_URL;
+                        vod.GameInfo.ImagePreviewLargeUrl = UNKNOWN_GAME_URL;
+                    }
+                }
+                else
+                {
+                    vod.GameInfo.ImagePreviewSmallUrl = UNKNOWN_GAME_URL;
+                    vod.GameInfo.ImagePreviewMediumUrl = UNKNOWN_GAME_URL;
+                    vod.GameInfo.ImagePreviewLargeUrl = UNKNOWN_GAME_URL;
+                }
+            }
             return vod;
         }
 
