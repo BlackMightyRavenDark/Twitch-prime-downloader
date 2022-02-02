@@ -147,6 +147,12 @@ namespace Twitch_prime_downloader
             return url;
         }
 
+        public string GenerateVodInfoRequestUrl_Helix(string vodId)
+        {
+            string url = $"{TWITCH_HELIX_VIDEOS_ENDPOINT_URL}?id={vodId}";
+            return url;
+        }
+
         public int GetUserInfo_Helix(string channelName,
                              TwitchUserInfo userInfo, out string errorMessage)
         {
@@ -214,6 +220,56 @@ namespace Twitch_prime_downloader
         {
             string url = string.Format(TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE, videoId);
             return HttpsGet_Kraken(url, out resJson);
+        }
+
+        public int GetVodInfo(string vodId, out string infoString)
+        {
+            string url = GenerateVodInfoRequestUrl_Helix(vodId);
+            int errorCode = HttpsGet_Helix(url, out infoString);
+            return errorCode;
+        }
+
+        public TwitchVod ParseVodInfo(JObject vodInfo)
+        {
+            TwitchVod vod = new TwitchVod();
+            vod.Title = vodInfo.Value<string>("title");
+            vod.VideoId = vodInfo.Value<string>("id");
+            vod.VideoUrl = vodInfo.Value<string>("url");
+            vod.UserInfo.Id = vodInfo.Value<string>("user_id");
+            vod.UserInfo.Login = vodInfo.Value<string>("user_login");
+            vod.ImagePreviewTemplateUrl = vodInfo.Value<string>("thumbnail_url");
+            vod.StreamId = ExtractStreamIDFromImageURL(vod.ImagePreviewTemplateUrl);
+            vod.ViewCount = vodInfo.Value<int>("view_count");
+            vod.Type = vodInfo.Value<string>("type");
+            string t = vodInfo.Value<string>("created_at");
+            vod.DateCreation = TwitchTimeToDateTime(t, true);
+            GetUserInfo_Helix(vod.UserInfo.Login, vod.UserInfo, out _);
+            VideoMetadataResult videoMetadata = GetVodMetadata(vod.VideoId, vod.UserInfo.Login);
+            if (videoMetadata.ErrorCode == 200)
+            {
+                JObject jVideo = videoMetadata.Data[0].Value<JObject>("data").Value<JObject>("video");
+                int seconds = jVideo.Value<int>("lengthSeconds");
+                vod.Length = TimeSpan.FromSeconds(seconds);
+                TimeSpan vodLifeTime = TimeSpan.FromDays(vod.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60.0 : 14.0);
+                vod.DateDeletion = new DateTime(vod.DateCreation.Ticks + vodLifeTime.Ticks);
+
+                JObject jGame = jVideo.Value<JObject>("game");
+                vod.GameInfo.Title = jGame.Value<string>("name");
+                int errorCode = GetGameInfo_Kraken(vod.GameInfo.Title, out string gameInfo);
+                if (errorCode == 200)
+                {
+                    JObject jGameInfo = JObject.Parse(gameInfo);
+                    JArray ja = jGameInfo.Value<JArray>("games");
+                    if (ja != null && ja.Count > 0)
+                    {
+                        vod.GameInfo.ImagePreviewSmallUrl = ja[0].Value<JObject>("box").Value<string>("small");
+                        vod.GameInfo.ImagePreviewMediumUrl = ja[0].Value<JObject>("box").Value<string>("medium");
+                        vod.GameInfo.ImagePreviewLargeUrl = ja[0].Value<JObject>("box").Value<string>("large");
+                    }
+                }
+            }
+
+            return vod;
         }
 
         /// <summary>
@@ -403,6 +459,18 @@ namespace Twitch_prime_downloader
                 }
             }
             return errorCode;
+        }
+    }
+
+    public class TwitchVodResult
+    {
+        public int ErrorCode { get; private set; }
+        public TwitchVod TwitchVod { get; private set; }
+
+        public TwitchVodResult(TwitchVod vod, int errorCode)
+        {
+            TwitchVod = vod;
+            ErrorCode = errorCode;
         }
     }
 

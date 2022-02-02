@@ -419,12 +419,13 @@ namespace Twitch_prime_downloader
         {
             JObject json = JObject.Parse(aJsonString);
             JArray jsonArr = json.Value<JArray>("data");
+            TwitchApi api = new TwitchApi();
             for (int i = 0; i < jsonArr.Count; i++)
             {
                 lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                 lbLog.Items.Add($"Обработка данных... {i + 1} / {jsonArr.Count}");
 
-                TwitchVod vod = ParseVodInfo_Helix(jsonArr[i].ToString());
+                TwitchVod vod = api.ParseVodInfo(jsonArr[i] as JObject);
 
                 FrameStream frameStream = new FrameStream();
                 frameStream.Parent = panelStreams;
@@ -638,12 +639,12 @@ namespace Twitch_prime_downloader
                 }
 
                 TwitchApi twitchApi = new TwitchApi();
-                int errorCode = twitchApi.GetVodInfo_Kraken(vodId, out string infoStringJson);
+                int errorCode = twitchApi.GetVodInfo(vodId, out string infoStringJson);
                 if (errorCode == 200)
                 {
                     JObject jObject = JObject.Parse(infoStringJson);
 
-                    jsonArray.Add(jObject);
+                    jsonArray.Add(jObject.Value<JArray>("data")[0] as JObject);
                     lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...OK");
                 }
                 else
@@ -657,8 +658,8 @@ namespace Twitch_prime_downloader
             {
                 lbLog.Items.Add("Обработка данных...");
                 JObject json = new JObject();
-                json.Add(new JProperty("videos", jsonArray));
-                int count = ParseVideosListJSON(json.ToString());
+                json.Add(new JProperty("data", jsonArray));
+                int count = ParseVideosList_Helix(json.ToString());
                 if (count > 0)
                 {
                     tabPageStreams.Text = $"Стримы ({count})";
