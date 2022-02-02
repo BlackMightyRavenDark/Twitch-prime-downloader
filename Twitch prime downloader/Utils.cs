@@ -220,6 +220,7 @@ namespace Twitch_prime_downloader
             TwitchApi api = new TwitchApi();
             _ = api.GetUserInfo_Helix(userLogin, vod.UserInfo, out _);
             vod.VideoId = json.Value<string>("id");
+            vod.VideoUrl = json.Value<string>("url");
             vod.DateCreation = TwitchTimeToDateTime(json.Value<string>("created_at"), false);
             TimeSpan vodlifeTime = TimeSpan.FromDays(vod.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60.0 : 14.0);
             vod.DateDeletion = new DateTime(vod.DateCreation.Ticks + vodlifeTime.Ticks);

@@ -787,7 +787,14 @@ namespace Twitch_prime_downloader
 
         private void miCopyVideoUrl_Click(object sender, EventArgs e)
         {
-            SetClipboardText(activeFrameStream.StreamInfo.VideoUrl);
+            if (activeFrameStream != null && activeFrameStream.StreamInfo != null)
+            {
+                if (!string.IsNullOrEmpty(activeFrameStream.StreamInfo.VideoUrl) &&
+                    !string.IsNullOrWhiteSpace(activeFrameStream.StreamInfo.VideoUrl))
+                {
+                    SetClipboardText(activeFrameStream.StreamInfo.VideoUrl);
+                }
+            }
         }
 
         private void btnRestoreDefaultFilenameFormat_Click(object sender, EventArgs e)
