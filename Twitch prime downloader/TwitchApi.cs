@@ -17,14 +17,7 @@ namespace Twitch_prime_downloader
         public const string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
         public const string TWITCH_HELIX_VIDEOS_ENDPOINT_URL = "https://api.twitch.tv/helix/videos";
         public const string TWITCH_HELIX_USERS_ENDPOINT_URL = "https://api.twitch.tv/helix/users";
-        public const string TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE = "https://api.twitch.tv/kraken/videos/{0}";
         public const string TWITCH_KRAKEN_GAME_QUERY_URL_TEMPLATE = "https://api.twitch.tv/kraken/search/games?query={0}";
-        /*public const string TWITCH_USERS_URL_TEMPLATE = "https://api.twitch.tv/kraken/users?login={0}";
-        public const string TWITCH_CHANNEL_VIDEOS_URL_TEMPLATE = "https://api.twitch.tv/kraken/channels/{0}/videos";
-        public const string TWITCH_ACCESS_TOKEN_VOD_URL_TEMPLATE = "https://api.twitch.tv/api/vods/{0}/access_token?client_id={1}";
-        public const string TWITCH_USHER_VOD_URL_TEMPLATE = "https://usher.ttvnw.net/vod/{0}.m3u8?" +
-                     "player=twitchweb&nauth={1}&nauthsig={2}&" +
-                     "$allow_audio_only=true&allow_source=true&type=any&p={3}";*/
 
         /// <summary>
         /// WARNING!!! Do not use the TWITCH GQL API if you are signed in!!!
@@ -216,12 +209,6 @@ namespace Twitch_prime_downloader
             return 400;
         }
 
-        public int GetVodInfo_Kraken(string videoId, out string resJson)
-        {
-            string url = string.Format(TWITCH_KRAKEN_VIDEO_INFO_URL_TEMPLATE, videoId);
-            return HttpsGet_Kraken(url, out resJson);
-        }
-
         public int GetVodInfo(string vodId, out string infoString)
         {
             string url = GenerateVodInfoRequestUrl_Helix(vodId);
@@ -229,6 +216,9 @@ namespace Twitch_prime_downloader
             return errorCode;
         }
 
+        /// <summary>
+        /// WARNING!!! Do not use this method if you are signed in!!!
+        /// </summary>
         public TwitchVod ParseVodInfo(JObject vodInfo)
         {
             TwitchVod vod = new TwitchVod();
@@ -367,9 +357,9 @@ namespace Twitch_prime_downloader
     public sealed class TwitchGameInfo
     {
         public string Title { get; set; }
-        public string ImagePreviewSmallUrl { get; set; }
-        public string ImagePreviewMediumUrl { get; set; }
-        public string ImagePreviewLargeUrl { get; set; }
+        public string ImagePreviewSmallUrl { get; set; } = TwitchApi.UNKNOWN_GAME_URL;
+        public string ImagePreviewMediumUrl { get; set; } = TwitchApi.UNKNOWN_GAME_URL;
+        public string ImagePreviewLargeUrl { get; set; } = TwitchApi.UNKNOWN_GAME_URL;
         public Stream ImageData { get; set; } = new MemoryStream();
 
         ~TwitchGameInfo()
@@ -424,8 +414,8 @@ namespace Twitch_prime_downloader
 
     public sealed class TwitchHelixOauthToken
     {
-        public const string TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE = "https://id.twitch.tv/oauth2/token?client_id={0}&" +
-                      "client_secret={1}&grant_type=client_credentials";
+        public const string TWITCH_HELIX_OAUTH_TOKEN_URL_TEMPLATE =
+            "https://id.twitch.tv/oauth2/token?client_id={0}&client_secret={1}&grant_type=client_credentials";
         public const string TWITCH_CLIENT_SECRET = "srr2yi260t15ir6w0wq5blir22i9pq";
 
         public string AccessToken { get; private set; }
