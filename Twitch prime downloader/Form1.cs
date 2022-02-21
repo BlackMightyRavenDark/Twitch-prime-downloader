@@ -350,7 +350,7 @@ namespace Twitch_prime_downloader
                         framesStream[i].imageStream.Image = bmp;
                     }
 
-                    downloader.Url = vod.GameInfo.ImagePreviewSmallUrl;
+                    downloader.Url = vod.GameInfo.ImagePreviewTemplateUrl.Replace("{width}", "52").Replace("{height}", "72");
                     if (downloader.Download(vod.GameInfo.ImageData) == 200)
                     {
                         framesStream[i].imageGame.Image = Image.FromStream(vod.GameInfo.ImageData);
