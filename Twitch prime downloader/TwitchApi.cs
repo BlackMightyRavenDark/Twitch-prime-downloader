@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.Utils;
@@ -27,6 +28,8 @@ namespace Twitch_prime_downloader
 
         public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/index-dvr.m3u8";
         public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/highlight-<video_id>.m3u8";
+
+        private static Dictionary<string, bool> _primeChannels = new Dictionary<string, bool>();
 
         public TwitchHelixOauthToken HelixOauthToken { get; private set; } = new TwitchHelixOauthToken();
 
@@ -275,25 +278,31 @@ namespace Twitch_prime_downloader
             vod.Type = vodInfo.Value<string>("type");
             string t = vodInfo.Value<string>("created_at");
             vod.DateCreation = TwitchTimeToDateTime(t, true);
-            GetUserInfo_Helix(vod.UserInfo.Login, vod.UserInfo, out _);
-            VideoMetadataResult videoMetadata = GetVodMetadata(vod.VideoId, vod.UserInfo.Login);
-            if (videoMetadata.ErrorCode == 200)
+            if (IsChannelPrime(vod.UserInfo.Login, out bool prime) == 200)
             {
-                JObject jVideo = videoMetadata.Data[0].Value<JObject>("data").Value<JObject>("video");
-                int seconds = jVideo.Value<int>("lengthSeconds");
-                vod.Length = TimeSpan.FromSeconds(seconds);
-                TimeSpan vodLifeTime = TimeSpan.FromDays(vod.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60.0 : 14.0);
-                vod.DateDeletion = new DateTime(vod.DateCreation.Ticks + vodLifeTime.Ticks);
+                vod.IsPrime = prime;
+            }    
+            if (GetUserInfo_Helix(vod.UserInfo.Login, vod.UserInfo, out _) == 200)
+            {
+                VideoMetadataResult videoMetadata = GetVodMetadata(vod.VideoId, vod.UserInfo.Login);
+                if (videoMetadata.ErrorCode == 200)
+                {
+                    JObject jVideo = videoMetadata.Data[0].Value<JObject>("data").Value<JObject>("video");
+                    int seconds = jVideo.Value<int>("lengthSeconds");
+                    vod.Length = TimeSpan.FromSeconds(seconds);
+                    TimeSpan vodLifeTime = TimeSpan.FromDays(vod.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60.0 : 14.0);
+                    vod.DateDeletion = new DateTime(vod.DateCreation.Ticks + vodLifeTime.Ticks);
 
-                TwitchGameInfoResult gameInfo = GetVodGameInfo_GQL(vod.VideoId, vod.VideoId);
-                if (gameInfo.ErrorCode == 200)
-                {
-                    vod.GameInfo.Title = gameInfo.GameInfo.Title;
-                    vod.GameInfo.ImagePreviewTemplateUrl = gameInfo.GameInfo.ImagePreviewTemplateUrl;
-                }
-                else
-                {
-                    vod.GameInfo.ImagePreviewTemplateUrl = UNKNOWN_GAME_URL;
+                    TwitchGameInfoResult gameInfo = GetVodGameInfo_GQL(vod.VideoId, vod.VideoId);
+                    if (gameInfo.ErrorCode == 200)
+                    {
+                        vod.GameInfo.Title = gameInfo.GameInfo.Title;
+                        vod.GameInfo.ImagePreviewTemplateUrl = gameInfo.GameInfo.ImagePreviewTemplateUrl;
+                    }
+                    else
+                    {
+                        vod.GameInfo.ImagePreviewTemplateUrl = UNKNOWN_GAME_URL;
+                    }
                 }
             }
 
@@ -352,6 +361,13 @@ namespace Twitch_prime_downloader
             {
                 return 400;
             }
+
+            if (_primeChannels.ContainsKey(channelName))
+            {
+                result = _primeChannels[channelName];
+                return 200;
+            }
+
             string body = GenerateChannelTokenRequestBody(channelName.ToLower());
             int errorCode = HttpsPost(TWITCH_GQL_API_URL, body, out string token);
             if (errorCode == 200)
@@ -361,6 +377,7 @@ namespace Twitch_prime_downloader
                 JObject j = JObject.Parse(t);
                 JToken jt = j.Value<JObject>("chansub").Value<JToken>("restricted_bitrates");
                 result = jt != null && (jt as JArray).Count > 0;
+                _primeChannels[channelName] = result;
             }
             return errorCode;
         }
