@@ -96,6 +96,31 @@ namespace Twitch_prime_downloader
         /// <summary>
         /// WARNING!!! Do not use this body if you are signed in!!!
         /// </summary>
+        public static JArray GenerateVodMutedSegmentsInfoRequestBody(string vodId)
+        {
+            const string hashValue = "c36e7400657815f4704e6063d265dff766ed8fc1590361c6d71e4368805e0b49";
+            JObject jPersistedQuery = new JObject();
+            jPersistedQuery["version"] = 1;
+            jPersistedQuery["sha256Hash"] = hashValue;
+
+            JObject jExtensions = new JObject();
+            jExtensions.Add(new JProperty("persistedQuery", jPersistedQuery));
+
+            JObject jVariables = new JObject();
+            jVariables["vodID"] = vodId;
+            
+            JObject json = new JObject();
+            json["operationName"] = "VideoPlayer_MutedSegmentsAlertOverlay";
+            json.Add(new JProperty("variables", jVariables));
+            json.Add(new JProperty("extensions", jExtensions));
+
+
+            return new JArray() { json };
+        }
+
+        /// <summary>
+        /// WARNING!!! Do not use this body if you are signed in!!!
+        /// </summary>
         public static JArray GenerateVodInfoRequestBody(string vodId, string channelLogin)
         {
             const string hashValue = "cb3b1eb2f2d2b2f65b8389ba446ec521d76c3aa44f5424a1b1d235fe21eb4806";
@@ -306,9 +331,63 @@ namespace Twitch_prime_downloader
                 }
             }
 
+            if (GetVodMutedSegments(vod.VideoId, out JArray segments) == 200)
+            {
+                ParseMutedSegments(segments, vod.MutedChunks);
+            }
+
             return vod;
         }
 
+        /// <summary>
+        /// WARNING!!! Do not use this method if you are signed in!!!
+        /// </summary>
+        public int GetVodMutedSegments(string vodId, out JArray segments)
+        {
+            //Official Helix API does not working properly. So, we need to use the GQL API.
+            JArray body = GenerateVodMutedSegmentsInfoRequestBody(vodId);
+            int errorCode = HttpsPost(TWITCH_GQL_API_URL, body.ToString(), out string response);
+            if (errorCode == 200)
+            {
+                try
+                {
+                    JArray jArray = JArray.Parse(response);
+                    JObject jVideo = jArray.Value<JObject>(0).Value<JObject>("data").Value<JObject>("video");
+                    JObject jMutedSegmentConnection = jVideo.Value<JObject>("muteInfo").Value<JObject>("mutedSegmentConnection");
+                    segments = jMutedSegmentConnection != null ? jMutedSegmentConnection.Value<JArray>("nodes") : null;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+                    segments = null;
+                    return 404;
+                }
+            }
+            else
+            {
+                segments = null;
+            }
+            return errorCode;
+        }
+
+        public static void ParseMutedSegments(JArray jArray, TwitchVodMutedChunks mutedChunks)
+        {
+            mutedChunks.Clear();
+            if (jArray != null && jArray.Count > 0)
+            {
+                for (int i = 0; i < jArray.Count; i++)
+                {
+                    int offset = jArray[i].Value<int>("offset");
+                    int dur = jArray[i].Value<int>("duration");
+                    mutedChunks.segments.Add(new TwitchVodMutedSegment(offset, dur));
+                    mutedChunks.totalLength = new DateTime(mutedChunks.totalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
+                    DateTime start = DateTime.MinValue + TimeSpan.FromSeconds(offset);
+                    DateTime end = DateTime.MinValue + TimeSpan.FromSeconds(offset + dur);
+                    mutedChunks.segmentList.Add($"{start:HH:mm:ss} - {end:HH:mm:ss}");
+                }
+            }
+        }
+        
         /// <summary>
         /// WARNING!!! Do not use this method if you are signed in!!!
         /// </summary>
