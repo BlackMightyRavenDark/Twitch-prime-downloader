@@ -331,9 +331,10 @@ namespace Twitch_prime_downloader
                 }
             }
 
-            if (GetVodMutedSegments(vod.VideoId, out JArray segments) == 200)
+            TwitchVodMutedSegmentsResult mutedSegmentsResult = GetVodMutedSegments(vod.VideoId);
+            if (mutedSegmentsResult.ErrorCode == 200)
             {
-                ParseMutedSegments(segments, vod.MutedChunks);
+                ParseMutedSegments(mutedSegmentsResult.MutedSegments, vod.MutedSegments);
             }
 
             return vod;
@@ -342,7 +343,7 @@ namespace Twitch_prime_downloader
         /// <summary>
         /// WARNING!!! Do not use this method if you are signed in!!!
         /// </summary>
-        public int GetVodMutedSegments(string vodId, out JArray segments)
+        public TwitchVodMutedSegmentsResult GetVodMutedSegments(string vodId)
         {
             //Official Helix API does not working properly. So, we need to use the GQL API.
             JArray body = GenerateVodMutedSegmentsInfoRequestBody(vodId);
@@ -354,23 +355,23 @@ namespace Twitch_prime_downloader
                     JArray jArray = JArray.Parse(response);
                     JObject jVideo = jArray.Value<JObject>(0).Value<JObject>("data").Value<JObject>("video");
                     JObject jMutedSegmentConnection = jVideo.Value<JObject>("muteInfo").Value<JObject>("mutedSegmentConnection");
-                    segments = jMutedSegmentConnection != null ? jMutedSegmentConnection.Value<JArray>("nodes") : null;
+                    JArray segments = jMutedSegmentConnection != null ? jMutedSegmentConnection.Value<JArray>("nodes") : null;
+                    if (segments == null)
+                    {
+                        errorCode = 404;
+                    }
+                    return new TwitchVodMutedSegmentsResult(segments, errorCode);
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-                    segments = null;
-                    return 404;
+                    return new TwitchVodMutedSegmentsResult(null, 404);
                 }
             }
-            else
-            {
-                segments = null;
-            }
-            return errorCode;
+            return new TwitchVodMutedSegmentsResult(null, errorCode);
         }
 
-        public static void ParseMutedSegments(JArray jArray, TwitchVodMutedChunks mutedChunks)
+        public static void ParseMutedSegments(JArray jArray, TwitchVodMutedSegments mutedChunks)
         {
             mutedChunks.Clear();
             if (jArray != null && jArray.Count > 0)
@@ -379,11 +380,11 @@ namespace Twitch_prime_downloader
                 {
                     int offset = jArray[i].Value<int>("offset");
                     int dur = jArray[i].Value<int>("duration");
-                    mutedChunks.segments.Add(new TwitchVodMutedSegment(offset, dur));
-                    mutedChunks.totalLength = new DateTime(mutedChunks.totalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
+                    mutedChunks.Segments.Add(new TwitchVodMutedSegment(offset, dur));
+                    mutedChunks.TotalLength = new TimeSpan(mutedChunks.TotalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
                     DateTime start = DateTime.MinValue + TimeSpan.FromSeconds(offset);
                     DateTime end = DateTime.MinValue + TimeSpan.FromSeconds(offset + dur);
-                    mutedChunks.segmentList.Add($"{start:HH:mm:ss} - {end:HH:mm:ss}");
+                    mutedChunks.SegmentList.Add($"{start:HH:mm:ss} - {end:HH:mm:ss}");
                 }
             }
         }
@@ -476,15 +477,112 @@ namespace Twitch_prime_downloader
             recvText = null;
             return errorCode;
         }
+    }
 
-        public int HttpsGet_Kraken(string url, out string recvText)
+
+    public sealed class TwitchVodMutedSegment
+    {
+        public int Offset { get; private set; }
+        public int Duration { get; private set; }
+
+        public TwitchVodMutedSegment(int offset, int duration)
         {
-            FileDownloader d = new FileDownloader();
-            d.Url = url;
-            d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
-            d.Accept = TWITCH_ACCEPT_V5_STRING;
-            int errorCode = d.DownloadString(out recvText);
-            return errorCode;
+            Offset = offset;
+            Duration = duration;
+        }
+    }
+
+    public sealed class TwitchVodMutedSegments
+    {
+        public List<TwitchVodMutedSegment> Segments { get; private set; } = new List<TwitchVodMutedSegment>();
+        public List<string> SegmentList { get; private set; } = new List<string>();
+        public TimeSpan TotalLength { get; set; } = new TimeSpan(0L);
+
+        public void Clear()
+        {
+            Segments.Clear();
+            SegmentList.Clear();
+            TotalLength = new TimeSpan(0L);
+        }
+    }
+
+    public sealed class TwitchVodMutedSegmentsResult
+    {
+        public JArray MutedSegments { get; private set; }
+        public int ErrorCode { get; private set; }
+
+        public TwitchVodMutedSegmentsResult(JArray mutedSegments, int errorCode)
+        {
+            MutedSegments = mutedSegments;
+            ErrorCode = errorCode;
+        }
+    }
+
+    public enum TwitchVodChunkState { NotMuted, Muted, Unmuted };
+
+    public sealed class TwitchVodChunk
+    {
+        public string FileName { get; private set; }
+
+        public TwitchVodChunk(string fileName)
+        {
+            FileName = fileName;
+        }
+
+        public string GetName()
+        {
+            return FileName.Substring(0, FileName.IndexOf(
+                GetState() == TwitchVodChunkState.NotMuted ? ".ts" : "-"));
+        }
+
+        public TwitchVodChunkState GetState()
+        {
+            if (FileName.EndsWith("-muted.ts"))
+            {
+                return TwitchVodChunkState.Muted;
+            }
+            else if (FileName.EndsWith("-unmuted.ts"))
+            {
+                return TwitchVodChunkState.Unmuted;
+            }
+            return TwitchVodChunkState.NotMuted;
+        }
+
+        public void SetState(TwitchVodChunkState state)
+        {
+            switch (state)
+            {
+                case TwitchVodChunkState.Muted:
+                    FileName = GetName() + "-muted.ts";
+                    break;
+
+                case TwitchVodChunkState.Unmuted:
+                    FileName = GetName() + "-unmuted.ts";
+                    break;
+
+                case TwitchVodChunkState.NotMuted:
+                    FileName = GetName() + ".ts";
+                    break;
+            }
+        }
+
+        public TwitchVodChunkState NextState()
+        {
+            switch (GetState())
+            {
+                case TwitchVodChunkState.Muted:
+                    SetState(TwitchVodChunkState.NotMuted);
+                    return TwitchVodChunkState.NotMuted;
+
+                case TwitchVodChunkState.NotMuted:
+                    SetState(TwitchVodChunkState.Unmuted);
+                    return TwitchVodChunkState.Unmuted;
+
+                case TwitchVodChunkState.Unmuted:
+                    SetState(TwitchVodChunkState.Muted);
+                    return TwitchVodChunkState.Muted;
+            }
+            return TwitchVodChunkState.NotMuted;
         }
     }
 
@@ -534,7 +632,7 @@ namespace Twitch_prime_downloader
         public TimeSpan Length { get; set; }
         public int ViewCount { get; set; }
         public string Type { get; set; }
-        public TwitchVodMutedChunks MutedChunks { get; private set; } = new TwitchVodMutedChunks();
+        public TwitchVodMutedSegments MutedSegments { get; private set; } = new TwitchVodMutedSegments();
         public DateTime DateCreation { get; set; }
         public DateTime DateDeletion { get; set; }
         public string ImagePreviewTemplateUrl { get; set; }

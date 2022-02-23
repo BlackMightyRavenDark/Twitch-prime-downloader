@@ -50,9 +50,9 @@ namespace Twitch_prime_downloader
             lblChannelName.Text = StreamInfo.UserInfo.DisplayName;
             lblGameName.Text = StreamInfo.GameInfo.Title;
             lblBroadcastType.Text = StreamInfo.Type;
-            if (StreamInfo.MutedChunks.segments.Count > 0)
+            if (StreamInfo.MutedSegments.Segments.Count > 0)
             {
-                lblMutedChunks.Text = $"Muted segments: {StreamInfo.MutedChunks.segments.Count}";
+                lblMutedChunks.Text = $"Muted segments: {StreamInfo.MutedSegments.Segments.Count}";
                 lblMutedChunks.Left = Width - lblMutedChunks.Width;
                 lblMutedChunks.Visible = true;
             }
@@ -186,13 +186,13 @@ namespace Twitch_prime_downloader
         private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
         {
             string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}";
-            for (int i = 0; i < StreamInfo.MutedChunks.segmentList.Count; i++)
+            for (int i = 0; i < StreamInfo.MutedSegments.SegmentList.Count; i++)
             {
-                t += StreamInfo.MutedChunks.segmentList[i] + Environment.NewLine;
+                t += StreamInfo.MutedSegments.SegmentList[i] + Environment.NewLine;
             }
 
-            double percent = 100.0 / StreamInfo.Length.Ticks * StreamInfo.MutedChunks.totalLength.Ticks;
-            t += $"\nВсего выпилено: {StreamInfo.MutedChunks.totalLength:HH:mm:ss} ({string.Format("{0:F2}", percent)}%)";
+            double percent = 100.0 / StreamInfo.Length.Ticks * StreamInfo.MutedSegments.TotalLength.Ticks;
+            t += $"\nВсего выпилено: {StreamInfo.MutedSegments.TotalLength:h':'mm':'ss} ({string.Format("{0:F2}", percent)}%)";
             if (MessageBox.Show($"{t}\n\nСкопировать это прямо в буфер?", "Определятор выпиленного звука",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
