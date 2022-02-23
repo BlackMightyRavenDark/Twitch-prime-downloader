@@ -133,24 +133,6 @@ namespace Twitch_prime_downloader
             return res;
         }
 
-        public static void ParseMutedSegments(JArray jArray, TwitchVodMutedChunks mutedChunks)
-        {
-            mutedChunks.Clear();
-            if (jArray != null && jArray.Count > 0)
-            {
-                for (int i = 0; i < jArray.Count; i++)
-                {
-                    int offset = jArray[i].Value<int>("offset");
-                    int dur = jArray[i].Value<int>("duration");
-                    mutedChunks.segments.Add(new TwitchVodMutedSegment(offset, dur));
-                    mutedChunks.totalLength = new DateTime(mutedChunks.totalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
-                    DateTime start = DateTime.MinValue + TimeSpan.FromSeconds(offset);
-                    DateTime end = DateTime.MinValue + TimeSpan.FromSeconds(offset + dur);
-                    mutedChunks.segmentList.Add($"{start:HH:mm:ss} - {end:HH:mm:ss}");
-                }
-            }
-        }
-        
         public static string ExtractVodIdFromUrl(string url)
         {
             try
@@ -442,14 +424,12 @@ namespace Twitch_prime_downloader
 
     public sealed class TwitchVodMutedChunks
     {
-        public List<int> chunkIds = new List<int>();
         public List<TwitchVodMutedSegment> segments = new List<TwitchVodMutedSegment>();
         public List<string> segmentList = new List<string>();
         public DateTime totalLength = DateTime.MinValue;
 
         public void Clear()
         {
-            chunkIds.Clear();
             segments.Clear();
             segmentList.Clear();
             totalLength = DateTime.MinValue;
