@@ -76,6 +76,7 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.chkUseLocalTime = new System.Windows.Forms.CheckBox();
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -136,6 +137,7 @@ namespace Twitch_prime_downloader
             // tabPageSettings
             // 
             this.tabPageSettings.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPageSettings.Controls.Add(this.chkUseLocalTime);
             this.tabPageSettings.Controls.Add(this.btnRestoreDefaultFilenameFormat);
             this.tabPageSettings.Controls.Add(this.textBox_FileNameFormat);
             this.tabPageSettings.Controls.Add(this.label2);
@@ -570,6 +572,17 @@ namespace Twitch_prime_downloader
             this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
             this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
             // 
+            // chkUseLocalTime
+            // 
+            this.chkUseLocalTime.AutoSize = true;
+            this.chkUseLocalTime.Location = new System.Drawing.Point(10, 165);
+            this.chkUseLocalTime.Name = "chkUseLocalTime";
+            this.chkUseLocalTime.Size = new System.Drawing.Size(191, 17);
+            this.chkUseLocalTime.TabIndex = 16;
+            this.chkUseLocalTime.Text = "Использовать локальное время";
+            this.chkUseLocalTime.UseVisualStyleBackColor = true;
+            this.chkUseLocalTime.CheckedChanged += new System.EventHandler(this.chkUseLocalTime_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -649,5 +662,6 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.Button btnSearchByUrls;
         private System.Windows.Forms.TextBox textBoxUrls;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.CheckBox chkUseLocalTime;
     }
 }

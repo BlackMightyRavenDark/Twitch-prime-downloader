@@ -11,8 +11,10 @@ namespace Twitch_prime_downloader
         public TwitchVod StreamInfo { get; private set; }
         private int _hudInfoFontSize = 10;
         private bool _showStreamInfoHud = true;
+        private bool _useLocalTime;
         public int HudInfoFontSize { get { return _hudInfoFontSize; } set { SetInfoGuiFontSize(value); } }
         public bool ShowStreaInfoHud { get { return _showStreamInfoHud; } set { SetShowInfoHud(value); } }
+        public bool UseLocalTime { get { return _useLocalTime; } set { SetUseLocalTime(value); } }
 
         public static readonly Color colorActive = IntToColor(0x909090);
         public static readonly Color colorInactive = IntToColor(0x303030);
@@ -27,6 +29,8 @@ namespace Twitch_prime_downloader
         public FrameStream()
         {
             InitializeComponent();
+
+            _useLocalTime = config.showLocalVodTime;
 
             try
             {
@@ -164,6 +168,18 @@ namespace Twitch_prime_downloader
             if (_showStreamInfoHud != flag)
             {
                 _showStreamInfoHud = flag;
+                imageStream.Refresh();
+            }
+        }
+
+        private void SetUseLocalTime(bool flag)
+        {
+            if (_useLocalTime != flag)
+            {
+                _useLocalTime = flag;
+                StreamInfo.DateCreation = TwitchTimeToDateTime(StreamInfo.DateCreationString, flag);
+                TimeSpan vodLifeTime = TimeSpan.FromDays(StreamInfo.UserInfo.BroadcasterType == TwitchBroadcasterType.Partner ? 60 : 14);
+                StreamInfo.DateDeletion = new DateTime((TimeSpan.FromTicks(StreamInfo.DateCreation.Ticks) + vodLifeTime).Ticks);
                 imageStream.Refresh();
             }
         }

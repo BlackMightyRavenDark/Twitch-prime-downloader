@@ -337,6 +337,7 @@ namespace Twitch_prime_downloader
         public string browserExe;
         public string urlsFileName;
         public int streamInfoGUIFontSize;
+        public bool showLocalVodTime;
         public bool debugMode;
 
         public MainConfiguration()
@@ -354,6 +355,7 @@ namespace Twitch_prime_downloader
             lastUsedPath = selfPath;
             urlsFileName = selfPath + "tpd_urls.txt";
             browserExe = "firefox.exe";
+            showLocalVodTime = false;
         }
 
         public void Load()
@@ -391,6 +393,9 @@ namespace Twitch_prime_downloader
                 {
                     browserExe = jt.Value<string>();
                 }
+
+                jt = json.Value<JToken>("showLocalVodTime");
+                showLocalVodTime = jt != null ? jt.Value<bool>() : false;
             }
         }
 
@@ -402,6 +407,7 @@ namespace Twitch_prime_downloader
             json["fileNameFormat"] = fileNameFormat;
             json["lastUsedPath"] = lastUsedPath;
             json["browserExe"] = browserExe;
+            json["showLocalVodTime"] = showLocalVodTime;
             if (File.Exists(fileName))
             {
                 File.Delete(fileName);

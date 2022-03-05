@@ -26,6 +26,7 @@ namespace Twitch_prime_downloader
             ServicePointManager.DefaultConnectionLimit = 1000;
 
             config.Load();
+            chkUseLocalTime.Checked = config.showLocalVodTime;
 
             if (File.Exists(config.channelsListFileName))
             {
@@ -695,6 +696,15 @@ namespace Twitch_prime_downloader
             else if (e.TabPage == tabPageDownloading)
             {
                 StackFramesDownloading();
+            }
+        }
+
+        private void chkUseLocalTime_CheckedChanged(object sender, EventArgs e)
+        {
+            config.showLocalVodTime = chkUseLocalTime.Checked;
+            foreach (FrameStream frameStream in framesStream)
+            {
+                frameStream.UseLocalTime = config.showLocalVodTime;
             }
         }
     }
