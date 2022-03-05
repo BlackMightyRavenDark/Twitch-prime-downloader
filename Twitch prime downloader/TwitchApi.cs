@@ -301,8 +301,8 @@ namespace Twitch_prime_downloader
             vod.StreamId = ExtractStreamIDFromImageURL(vod.ImagePreviewTemplateUrl);
             vod.ViewCount = vodInfo.Value<int>("view_count");
             vod.Type = vodInfo.Value<string>("type");
-            string t = vodInfo.Value<string>("created_at");
-            vod.DateCreation = TwitchTimeToDateTime(t, true);
+            vod.DateCreationString = vodInfo.Value<string>("created_at");
+            vod.DateCreation = TwitchTimeToDateTime(vod.DateCreationString, config.showLocalVodTime);
             if (IsChannelPrime(vod.UserInfo.Login, out bool prime) == 200)
             {
                 vod.IsPrime = prime;
@@ -633,6 +633,7 @@ namespace Twitch_prime_downloader
         public int ViewCount { get; set; }
         public string Type { get; set; }
         public TwitchVodMutedSegments MutedSegments { get; private set; } = new TwitchVodMutedSegments();
+        public string DateCreationString { get; set; }
         public DateTime DateCreation { get; set; }
         public DateTime DateDeletion { get; set; }
         public string ImagePreviewTemplateUrl { get; set; }
