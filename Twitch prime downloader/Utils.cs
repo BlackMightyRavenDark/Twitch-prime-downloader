@@ -286,8 +286,12 @@ namespace Twitch_prime_downloader
             return bmp;
         }
 
-        public static void SetClipboardText(string text)
+        public static bool SetClipboardText(string text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return false;
+            }
             bool suc;
             do
             {
@@ -300,7 +304,8 @@ namespace Twitch_prime_downloader
                 {
                     suc = false;
                 }
-            } while (!suc); 
+            } while (!suc);
+            return true;
         }
 
         public static string LeadZero(int n)
