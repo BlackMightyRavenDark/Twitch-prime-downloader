@@ -367,7 +367,8 @@ namespace Twitch_prime_downloader
             TwitchVod vod = activeFrameStream.StreamInfo;
             if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
-                SetClipboardText(vod.ImagePreviewTemplateUrl);
+                string url = vod.ImagePreviewTemplateUrl.Replace("%{width}", "1920").Replace("%{height}", "1080");
+                SetClipboardText(url);
             }
         }
 
