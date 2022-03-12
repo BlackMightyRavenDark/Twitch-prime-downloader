@@ -638,7 +638,6 @@ namespace Twitch_prime_downloader
         public DateTime DateCreation { get; set; }
         public DateTime DateDeletion { get; set; }
         public string ImagePreviewTemplateUrl { get; set; }
-        public string ImageAnimatedPreviewUrl { get; set; }
         public Stream ImageData { get; set; } = new MemoryStream();
         public bool IsPrime { get; set; }
         public TwitchUserInfo UserInfo { get; private set; } = new TwitchUserInfo();

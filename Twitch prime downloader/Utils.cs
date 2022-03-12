@@ -14,7 +14,6 @@ namespace Twitch_prime_downloader
     {
         public static List<FrameStream> framesStream = new List<FrameStream>();
         public static List<FrameDownloading> framesDownloading = new List<FrameDownloading>();
-        public static List<string> twitchArchiveUrls = new List<string>();
 
         public static readonly MainConfiguration config = new MainConfiguration();
 
