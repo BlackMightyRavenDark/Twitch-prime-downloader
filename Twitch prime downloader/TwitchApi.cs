@@ -29,6 +29,8 @@ namespace Twitch_prime_downloader
         public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/index-dvr.m3u8";
         public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/highlight-<video_id>.m3u8";
 
+        public static readonly string[] TwitchFileServerIds = new string[] { "dgeft87wbj63p", "d2nvs31859zcd8" };
+
         private static Dictionary<string, bool> _primeChannels = new Dictionary<string, bool>();
 
         public TwitchHelixOauthToken HelixOauthToken { get; private set; } = new TwitchHelixOauthToken();
@@ -403,29 +405,27 @@ namespace Twitch_prime_downloader
 
         public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
         {
+            playlistUrl = null;
             if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
-                int n = vod.ImagePreviewTemplateUrl.IndexOf("_vods/");
-                if (n > 0)
+                int errorCode = 404;
+                for (int i = 0; i < TwitchFileServerIds.Length && errorCode != 200; i++)
                 {
-                    string t = vod.ImagePreviewTemplateUrl.Substring(n + 6);
-                    string serverId = t.Substring(0, t.IndexOf("/"));
-                    if (vod.Type == "highlight")
+                    if (vod.IsHighlight())
                     {
-                        playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server_id>", serverId)
+                        playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server_id>", TwitchFileServerIds[i])
                             .Replace("<stream_id>", vod.StreamId).Replace("<video_id>", vod.VideoId);
                     }
                     else
                     {
-                        playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server_id>", serverId)
+                        playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server_id>", TwitchFileServerIds[i])
                             .Replace("<stream_id>", vod.StreamId);
                     }
-                    int errorCode = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
-                    return errorCode;
+                    errorCode = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
                 }
+                return errorCode;
             }
 
-            playlistUrl = null;
             return 400;
         }
 
