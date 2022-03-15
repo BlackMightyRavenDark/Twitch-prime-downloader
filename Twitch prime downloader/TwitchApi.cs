@@ -29,7 +29,7 @@ namespace Twitch_prime_downloader
         public const string TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/index-dvr.m3u8";
         public const string TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE = "https://<server_id>.cloudfront.net/<stream_id>/chunked/highlight-<video_id>.m3u8";
 
-        public static readonly string[] TwitchFileServerIds = new string[] { "dgeft87wbj63p", "d2nvs31859zcd8" };
+        public static readonly string[] TwitchFileServerIds = new string[] { "dgeft87wbj63p", "d2nvs31859zcd8", "d1m7jfoe9zdc1j" };
 
         private static Dictionary<string, bool> _primeChannels = new Dictionary<string, bool>();
 
