@@ -304,7 +304,7 @@ namespace Twitch_prime_downloader
             vod.ViewCount = vodInfo.Value<int>("view_count");
             vod.Type = vodInfo.Value<string>("type");
             vod.DateCreationString = vodInfo.Value<string>("created_at");
-            vod.DateCreation = TwitchTimeToDateTime(vod.DateCreationString, config.showLocalVodTime);
+            vod.DateCreation = TwitchTimeToDateTime(vod.DateCreationString, config.UseLocalVodDate);
             vod.InfoStringJson = vodInfo.ToString();
             if (IsChannelPrime(vod.UserInfo.Login, out bool prime) == 200)
             {

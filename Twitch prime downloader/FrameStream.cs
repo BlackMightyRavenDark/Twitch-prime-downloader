@@ -30,7 +30,7 @@ namespace Twitch_prime_downloader
         {
             InitializeComponent();
 
-            _useLocalTime = config.showLocalVodTime;
+            _useLocalTime = config.UseLocalVodDate;
 
             try
             {
