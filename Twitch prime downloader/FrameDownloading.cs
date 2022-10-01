@@ -344,8 +344,8 @@ namespace Twitch_prime_downloader
         {
             StreamInfo = vod;
             lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
-            OutputFilenameOrig = config.downloadingPath +
-                FixFileName(FormatFileName(config.fileNameFormat, StreamInfo)) +
+            OutputFilenameOrig = config.DownloadingDirPath +
+                FixFileName(FormatFileName(config.FileNameFormat, StreamInfo)) +
                 (vod.IsHighlight() ? " [highlight].ts" : ".ts");
             lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
             if (vod.ImageData != null)
@@ -498,7 +498,7 @@ namespace Twitch_prime_downloader
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
             DownloadingMode = DownloadingMode.WholeFile;
-            string fn = config.downloadingPath + FixFileName(FormatFileName(config.fileNameFormat, StreamInfo)) + ".ts";
+            string fn = config.DownloadingDirPath + FixFileName(FormatFileName(config.FileNameFormat, StreamInfo)) + ".ts";
             OutputFilenameOrig = fn;
             lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
         }
@@ -506,7 +506,7 @@ namespace Twitch_prime_downloader
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
             DownloadingMode = DownloadingMode.Chunked;
-            OutputFilenameOrig = $"{config.downloadingPath}{FixFileName(FormatFileName(config.fileNameFormat, StreamInfo))}\\";
+            OutputFilenameOrig = $"{config.DownloadingDirPath}{FixFileName(FormatFileName(config.FileNameFormat, StreamInfo))}\\";
             lblOutputFilename.Text = $"Папка для скачивания: {OutputFilenameOrig}";
         }
 

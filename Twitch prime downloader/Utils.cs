@@ -335,92 +335,92 @@ namespace Twitch_prime_downloader
 
     public sealed class MainConfiguration
     {
-        public string selfPath;
-        public string fileName;
-        public string downloadingPath;
-        public string fileNameFormat;
-        public string tempPath;
-        public string lastUsedPath;
-        public string channelsListFileName;
-        public string browserExe;
-        public string urlsFileName;
-        public int streamInfoGUIFontSize;
-        public bool showLocalVodTime;
-        public bool debugMode;
+        public string SelfDirPath { get; set; }
+        public string FileName { get; set; }
+        public string DownloadingDirPath { get; set; }
+        public string FileNameFormat { get; set; }
+        public string TempDirPath { get; set; }
+        public string LastUsedDirPath { get; set; }
+        public string ChannelListFilePath { get; set; }
+        public string BrowserExeFiLePath { get; set; }
+        public string UrlListFilePath { get; set; }
+        public int VodInfoGuiFontSize { get; set; }
+        public bool UseLocalVodDate { get; set; }
+        public bool DebugMode { get; set; }
 
         public MainConfiguration()
         {
-            selfPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
-            fileName = selfPath + "tpd_config.json";
-            debugMode = false;
+            SelfDirPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
+            FileName = SelfDirPath + "tpd_config.json";
+            DebugMode = false;
         }
 
         public void LoadDefaults()
         {
-            channelsListFileName = selfPath + "tpd_channelList.txt";
-            downloadingPath = selfPath;
-            fileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
-            lastUsedPath = selfPath;
-            urlsFileName = selfPath + "tpd_urls.txt";
-            browserExe = "firefox.exe";
-            showLocalVodTime = false;
+            ChannelListFilePath = SelfDirPath + "tpd_channelList.txt";
+            DownloadingDirPath = SelfDirPath;
+            FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+            LastUsedDirPath = SelfDirPath;
+            UrlListFilePath = SelfDirPath + "tpd_urls.txt";
+            BrowserExeFiLePath = "firefox.exe";
+            UseLocalVodDate = false;
         }
 
         public void Load()
         {
             LoadDefaults();
-            if (File.Exists(fileName))
+            if (File.Exists(FileName))
             {
-                JObject json = JObject.Parse(File.ReadAllText(fileName));
+                JObject json = JObject.Parse(File.ReadAllText(FileName));
                 JToken jt = json.Value<JToken>("downloadingPath");
                 if (jt != null)
                 {
-                    downloadingPath = jt.Value<string>();
+                    DownloadingDirPath = jt.Value<string>();
                 }
                 jt = json.Value<JToken>("tempPath");
                 if (jt != null)
                 {
-                    tempPath = jt.Value<string>();
+                    TempDirPath = jt.Value<string>();
                 }
                 jt = json.Value<JToken>("lastUsedPath");
                 if (jt != null)
                 {
-                    lastUsedPath = jt.Value<string>();
+                    LastUsedDirPath = jt.Value<string>();
                 }
                 jt = json.Value<JToken>("fileNameFormat");
                 if (jt != null)
                 {
-                    fileNameFormat = jt.Value<string>();
-                    if (string.IsNullOrEmpty(fileNameFormat))
+                    FileNameFormat = jt.Value<string>();
+                    if (string.IsNullOrEmpty(FileNameFormat))
                     {
-                        fileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+                        FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
                     }
                 }
                 jt = json.Value<JToken>("browserExe");
                 if (jt != null)
                 {
-                    browserExe = jt.Value<string>();
+                    BrowserExeFiLePath = jt.Value<string>();
                 }
 
-                jt = json.Value<JToken>("showLocalVodTime");
-                showLocalVodTime = jt != null ? jt.Value<bool>() : false;
+                jt = json.Value<JToken>("useLocalVodDate");
+                UseLocalVodDate = jt != null ? jt.Value<bool>() : false;
             }
         }
 
         public void Save()
         {
             JObject json = new JObject();
-            json["downloadingPath"] = downloadingPath;
-            json["tempPath"] = tempPath;
-            json["fileNameFormat"] = fileNameFormat;
-            json["lastUsedPath"] = lastUsedPath;
-            json["browserExe"] = browserExe;
-            json["showLocalVodTime"] = showLocalVodTime;
-            if (File.Exists(fileName))
+            json["downloadingPath"] = DownloadingDirPath;
+            json["tempPath"] = TempDirPath;
+            json["fileNameFormat"] = FileNameFormat;
+            json["lastUsedPath"] = LastUsedDirPath;
+            json["browserExe"] = BrowserExeFiLePath;
+            json["useLocalVodDate"] = UseLocalVodDate;
+            if (File.Exists(FileName))
             {
-                File.Delete(fileName);
+                File.Delete(FileName);
             }
-            File.WriteAllText(fileName, json.ToString());
+            File.WriteAllText(FileName, json.ToString());
         }
     }
 

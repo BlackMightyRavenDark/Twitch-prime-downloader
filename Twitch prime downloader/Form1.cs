@@ -26,11 +26,11 @@ namespace Twitch_prime_downloader
             ServicePointManager.DefaultConnectionLimit = 1000;
 
             config.Load();
-            chkUseLocalTime.Checked = config.showLocalVodTime;
+            chkUseLocalTime.Checked = config.UseLocalVodDate;
 
-            if (File.Exists(config.channelsListFileName))
+            if (File.Exists(config.ChannelListFilePath))
             {
-                cboxChannelName.LoadFromFile(config.channelsListFileName);
+                cboxChannelName.LoadFromFile(config.ChannelListFilePath);
 
                 if (cboxChannelName.Items.Count > 0)
                 {
@@ -38,9 +38,9 @@ namespace Twitch_prime_downloader
                 }
             }
 
-            if (File.Exists(config.urlsFileName))
+            if (File.Exists(config.UrlListFilePath))
             {
-                string[] strings = File.ReadAllLines(config.urlsFileName);
+                string[] strings = File.ReadAllLines(config.UrlListFilePath);
                 textBoxUrls.Lines = strings;
             }
 
@@ -48,18 +48,18 @@ namespace Twitch_prime_downloader
             {
                 if (s.ToLower().Equals("/debug"))
                 {
-                    config.debugMode = true;
+                    config.DebugMode = true;
                     break;
                 }
             }
 
-            if (!config.debugMode)
+            if (!config.DebugMode)
             {
                 tabControlMain.TabPages.Remove(tabPageDebug);
             }
-            textBox_DownloadingPath.Text = config.downloadingPath;
-            textBox_FileNameFormat.Text = config.fileNameFormat;
-            textBox_Browser.Text = config.browserExe;
+            textBox_DownloadingPath.Text = config.DownloadingDirPath;
+            textBox_FileNameFormat.Text = config.FileNameFormat;
+            textBox_Browser.Text = config.BrowserExeFiLePath;
 
             tabControlMain.SelectedTab = tabPageSearch;
         }
@@ -73,16 +73,16 @@ namespace Twitch_prime_downloader
                 frd.Dispose();
             }
 
-            cboxChannelName.SaveToFile(config.channelsListFileName);
+            cboxChannelName.SaveToFile(config.ChannelListFilePath);
 
-            if (File.Exists(config.urlsFileName))
+            if (File.Exists(config.UrlListFilePath))
             {
-                File.Delete(config.urlsFileName);
+                File.Delete(config.UrlListFilePath);
             }
             string[] urls = textBoxUrls.Lines;
             if (urls.Length > 0)
             {
-                urls.SaveToFile(config.urlsFileName);
+                urls.SaveToFile(config.UrlListFilePath);
             }
             config.Save();
         }
@@ -224,7 +224,7 @@ namespace Twitch_prime_downloader
             ThreadGetVodPlaylist thrObj = sender as ThreadGetVodPlaylist;
             if (errorCode == 200)
             {
-                if (config.debugMode)
+                if (config.DebugMode)
                 {
                     memoDebug.Text = thrObj.PlaylistString;
                 }
@@ -374,7 +374,7 @@ namespace Twitch_prime_downloader
 
         private void TextBox_DownloadingPath_Leave(object sender, EventArgs e)
         {
-            config.downloadingPath = textBox_DownloadingPath.Text;
+            config.DownloadingDirPath = textBox_DownloadingPath.Text;
         }
 
         private void CopyStreamInfoJsonToolStripMenuItem_Click(object sender, EventArgs e)
@@ -568,7 +568,7 @@ namespace Twitch_prime_downloader
 
         private void OnDownloadButtonClick(object sender)
         {
-            if (string.IsNullOrEmpty(config.downloadingPath))
+            if (string.IsNullOrEmpty(config.DownloadingDirPath))
             {
                 MessageBox.Show("Не указана папка для скачивания!", "Ошибка!",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -590,15 +590,15 @@ namespace Twitch_prime_downloader
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.Description = "Выберите папку для скачивания";
             folderBrowserDialog.SelectedPath =
-                (!string.IsNullOrEmpty(config.downloadingPath) && Directory.Exists(config.downloadingPath)) ?
-                config.downloadingPath : config.selfPath;
+                (!string.IsNullOrEmpty(config.DownloadingDirPath) && Directory.Exists(config.DownloadingDirPath)) ?
+                config.DownloadingDirPath : config.SelfDirPath;
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                config.downloadingPath =
+                config.DownloadingDirPath =
                     folderBrowserDialog.SelectedPath.EndsWith("\\")
                     ? folderBrowserDialog.SelectedPath : folderBrowserDialog.SelectedPath + "\\";
 
-                textBox_DownloadingPath.Text = config.downloadingPath;
+                textBox_DownloadingPath.Text = config.DownloadingDirPath;
             }
         }
 
@@ -612,12 +612,12 @@ namespace Twitch_prime_downloader
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "jpg|*.jpg";
             sfd.DefaultExt = ".jpg";
-            sfd.InitialDirectory = config.lastUsedPath;
-            string fn = FixFileName(FormatFileName(config.fileNameFormat, activeFrameStream.StreamInfo));
+            sfd.InitialDirectory = config.LastUsedDirPath;
+            string fn = FixFileName(FormatFileName(config.FileNameFormat, activeFrameStream.StreamInfo));
             sfd.FileName = fn + "_preview";
             if (sfd.ShowDialog() != DialogResult.Cancel)
             {
-                config.lastUsedPath = sfd.FileName;
+                config.LastUsedDirPath = sfd.FileName;
                 activeFrameStream.StreamInfo.ImageData.SaveToFile(sfd.FileName);
             }
             sfd.Dispose();
@@ -628,11 +628,12 @@ namespace Twitch_prime_downloader
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "Выберите браузер";
             ofd.Filter = "exe|*.exe";
-            string dir = string.IsNullOrEmpty(config.browserExe) ? config.selfPath : Path.GetFullPath(config.browserExe);
+            string dir = string.IsNullOrEmpty(config.BrowserExeFiLePath) ?
+                config.SelfDirPath : Path.GetFullPath(config.BrowserExeFiLePath);
             ofd.InitialDirectory = dir;
             if (ofd.ShowDialog() != DialogResult.Cancel)
             {
-                config.browserExe = ofd.FileName;
+                config.BrowserExeFiLePath = ofd.FileName;
                 textBox_Browser.Text = ofd.FileName;
             }
             ofd.Dispose();
@@ -640,13 +641,13 @@ namespace Twitch_prime_downloader
 
         private void openVideoInBrowserToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(config.browserExe) || string.IsNullOrWhiteSpace(config.browserExe))
+            if (string.IsNullOrEmpty(config.BrowserExeFiLePath) || string.IsNullOrWhiteSpace(config.BrowserExeFiLePath))
             {
                 MessageBox.Show("Браузер не указан!", "Ошибка!",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!File.Exists(config.browserExe))
+            if (!File.Exists(config.BrowserExeFiLePath))
             {
                 MessageBox.Show("Браузер не найден!", "Ошибка!",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -654,15 +655,15 @@ namespace Twitch_prime_downloader
             }
 
             Process process = new Process();
-            process.StartInfo.FileName = Path.GetFileName(config.browserExe);
-            process.StartInfo.WorkingDirectory = Path.GetFullPath(config.browserExe);
+            process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFiLePath);
+            process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFiLePath);
             process.StartInfo.Arguments = activeFrameStream.StreamInfo.VideoUrl;
             process.Start();
         }
 
         private void textBox_FileNameFormat_Leave(object sender, EventArgs e)
         {
-            config.fileNameFormat = (sender as TextBox).Text;
+            config.FileNameFormat = (sender as TextBox).Text;
         }
 
         private void scrollBarDownloads_Scroll(object sender, ScrollEventArgs e)
@@ -685,7 +686,7 @@ namespace Twitch_prime_downloader
         private void btnRestoreDefaultFilenameFormat_Click(object sender, EventArgs e)
         {
             textBox_FileNameFormat.Text = FILENAME_FORMAT_DEFAULT;
-            config.fileNameFormat = FILENAME_FORMAT_DEFAULT;
+            config.FileNameFormat = FILENAME_FORMAT_DEFAULT;
         }
 
         private void tabControlMain_Selected(object sender, TabControlEventArgs e)
@@ -702,10 +703,10 @@ namespace Twitch_prime_downloader
 
         private void chkUseLocalTime_CheckedChanged(object sender, EventArgs e)
         {
-            config.showLocalVodTime = chkUseLocalTime.Checked;
+            config.UseLocalVodDate = chkUseLocalTime.Checked;
             foreach (FrameStream frameStream in framesStream)
             {
-                frameStream.UseLocalTime = config.showLocalVodTime;
+                frameStream.UseLocalTime = config.UseLocalVodDate;
             }
         }
     }
