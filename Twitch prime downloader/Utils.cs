@@ -19,7 +19,8 @@ namespace Twitch_prime_downloader
 
         public static readonly Random random = new Random((int)DateTime.Now.Ticks);
 
-        public const string FILENAME_FORMAT_DEFAULT = "<channel_name> [<year>-<month>-<day>] <video_title>";
+        public const string FILENAME_FORMAT_DEFAULT =
+            "<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second>] <video_title>";
 
         public static int DownloadString(string url, out string resString)
         {
@@ -317,6 +318,9 @@ namespace Twitch_prime_downloader
             return fmt.Replace("<year>", LeadZero(twitchVod.DateCreation.Year))
                 .Replace("<month>", LeadZero(twitchVod.DateCreation.Month))
                 .Replace("<day>", LeadZero(twitchVod.DateCreation.Day))
+                .Replace("<hour>", LeadZero(twitchVod.DateCreation.Hour))
+                .Replace("<minute>", LeadZero(twitchVod.DateCreation.Minute))
+                .Replace("<second>", LeadZero(twitchVod.DateCreation.Second))
                 .Replace("<video_title>", twitchVod.Title)
                 .Replace("<channel_name>", twitchVod.UserInfo.DisplayName);
         }
