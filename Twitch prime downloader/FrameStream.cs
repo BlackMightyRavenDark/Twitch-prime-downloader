@@ -89,7 +89,7 @@ namespace Twitch_prime_downloader
                             size.Width, size.Height);
                         e.Graphics.FillRectangle(Brushes.Black, r);
                         e.Graphics.DrawString(t, fnt, Brushes.White, new Point((int)r.X, (int)r.Y));
-                        if (StreamInfo.DateDeletion > DateTime.MinValue)
+                        if (!StreamInfo.IsHighlight() && StreamInfo.DateDeletion > DateTime.MinValue)
                         {
                             int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
                             t = "Будет удалён: " + StreamInfo.DateDeletion.ToString("yyyy.MM.dd, HH:mm:ss");
