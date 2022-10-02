@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
+using Newtonsoft.Json.Linq;
 
 namespace Twitch_prime_downloader
 {
@@ -202,12 +203,12 @@ namespace Twitch_prime_downloader
                 {
                     case 200:
                         {
+                            ThreadDownload thr = sender as ThreadDownload;
                             if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
                             {
                                 string infoFp;
                                 if (DownloadingMode == DownloadingMode.WholeFile)
                                 {
-                                    ThreadDownload thr = sender as ThreadDownload;
                                     string fn = Path.GetFileNameWithoutExtension(thr.DownloadingFilePath);
                                     infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
                                 }
@@ -216,6 +217,22 @@ namespace Twitch_prime_downloader
                                     infoFp = OutputFilePath + "\\_info.json";
                                 }
                                 File.WriteAllText(infoFp, StreamInfo.InfoStringJson);
+                            }
+                            if (DownloadingMode == DownloadingMode.WholeFile &&
+                                config.SaveChunksInfo && thr.VideoChunks != null)
+                            {
+                                JArray jaChunks = new JArray();
+                                foreach (VideoChunk videoChunk in thr.VideoChunks)
+                                {
+                                    JObject jChunk = new JObject();
+                                    jChunk["position"] = videoChunk.Position;
+                                    jChunk["size"] = videoChunk.Size;
+                                    jChunk["fileName"] = videoChunk.FileName;
+                                    jaChunks.Add(jChunk);
+                                }
+                                string fn = Path.GetFileNameWithoutExtension(thr.DownloadingFilePath);
+                                string chunksFp = Path.Combine(OutputDirPath, $"{fn}_chunks.json");
+                                File.WriteAllText(chunksFp, jaChunks.ToString());
                             }
                             MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -291,7 +308,7 @@ namespace Twitch_prime_downloader
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            threadDownload = new ThreadDownload(OutputFilePath, DownloadingMode);
+            threadDownload = new ThreadDownload(OutputFilePath, DownloadingMode, config.SaveChunksInfo);
             threadDownload.WorkProgress += ThreadDownloading_Progress;
             threadDownload.WorkStarted += ThreadDownloading_WorkStarted;
             threadDownload.WorkFinished += ThreadDownloading_WorkFinished;
