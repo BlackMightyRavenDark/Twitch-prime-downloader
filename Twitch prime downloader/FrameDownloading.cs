@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,8 +13,10 @@ namespace Twitch_prime_downloader
     { 
         private ThreadDownload threadDownload = null;
         public TwitchVod StreamInfo { get; private set; }
-        public string OutputFilenameOrig { get; set; }
-        public string OutputFileName { get; private set; }
+        private string FixedFileName;
+        public string OutputDirPath { get; private set; }
+        public string OutputFilePathOrig { get; private set; }
+        public string OutputFilePath { get; private set; }
         private int _chunkFrom = 0;
         private int _chunkTo = 10;
         private int _currentChunkId = 0;
@@ -37,11 +40,13 @@ namespace Twitch_prime_downloader
         public delegate void ClosedDelegate(object sender);
         public ClosedDelegate Closed;
 
-        public FrameDownloading(string streamRootUrl)
+        public FrameDownloading(TwitchVod streamInfo, string streamRootUrl)
         {
             InitializeComponent();
 
             StreamRootUrl = streamRootUrl;
+            OutputDirPath = config.DownloadingDirPath;
+            SetStreamInfo(streamInfo);
 
             OnFrameCreate();
         }
@@ -54,6 +59,9 @@ namespace Twitch_prime_downloader
             lblProgressCurrentChunk.Text = null;
             lblElapsedTime.Text = null;
             imgScrollBar.Top = Height - imgScrollBar.Height;
+
+            lblOutputFilename.Text = DownloadingMode == DownloadingMode.WholeFile ?
+                $"Имя файла: {OutputFilePathOrig}" : $"Папка для скачивания: {OutputFilePathOrig}";
         }
 
         public void FrameDispose()
@@ -245,8 +253,16 @@ namespace Twitch_prime_downloader
             DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
-            OutputFileName = GetNumberedFileName(OutputFilenameOrig);
-            lblOutputFilename.Text = "Имя файла: " + OutputFileName;
+            if (DownloadingMode == DownloadingMode.WholeFile)
+            {
+                OutputFilePath = GetNumberedFileName(OutputFilePathOrig);
+                lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
+            }
+            else
+            {
+                OutputFilePath = GetNumberedDirectoryName(OutputFilePathOrig);
+                lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePath}";
+            }
             lblProgressOverall.Text = $"Скачано чанков: 0 / {ChunkTo - ChunkFrom + 1} (0.00%), Размер файла: 0 bytes";
             progressBar1.MinValue1 = 0;
             progressBar1.Value1 = 0;
@@ -258,13 +274,7 @@ namespace Twitch_prime_downloader
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            if (DownloadingMode == DownloadingMode.Chunked)
-            {
-                OutputFileName = GetNumberedDirectoryName(OutputFilenameOrig);
-                lblOutputFilename.Text = $"Папка для скачивания: {OutputFileName}";
-            }
-
-            threadDownload = new ThreadDownload(OutputFileName, DownloadingMode);
+            threadDownload = new ThreadDownload(OutputFilePath, DownloadingMode);
             threadDownload.WorkProgress += ThreadDownloading_Progress;
             threadDownload.WorkStarted += ThreadDownloading_WorkStarted;
             threadDownload.WorkFinished += ThreadDownloading_WorkFinished;
@@ -344,10 +354,18 @@ namespace Twitch_prime_downloader
         {
             StreamInfo = vod;
             lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
-            OutputFilenameOrig = config.DownloadingDirPath +
-                FixFileName(FormatFileName(config.FileNameFormat, StreamInfo)) +
-                (vod.IsHighlight() ? " [highlight].ts" : ".ts");
-            lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
+            FixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
+            if (DownloadingMode == DownloadingMode.WholeFile)
+            {
+                OutputFilePathOrig = Path.Combine(OutputDirPath,
+                     StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
+                lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
+            }
+            else
+            {
+                OutputFilePathOrig = Path.Combine(OutputDirPath, FixedFileName);
+                lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
+            }
             if (vod.ImageData != null)
             {
                 pictureBoxStreamImage.Image = Image.FromStream(vod.ImageData);
@@ -498,16 +516,17 @@ namespace Twitch_prime_downloader
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
             DownloadingMode = DownloadingMode.WholeFile;
-            string fn = config.DownloadingDirPath + FixFileName(FormatFileName(config.FileNameFormat, StreamInfo)) + ".ts";
-            OutputFilenameOrig = fn;
-            lblOutputFilename.Text = $"Имя файла: {OutputFilenameOrig}";
+            string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
+            OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
+            lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
         }
 
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
             DownloadingMode = DownloadingMode.Chunked;
-            OutputFilenameOrig = $"{config.DownloadingDirPath}{FixFileName(FormatFileName(config.FileNameFormat, StreamInfo))}\\";
-            lblOutputFilename.Text = $"Папка для скачивания: {OutputFilenameOrig}";
+            string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight]" : FixedFileName;
+            OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
+            lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
         }
 
         private void imgScrollBar_Paint(object sender, PaintEventArgs e)

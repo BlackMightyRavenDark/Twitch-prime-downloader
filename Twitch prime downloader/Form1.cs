@@ -230,12 +230,10 @@ namespace Twitch_prime_downloader
                 }
 
                 string streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
-                FrameDownloading frd = new FrameDownloading(streamRoot);
+                FrameDownloading frd = new FrameDownloading(thrObj.StreamInfo, streamRoot);
                 frd.Parent = panelDownloads;
                 frd.Location = new Point(0, 0);
                 frd.Closed += OnFrameDownload_Closed;
-                frd.SetStreamInfo(thrObj.StreamInfo);
-
                 frd.SetChunks(thrObj.Chunks);
 
                 frd.ChunkFrom = 0;
