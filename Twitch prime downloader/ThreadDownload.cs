@@ -16,7 +16,9 @@ namespace Twitch_prime_downloader
         private int iDownload;
         public string DownloadingFilePath { get; private set; }
         public long DownloadedFileSize { get; private set; } = 0L;
+        public List<VideoChunk> VideoChunks { get; private set; } = null;
         public string _streamRoot;
+        public bool SaveChunksInfo { get; private set; }
         public List<TwitchVodChunk> _chunks;
         public int LastErrorCode { get; private set; }
 
@@ -37,10 +39,12 @@ namespace Twitch_prime_downloader
         public ChunkChangedDelegate ChunkChanged;
         public CompletedDelegate Completed;
 
-        public ThreadDownload(string downloadingFilePath, DownloadingMode downloadingMode)
+        public ThreadDownload(string downloadingFilePath,
+            DownloadingMode downloadingMode, bool saveChunksInfo)
         {
             DownloadingFilePath = downloadingFilePath;
             DownloadingMode = downloadingMode;
+            SaveChunksInfo = saveChunksInfo;
         }
 
         public void Work(object context)
@@ -56,6 +60,11 @@ namespace Twitch_prime_downloader
             };
             fileDownloader.WorkStarted += (s, contentLen) =>
             {
+                if (SaveChunksInfo)
+                {
+                    string chunkFn = _chunks[iDownload].FileName;
+                    VideoChunks.Add(new VideoChunk(DownloadedFileSize, contentLen, chunkFn));
+                }
                 CurrentChunkSize = contentLen;
                 CurrentChunkBytesTransfered = 0L;
                 synchronizationContext?.Send(WorkStart_Context, this);
@@ -79,6 +88,11 @@ namespace Twitch_prime_downloader
             if (DownloadingMode == DownloadingMode.Chunked && !Directory.Exists(DownloadingFilePath))
             {
                 Directory.CreateDirectory(DownloadingFilePath);
+            }
+
+            if (SaveChunksInfo)
+            {
+                VideoChunks = new List<VideoChunk>();
             }
 
             canceled = false;

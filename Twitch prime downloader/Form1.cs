@@ -28,6 +28,7 @@ namespace Twitch_prime_downloader
             config.Load();
             chkUseLocalTime.Checked = config.UseLocalVodDate;
             chkSaveVodInfo.Checked = config.SaveVodInfo;
+            chkSaveChunksInfo.Checked = config.SaveChunksInfo;
 
             if (File.Exists(config.ChannelListFilePath))
             {
@@ -712,6 +713,11 @@ namespace Twitch_prime_downloader
         private void chkSaveVodInfo_CheckedChanged(object sender, EventArgs e)
         {
             config.SaveVodInfo = chkSaveVodInfo.Checked;
+        }
+
+        private void chkSaveChunksInfo_CheckedChanged(object sender, EventArgs e)
+        {
+            config.SaveChunksInfo = chkSaveChunksInfo.Checked;
         }
     }
 }

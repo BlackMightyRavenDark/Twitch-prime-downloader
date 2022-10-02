@@ -333,6 +333,20 @@ namespace Twitch_prime_downloader
         }
     }
 
+    public sealed class VideoChunk
+    {
+        public long Position { get; private set; }
+        public long Size { get; private set; }
+        public string FileName { get; private set; }
+
+        public VideoChunk(long position, long size, string fileName)
+        {
+            Position = position;
+            Size = size;
+            FileName = fileName;
+        }
+    }
+
     public sealed class MainConfiguration
     {
         public string SelfDirPath { get; set; }
@@ -347,6 +361,7 @@ namespace Twitch_prime_downloader
         public int VodInfoGuiFontSize { get; set; }
         public bool UseLocalVodDate { get; set; }
         public bool SaveVodInfo { get; set; }
+        public bool SaveChunksInfo { get; set; }
         public bool DebugMode { get; set; }
 
         public MainConfiguration()
@@ -366,6 +381,7 @@ namespace Twitch_prime_downloader
             BrowserExeFiLePath = "firefox.exe";
             UseLocalVodDate = false;
             SaveVodInfo = true;
+            SaveChunksInfo = false;
         }
 
         public void Load()
@@ -412,6 +428,11 @@ namespace Twitch_prime_downloader
                 {
                     SaveVodInfo = jt.Value<bool>();
                 }
+                jt = json.Value<JToken>("saveChunksInfo");
+                if (jt != null)
+                {
+                    SaveChunksInfo = jt.Value<bool>();
+                }
             }
         }
 
@@ -425,6 +446,7 @@ namespace Twitch_prime_downloader
             json["browserExe"] = BrowserExeFiLePath;
             json["useLocalVodDate"] = UseLocalVodDate;
             json["saveVideoInfo"] = SaveVodInfo;
+            json["saveChunksInfo"] = SaveChunksInfo;
             if (File.Exists(FileName))
             {
                 File.Delete(FileName);

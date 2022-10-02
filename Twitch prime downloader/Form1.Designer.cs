@@ -78,6 +78,7 @@ namespace Twitch_prime_downloader
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.chkSaveVodInfo = new System.Windows.Forms.CheckBox();
+            this.chkSaveChunksInfo = new System.Windows.Forms.CheckBox();
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -138,6 +139,7 @@ namespace Twitch_prime_downloader
             // tabPageSettings
             // 
             this.tabPageSettings.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPageSettings.Controls.Add(this.chkSaveChunksInfo);
             this.tabPageSettings.Controls.Add(this.chkSaveVodInfo);
             this.tabPageSettings.Controls.Add(this.chkUseLocalTime);
             this.tabPageSettings.Controls.Add(this.btnRestoreDefaultFilenameFormat);
@@ -596,6 +598,17 @@ namespace Twitch_prime_downloader
             this.chkSaveVodInfo.UseVisualStyleBackColor = true;
             this.chkSaveVodInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodInfo_CheckedChanged);
             // 
+            // chkSaveChunksInfo
+            // 
+            this.chkSaveChunksInfo.AutoSize = true;
+            this.chkSaveChunksInfo.Location = new System.Drawing.Point(403, 165);
+            this.chkSaveChunksInfo.Name = "chkSaveChunksInfo";
+            this.chkSaveChunksInfo.Size = new System.Drawing.Size(194, 17);
+            this.chkSaveChunksInfo.TabIndex = 18;
+            this.chkSaveChunksInfo.Text = "Сохранять информацию о чанках";
+            this.chkSaveChunksInfo.UseVisualStyleBackColor = true;
+            this.chkSaveChunksInfo.CheckedChanged += new System.EventHandler(this.chkSaveChunksInfo_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -677,5 +690,6 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox chkUseLocalTime;
         private System.Windows.Forms.CheckBox chkSaveVodInfo;
+        private System.Windows.Forms.CheckBox chkSaveChunksInfo;
     }
 }
