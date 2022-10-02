@@ -195,14 +195,31 @@ namespace Twitch_prime_downloader
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;
 
-            string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
             if (errorCode != ThreadDownload.ERROR_DOWNLOAD_TERMINATED)
             {
+                string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
                 switch (errorCode)
                 {
                     case 200:
-                        MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        {
+                            if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
+                            {
+                                string infoFp;
+                                if (DownloadingMode == DownloadingMode.WholeFile)
+                                {
+                                    ThreadDownload thr = sender as ThreadDownload;
+                                    string fn = Path.GetFileNameWithoutExtension(thr.DownloadingFilePath);
+                                    infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
+                                }
+                                else
+                                {
+                                    infoFp = OutputFilePath + "\\_info.json";
+                                }
+                                File.WriteAllText(infoFp, StreamInfo.InfoStringJson);
+                            }
+                            MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                         break;
 
                     case FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER:

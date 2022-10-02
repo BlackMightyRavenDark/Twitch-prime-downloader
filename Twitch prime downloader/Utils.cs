@@ -346,6 +346,7 @@ namespace Twitch_prime_downloader
         public string UrlListFilePath { get; set; }
         public int VodInfoGuiFontSize { get; set; }
         public bool UseLocalVodDate { get; set; }
+        public bool SaveVodInfo { get; set; }
         public bool DebugMode { get; set; }
 
         public MainConfiguration()
@@ -364,6 +365,7 @@ namespace Twitch_prime_downloader
             UrlListFilePath = SelfDirPath + "tpd_urls.txt";
             BrowserExeFiLePath = "firefox.exe";
             UseLocalVodDate = false;
+            SaveVodInfo = true;
         }
 
         public void Load()
@@ -404,6 +406,12 @@ namespace Twitch_prime_downloader
 
                 jt = json.Value<JToken>("useLocalVodDate");
                 UseLocalVodDate = jt != null ? jt.Value<bool>() : false;
+
+                jt = json.Value<JToken>("saveVideoInfo");
+                if (jt != null)
+                {
+                    SaveVodInfo = jt.Value<bool>();
+                }
             }
         }
 
@@ -416,6 +424,7 @@ namespace Twitch_prime_downloader
             json["lastUsedPath"] = LastUsedDirPath;
             json["browserExe"] = BrowserExeFiLePath;
             json["useLocalVodDate"] = UseLocalVodDate;
+            json["saveVideoInfo"] = SaveVodInfo;
             if (File.Exists(FileName))
             {
                 File.Delete(FileName);
