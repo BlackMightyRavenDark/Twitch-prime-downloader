@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
+using System.Web;
 using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.Utils;
 
@@ -68,6 +70,34 @@ namespace Twitch_prime_downloader
             json.Add(new JProperty("variables", jVariables));
 
             return json.ToString();
+        }
+
+        /// <summary>
+        /// WARNING!!! Do not use this body if you are signed in!!!
+        /// </summary>
+        public static JArray GenerateVodPlaybackTokenRequestBody(string vodId)
+        {
+            const string hashValue = "0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712";
+            JObject jPersistedQuery = new JObject();
+            jPersistedQuery["version"] = 1;
+            jPersistedQuery["sha256Hash"] = hashValue;
+
+            JObject jExtensions = new JObject();
+            jExtensions.Add(new JProperty("persistedQuery", jPersistedQuery));
+
+            JObject jVariables = new JObject();
+            jVariables["isLive"] = false;
+            jVariables["login"] = string.Empty;
+            jVariables["isVod"] = true;
+            jVariables["vodID"] = vodId;
+            jVariables["playerType"] = "embed";
+
+            JObject json = new JObject();
+            json["operationName"] = "PlaybackAccessToken";
+            json.Add(new JProperty("extensions", jExtensions));
+            json.Add(new JProperty("variables", jVariables));
+
+            return new JArray(){ json };
         }
 
         /// <summary>
@@ -144,6 +174,27 @@ namespace Twitch_prime_downloader
 
             JArray jArray = new JArray() { json };
             return jArray;
+        }
+
+        public static string GenerateVodPlaylistManifestUrl(string vodId, JObject vodPlaybackToken)
+        {
+            string tokenValue = vodPlaybackToken.Value<string>("value");
+            string tokenSignature = vodPlaybackToken.Value<string>("signature");
+
+            string usherUrl = $"https://usher.ttvnw.net/vod/{vodId}.m3u8?";
+            int randomNumber = random.Next(999999);
+
+            NameValueCollection query = HttpUtility.ParseQueryString(string.Empty);
+            query.Add("player", "twitchweb");
+            query.Add("allow_audio_only", "true");
+            query.Add("allow_source", "true");
+            query.Add("type", "any");
+            query.Add("nauth", tokenValue);
+            query.Add("nauthsig", tokenSignature);
+            query.Add("p", randomNumber.ToString());
+
+            string url = usherUrl + query.ToString();
+            return url;
         }
 
         public string GetChannelVideosRequestUrl_Helix(string channelId, int videosPerPage, string pageToken)
@@ -403,12 +454,54 @@ namespace Twitch_prime_downloader
             return new VideoMetadataResult(res, errorCode);
         }
 
+        public static int GetVodAccessToken(string vodId, out JObject token)
+        {
+            token = null;
+            try
+            {
+                JArray body = GenerateVodPlaybackTokenRequestBody(vodId);
+                int errorCode = HttpsPost(TWITCH_GQL_API_URL, body.ToString(), out string response);
+                if (errorCode == 200)
+                {
+                    JArray jsonArr = JArray.Parse(response);
+                    if (jsonArr != null && jsonArr.Count > 0)
+                    {
+                        JObject jData = (jsonArr[0] as JObject).Value<JObject>("data");
+                        if (jData != null)
+                        {
+                            token = jData.Value<JObject>("videoPlaybackAccessToken");
+                            return token != null ? 200 : 400;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+
+            return 400;
+        }
+
         public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
         {
             playlistUrl = null;
+            int errorCode = GetVodAccessToken(vod.VideoId, out JObject token);
+            if (errorCode == 200)
+            {
+                playlistUrl = GenerateVodPlaylistManifestUrl(vod.VideoId, token);
+                errorCode = DownloadString(playlistUrl, out string manifest);
+                if (errorCode == 200)
+                {
+                    TwitchPlaylistManifestParser parser = new TwitchPlaylistManifestParser(manifest);
+                    playlistUrl = parser.FindPlaylistUrl("chunked");
+                    return !string.IsNullOrEmpty(playlistUrl) && !string.IsNullOrWhiteSpace(playlistUrl) &&
+                        MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _) == 200 ? 200 : 400;
+                }
+            }
             if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
-                int errorCode = 404;
+                errorCode = 404;
                 for (int i = 0; i < TwitchFileServerIds.Length && errorCode != 200; i++)
                 {
                     if (vod.IsHighlight())
