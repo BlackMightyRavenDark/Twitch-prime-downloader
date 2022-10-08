@@ -41,6 +41,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -81,6 +83,7 @@
     <Compile Include="ThreadDownload.cs" />
     <Compile Include="ThreadGetVodPlaylist.cs" />
     <Compile Include="TwitchApi.cs" />
+    <Compile Include="TwitchPlaylistManifestParser.cs" />
     <Compile Include="Utils.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
