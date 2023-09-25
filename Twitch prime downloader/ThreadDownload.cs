@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using MultiThreadedDownloaderLib;
+using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
