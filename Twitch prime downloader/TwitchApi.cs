@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Web;
 using Newtonsoft.Json.Linq;
+using MultiThreadedDownloaderLib;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
@@ -514,7 +515,7 @@ namespace Twitch_prime_downloader
                     TwitchPlaylistManifestParser parser = new TwitchPlaylistManifestParser(manifest);
                     playlistUrl = parser.FindPlaylistUrl("chunked");
                     return !string.IsNullOrEmpty(playlistUrl) && !string.IsNullOrWhiteSpace(playlistUrl) &&
-                        MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _) == 200 ? 200 : 400;
+                        FileDownloader.GetUrlContentLength(playlistUrl, null, out _, out _) == 200 ? 200 : 400;
                 }
             }
             if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
@@ -532,7 +533,7 @@ namespace Twitch_prime_downloader
                         playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server_id>", TwitchFileServerIds[i])
                             .Replace("<stream_id>", vod.StreamId);
                     }
-                    errorCode = MultiThreadedDownloader.GetUrlContentLength(playlistUrl, out _);
+                    errorCode = FileDownloader.GetUrlContentLength(playlistUrl, null, out _, out _);
                 }
                 return errorCode;
             }

@@ -2,11 +2,12 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Net;
 using System.Windows.Forms;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
+using MultiThreadedDownloaderLib;
 using static Twitch_prime_downloader.TwitchApi;
+using System.Collections.Specialized;
 
 namespace Twitch_prime_downloader
 {
@@ -29,76 +30,46 @@ namespace Twitch_prime_downloader
             return d.DownloadString(out resString);
         }
 
-        public static int HttpsPost(string url, out string responseString)
+        public static int HttpsPost(string url, string body, NameValueCollection headers, out string responseString)
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-                httpWebRequest.Method = "POST";
-                HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                using (HttpRequestResult requestResult = HttpRequestSender.Send("POST", url, body, headers))
                 {
-                    responseString = streamReader.ReadToEnd();
-                    return (int)httpResponse.StatusCode;
+                    if (requestResult.ErrorCode == 200)
+                    {
+                        return requestResult.WebContent.ContentToString(out responseString);
+                    }
+                    else
+                    {
+                        responseString = requestResult.ErrorMessage;
+                        return requestResult.ErrorCode;
+                    }    
                 }
-            }
-            catch (WebException ex)
-            {
-                if (ex.Status == WebExceptionStatus.ProtocolError)
-                {
-                    HttpWebResponse httpWebResponse = (HttpWebResponse)ex.Response;
-                    responseString = ex.Message;
-                    return (int)httpWebResponse.StatusCode;
-                }
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
+                responseString = ex.Message;
+                return ex.HResult;
             }
-
-            responseString = "Client error";
-            return 400;
         }
 
         public static int HttpsPost(string url, string body, out string responseString)
         {
-            responseString = "Client error";
-            int res = 400;
-            try
+            NameValueCollection headers = null;
+            if (!string.IsNullOrEmpty(body))
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-                httpWebRequest.ContentType = "application/json";
-                httpWebRequest.Headers.Add("Client-ID", TWITCH_CLIENT_ID_PRIVATE);
-                httpWebRequest.Method = "POST";
-                using (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-                {
-                    streamWriter.Write(body);
-                }
-                HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                try
-                {
-                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                    {
-                        responseString = streamReader.ReadToEnd();
-                        res = (int)httpResponse.StatusCode;
-                    }
-                }
-                catch (WebException ex)
-                {
-                    if (ex.Status == WebExceptionStatus.ProtocolError)
-                    {
-                        HttpWebResponse httpWebResponse = (HttpWebResponse)ex.Response;
-                        responseString = ex.Message;
-                        res = (int)httpWebResponse.StatusCode;
-                    }
-                }
+                headers = new NameValueCollection();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("Client-ID", TWITCH_CLIENT_ID_PRIVATE);
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                res = ex.HResult;
-            }
-            return res;
+
+            return HttpsPost(url, body, headers, out responseString);
+        }
+
+        public static int HttpsPost(string url, out string responseString)
+        {
+            return HttpsPost(url, null, null, out responseString);
         }
 
         public static string ExtractStreamIDFromImageURL(string url)
