@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using MultiThreadedDownloaderLib;
 
 namespace Twitch_prime_downloader
 {
@@ -28,14 +29,12 @@ namespace Twitch_prime_downloader
         public delegate void WorkStartedDelegate(object sender, long fileSize, int chunkId);
         public delegate void WorkProgressDelegate(object sender, long transferedSize);
         public delegate void WorkFinishedDelegate(object sender, long transferedSize, int errorCode);
-        public delegate void CancelTestDelegate(object sender, ref bool stop);
         public delegate void ChunkChangedDelegate(object sender, int chunkId);
         public delegate void CompletedDelegate(object sender, int errorCode);
         public ConnectingDelegate Connecting;
         public WorkStartedDelegate WorkStarted;
         public WorkProgressDelegate WorkProgress;
         public WorkFinishedDelegate WorkFinished;
-        public CancelTestDelegate CancelTest;
         public ChunkChangedDelegate ChunkChanged;
         public CompletedDelegate Completed;
 
@@ -78,11 +77,6 @@ namespace Twitch_prime_downloader
             {
                 CurrentChunkBytesTransfered = bytes;
                 synchronizationContext?.Send(WorkProgress_Context, this);
-            };
-            fileDownloader.CancelTest += (object s, ref bool stop) =>
-            {
-                CancelTest?.Invoke(this, ref canceled);
-                stop = canceled;
             };
 
             if (DownloadingMode == DownloadingMode.Chunked && !Directory.Exists(DownloadingFilePath))
@@ -188,13 +182,18 @@ namespace Twitch_prime_downloader
 
             if (canceled)
             {
-                LastErrorCode = FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER;
+                LastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER;
             }
             if (synchronizationContext != null)
             {
                 synchronizationContext.Send(WorkProgress_Context, this);
                 synchronizationContext.Send(Completed_Context, this);
             }
+        }
+
+        public void Cancel()
+        {
+            canceled = true;
         }
 
         public void Abort()

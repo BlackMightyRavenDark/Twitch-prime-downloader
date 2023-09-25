@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using MultiThreadedDownloaderLib;
 using static Twitch_prime_downloader.TwitchApi;
 using static Twitch_prime_downloader.Utils;
 
@@ -23,7 +23,7 @@ namespace Twitch_prime_downloader
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ServicePointManager.DefaultConnectionLimit = 1000;
+            MultiThreadedDownloader.SetMaximumConnectionsLimit(100);
 
             config.Load();
             chkUseLocalTime.Checked = config.UseLocalVodDate;

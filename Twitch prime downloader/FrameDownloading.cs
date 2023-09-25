@@ -4,9 +4,10 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using MultiThreadedDownloaderLib;
+using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
-using Newtonsoft.Json.Linq;
 
 namespace Twitch_prime_downloader
 {
@@ -34,7 +35,6 @@ namespace Twitch_prime_downloader
         public const int EXTRA_WIDTH = 450;
         private int fcstId = 0;
         private int oldX;
-        private bool needToStop;
 
         public int TotalChunksCount => _chunks.Count;
 
@@ -239,7 +239,7 @@ namespace Twitch_prime_downloader
                         }
                         break;
 
-                    case FileDownloader.DOWNLOAD_ERROR_ABORTED_BY_USER:
+                    case FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER:
                         MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         break;
@@ -257,11 +257,6 @@ namespace Twitch_prime_downloader
                     case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
                         MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
                             msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-
-                    case FileDownloader.DOWNLOAD_ERROR_UNKNOWN:
-                        MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!\nСкачивание прервано!", msgCaption,
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
 
                     default:
@@ -283,7 +278,6 @@ namespace Twitch_prime_downloader
         private void StartDownload()
         {
             btnStartDownload.Enabled = false;
-            needToStop = false;
             DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
@@ -321,10 +315,6 @@ namespace Twitch_prime_downloader
                 lblProgressCurrentChunk.Text = ": Connecting...";
                 lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
             };
-            threadDownload.CancelTest += (object sender, ref bool stop) =>
-            {
-                stop = needToStop;
-            };
             threadDownload.ChunkChanged += (s, id) =>
             {
                 _chunks.RemoveAt(id);
@@ -348,7 +338,7 @@ namespace Twitch_prime_downloader
 
         public void StopDownload()
         {
-            needToStop = true;
+            threadDownload?.Cancel();
         }
 
         private void BtnStartDownload_Click(object sender, EventArgs e)
