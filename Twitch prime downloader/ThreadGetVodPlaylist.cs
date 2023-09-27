@@ -39,7 +39,7 @@ namespace Twitch_prime_downloader
                     PlaylistString = playlistString;
                     PlaylistParsed = PlaylistString.Split(new string[] { "\n" },
                         StringSplitOptions.RemoveEmptyEntries).Where(s => s.EndsWith(".ts")).ToArray();
-                    for (int i = 0; i < PlaylistParsed.Length; i++)
+                    for (int i = 0; i < PlaylistParsed.Length; ++i)
                     {
                         TwitchVodChunk chunk = new TwitchVodChunk(PlaylistParsed[i]);
                         if (chunk.GetState() == TwitchVodChunkState.Unmuted)

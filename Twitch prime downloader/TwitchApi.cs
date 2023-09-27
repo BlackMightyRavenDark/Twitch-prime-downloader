@@ -449,7 +449,7 @@ namespace Twitch_prime_downloader
             mutedChunks.Clear();
             if (jArray != null && jArray.Count > 0)
             {
-                for (int i = 0; i < jArray.Count; i++)
+                for (int i = 0; i < jArray.Count; ++i)
                 {
                     int offset = jArray[i].Value<int>("offset");
                     int dur = jArray[i].Value<int>("duration");
@@ -521,7 +521,7 @@ namespace Twitch_prime_downloader
             if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
             {
                 errorCode = 404;
-                for (int i = 0; i < TwitchFileServerIds.Length && errorCode != 200; i++)
+                for (int i = 0; i < TwitchFileServerIds.Length && errorCode != 200; ++i)
                 {
                     if (vod.IsHighlight())
                     {

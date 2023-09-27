@@ -48,7 +48,7 @@ namespace Twitch_prime_downloader
                 {
                     using (StreamWriter sw = new StreamWriter(fileName))
                     {
-                        for (int i = 0; i < comboBox.Items.Count; i++)
+                        for (int i = 0; i < comboBox.Items.Count; ++i)
                         {
                             sw.WriteLine(comboBox.Items[i]);
                         }

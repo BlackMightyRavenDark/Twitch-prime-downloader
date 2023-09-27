@@ -100,7 +100,7 @@ namespace Twitch_prime_downloader
             }
             string[] keyValues = inputString.Split(new string[] { keySeparaor }, StringSplitOptions.None);
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            for (int i = 0; i < keyValues.Length; i++)
+            for (int i = 0; i < keyValues.Length; ++i)
             {
                 string[] t = keyValues[i].Split(valueSeparator);
                 dict.Add(t[0], t[1]);

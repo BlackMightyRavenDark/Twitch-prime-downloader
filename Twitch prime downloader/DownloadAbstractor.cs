@@ -15,7 +15,7 @@ namespace Twitch_prime_downloader
         public delegate void ChunkDownloadStartedDelegate(object sender, long contentLength, int chunkId);
         public delegate void ChunkDownloadProgressedDelegate(object sender, long downloadedBytes, long contentLength);
         public delegate void ChunkDownloadFinishedDelegate(object sender, long downloadedBytes, long contentLength, int errorCode);
-        public delegate void ChunkMergingFinishedDelegate(object sender, long totalSize, DownloadingMode downloadingMode, int chunkId, int chunkCount);
+        public delegate void ChunkMergingFinishedDelegate(object sender, long totalSize, DownloadMode downloadMode, int chunkId, int chunkCount);
         public delegate void ChunkChangedDelegate(object sender, TwitchVodChunk chunk, int chunkId);
         public delegate void CompletedDelegate(object sender, int errorCode);
 
@@ -34,7 +34,7 @@ namespace Twitch_prime_downloader
             List<TwitchVodChunk> chunkList,
             int firstChunkId,
             int lastChunkId,
-            DownloadingMode downloadMode,
+            DownloadMode downloadMode,
             ConnectingDelegate connecting,
             ChunkDownloadStartedDelegate chunkDownloadStarted,
             ChunkDownloadProgressedDelegate chunkDownloadProgressed,
@@ -53,13 +53,13 @@ namespace Twitch_prime_downloader
                 int errorCode = 200;
                 try
                 {
-                    if (downloadMode == DownloadingMode.Chunked && !Directory.Exists(outputFilePath))
+                    if (downloadMode == DownloadMode.Chunked && !Directory.Exists(outputFilePath))
                     {
                         Directory.CreateDirectory(outputFilePath);
                     }
 
                     Stream outputStream = null;
-                    if (downloadMode == DownloadingMode.WholeFile)
+                    if (downloadMode == DownloadMode.WholeFile)
                     {
                         if (File.Exists(outputFilePath)) { File.Delete(outputFilePath); }
                         outputStream = File.OpenWrite(outputFilePath);
@@ -111,7 +111,7 @@ namespace Twitch_prime_downloader
 
                         totalBytesDownloaded += mem.Length;
 
-                        if (downloadMode == DownloadingMode.WholeFile)
+                        if (downloadMode == DownloadMode.WholeFile)
                         {
                             long chunkPosition = outputStream.Position;
 
@@ -148,7 +148,7 @@ namespace Twitch_prime_downloader
                         currentChunkId++;
                     }
 
-                    if (saveChunkInfo && downloadMode == DownloadingMode.WholeFile)
+                    if (saveChunkInfo && downloadMode == DownloadMode.WholeFile)
                     {
                         int n = outputFilePath.LastIndexOf(".");
                         string chunksFilePath = n > 0 ? $"{outputFilePath.Substring(0, n)}_chunks.json" : $"{outputFilePath}_chunks.json";
