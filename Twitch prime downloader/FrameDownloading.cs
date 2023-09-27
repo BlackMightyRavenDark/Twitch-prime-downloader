@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using MultiThreadedDownloaderLib;
-using Newtonsoft.Json.Linq;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
 
@@ -13,7 +11,7 @@ namespace Twitch_prime_downloader
 {
     public partial class FrameDownloading : UserControl
     { 
-        private ThreadDownload threadDownload = null;
+        private DownloadAbstractor downloadAbstractor = null;
         public TwitchVod StreamInfo { get; private set; }
         private string FixedFileName;
         public string OutputDirPath { get; private set; }
@@ -21,13 +19,11 @@ namespace Twitch_prime_downloader
         public string OutputFilePath { get; private set; }
         private int _chunkFrom = 0;
         private int _chunkTo = 10;
-        private int _currentChunkId = 0;
         public int ChunkFrom { get { return _chunkFrom; } set { SetChunkFrom(value); } }
         public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
         public long CurrentChunkFileSize { get; private set; }
-        public long DownloadedSize { get; private set; }
         public string StreamRootUrl { get; private set; }
-        public DownloadingMode DownloadingMode { get; private set; } = DownloadingMode.WholeFile;
+        public DownloadingMode DownloadMode { get; private set; } = DownloadingMode.WholeFile;
         public DateTime DownloadStarted { get; private set; }
         private List<TwitchVodChunk> _chunks;
         public TwitchVodChunk[] Chunks => _chunks.ToArray();
@@ -61,13 +57,13 @@ namespace Twitch_prime_downloader
             lblElapsedTime.Text = null;
             imgScrollBar.Top = Height - imgScrollBar.Height;
 
-            lblOutputFilename.Text = DownloadingMode == DownloadingMode.WholeFile ?
+            lblOutputFilename.Text = DownloadMode == DownloadingMode.WholeFile ?
                 $"Имя файла: {OutputFilePathOrig}" : $"Папка для скачивания: {OutputFilePathOrig}";
         }
 
         public void FrameDispose()
         {
-            threadDownload?.Abort();
+            StopDownload();
         }
 
         private void FrameDownload_Resize(object sender, EventArgs e)
@@ -145,143 +141,84 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void ThreadDownloading_WorkStarted(object sender, long fileSize, int chunkId)
+        private void OnConnecting(object sender, TwitchVodChunk chunk)
         {
-            CurrentChunkFileSize = fileSize;
-            _currentChunkId = chunkId;
-            progressBar1.Value1 = 0;
-            progressBar1.MaxValue1 = 100;
-            lblProgressCurrentChunk.Text = $": 0 / {FormatSize(fileSize)}";
+            Invoke(new MethodInvoker(() =>
+            {
+                progressBar1.Value1 = 0;
+                lblCurrentChunkName.Text = chunk.FileName;
+                lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
+                lblProgressCurrentChunk.Text = ": Connecting...";
+                lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
+            }));
         }
 
-        private void ThreadDownloading_WorkFinished(object sender, long bytesTransfered, int errorCode)
+        private void OnChunkDownloadStarted(object sender, long fileSize, int chunkId)
         {
-            if (errorCode == 200)
+            Invoke(new MethodInvoker(() =>
             {
-                double percent = 100.0 / CurrentChunkFileSize * bytesTransfered;
+                CurrentChunkFileSize = fileSize;
+                progressBar1.Value1 = 0;
+                lblProgressCurrentChunk.Text = $": 0 / {FormatSize(fileSize)}";
+            }));
+        }
+
+        private void OnChunkDownloadProgressed(object sender, long downloadedBytes, long contentLength)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                double percent = 100.0 / contentLength * downloadedBytes;
+                string percentFormatted = string.Format("{0:F2}", percent);
                 progressBar1.Value1 = (int)percent;
-                progressBar1.Value2 = _currentChunkId - ChunkFrom + 1;
-                int max = ChunkTo - ChunkFrom + 1;
-                percent = 100.0 / max * progressBar1.Value2;
-                string t;
-                if (threadDownload.DownloadingMode == DownloadingMode.WholeFile)
-                {
-                    t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
-                        ", Размер файла: " + FormatSize(threadDownload.DownloadedFileSize);
-                }
-                else
-                {
-                    DownloadedSize += bytesTransfered;
-                    t = $"Скачано чанков: {progressBar1.Value2} / {max} ({string.Format("{0:F2}", percent)}%)" +
-                        ", Размер скачанного: " + FormatSize(DownloadedSize);
-                }
-
-                lblProgressOverall.Text = t;
-
-                int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / max;
-                imgFcst.Left = x;
-            }
+                lblProgressCurrentChunk.Text = $": {FormatSize(downloadedBytes)} / {FormatSize(CurrentChunkFileSize)}" +
+                    $" ({percentFormatted}%)";
+            }));
         }
 
-        private void ThreadDownloading_Progress(object sender, long bytesTransfered)
+        private void OnChunkDownloadFinished(object sender, long downloadedBytes, long contentLength, int errorCode)
         {
-            double percent = 100.0 / CurrentChunkFileSize * bytesTransfered;
-            progressBar1.Value1 = (int)percent;
-            lblProgressCurrentChunk.Text = $": {FormatSize(bytesTransfered)} / {FormatSize(CurrentChunkFileSize)}" +
-                $" ({string.Format("{0:F2}", percent)}%)";
-        }
-
-        private void ThreadDownloading_Completed(object sender, int errorCode)
-        {
-            timerElapsed.Enabled = false;
-            timerFcst.Enabled = false;
-
-            if (errorCode != ThreadDownload.ERROR_DOWNLOAD_TERMINATED)
+            Invoke(new MethodInvoker(() =>
             {
-                string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
-                switch (errorCode)
-                {
-                    case 200:
-                        {
-                            ThreadDownload thr = sender as ThreadDownload;
-                            if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
-                            {
-                                string infoFp;
-                                if (DownloadingMode == DownloadingMode.WholeFile)
-                                {
-                                    string fn = Path.GetFileNameWithoutExtension(thr.DownloadingFilePath);
-                                    infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
-                                }
-                                else
-                                {
-                                    infoFp = OutputFilePath + "\\_info.json";
-                                }
-                                File.WriteAllText(infoFp, StreamInfo.InfoStringJson);
-                            }
-                            if (DownloadingMode == DownloadingMode.WholeFile &&
-                                config.SaveChunksInfo && thr.VideoChunks != null)
-                            {
-                                JArray jaChunks = new JArray();
-                                foreach (VideoChunk videoChunk in thr.VideoChunks)
-                                {
-                                    JObject jChunk = new JObject();
-                                    jChunk["position"] = videoChunk.Position;
-                                    jChunk["size"] = videoChunk.Size;
-                                    jChunk["fileName"] = videoChunk.FileName;
-                                    jaChunks.Add(jChunk);
-                                }
-                                string fn = Path.GetFileNameWithoutExtension(thr.DownloadingFilePath);
-                                string chunksFp = Path.Combine(OutputDirPath, $"{fn}_chunks.json");
-                                File.WriteAllText(chunksFp, jaChunks.ToString());
-                            }
-                            MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        break;
-
-                    case FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER:
-                        MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        break;
-
-                    case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
-                        MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!",
-                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-
-                    case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
-                        MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
-                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-
-                    case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
-                        MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
-                            msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-
-                    default:
-                        MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
-                            $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                }
-            }
-
-            editFrom.Enabled = true;
-            editTo.Enabled = true;
-            btnSetMaxChunkTo.Enabled = true;
-            rbDownloadOneBigFile.Enabled = true;
-            rbDownloadChunksSeparatelly.Enabled = true;
-            btnStartDownload.Enabled = true;
+                double percent = 100.0 / contentLength * downloadedBytes;
+                progressBar1.Value1 = (int)percent;
+                string percentFormatted = string.Format("{0:F2}", percent);
+                lblProgressCurrentChunk.Text = $": {FormatSize(downloadedBytes)} / {FormatSize(contentLength)} ({percentFormatted}%)";
+            }));
         }
 
-        private void StartDownload()
+        private void OnChunkChanged(object sender, TwitchVodChunk chunk, int chunkId)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                _chunks[chunkId] = new TwitchVodChunk(chunk.FileName);
+                lbFileList.Items[chunkId] = chunk.FileName;
+            }));
+        }
+
+        private void OnChunkMergingFinished(object sender, long totalSize,
+            DownloadingMode downloadingMode, int chunkId, int chunkCount)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                progressBar1.Value2 = chunkId - ChunkFrom + 1;
+                double percent = 100.0 / chunkCount * progressBar1.Value2;
+                string percentFormatted = string.Format("{0:F2}", percent);
+                string sizeText = downloadingMode == DownloadingMode.WholeFile ? "Размер файла" : "Размер скачанного";
+                lblProgressOverall.Text = $"Скачано чанков: {progressBar1.Value2} / {chunkCount} " +
+                    $"({percentFormatted}%), {sizeText}: {FormatSize(totalSize)}";
+
+                int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / (ChunkTo - ChunkFrom + 1);
+                imgFcst.Left = x;
+            }));
+        }
+
+        private async void StartDownload()
         {
             btnStartDownload.Enabled = false;
             DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
-            if (DownloadingMode == DownloadingMode.WholeFile)
+            if (DownloadMode == DownloadingMode.WholeFile)
             {
                 OutputFilePath = GetNumberedFileName(OutputFilePathOrig);
                 lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
@@ -292,53 +229,90 @@ namespace Twitch_prime_downloader
                 lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePath}";
             }
             lblProgressOverall.Text = $"Скачано чанков: 0 / {ChunkTo - ChunkFrom + 1} (0.00%), Размер файла: 0 bytes";
-            progressBar1.MinValue1 = 0;
             progressBar1.Value1 = 0;
             progressBar1.Value2 = 0;
-            DownloadedSize = 0L;
             editFrom.Enabled = false;
             editTo.Enabled = false;
             btnSetMaxChunkTo.Enabled = false;
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            threadDownload = new ThreadDownload(OutputFilePath, DownloadingMode, config.SaveChunksInfo);
-            threadDownload.WorkProgress += ThreadDownloading_Progress;
-            threadDownload.WorkStarted += ThreadDownloading_WorkStarted;
-            threadDownload.WorkFinished += ThreadDownloading_WorkFinished;
-            threadDownload.Completed += ThreadDownloading_Completed;
-            threadDownload.Connecting += (object sender, TwitchVodChunk chunk) =>
-            {
-                progressBar1.Value1 = 0;
-                lblCurrentChunkName.Text = chunk.FileName;
-                lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
-                lblProgressCurrentChunk.Text = ": Connecting...";
-                lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
-            };
-            threadDownload.ChunkChanged += (s, id) =>
-            {
-                _chunks.RemoveAt(id);
-                _chunks.Insert(id, new TwitchVodChunk((s as ThreadDownload)._chunks[id].FileName));
-                lbFileList.Items.RemoveAt(id);
-                lbFileList.Items.Insert(id, _chunks[id].FileName);
-            };
-
-            threadDownload._streamRoot = StreamRootUrl;
-            threadDownload._chunks = _chunks;
-            threadDownload.ChunkFrom = _chunkFrom;
-            threadDownload.ChunkTo = ChunkTo;
-
             imgFcst.Left = progressBar1.Left;
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
 
-            Thread thr = new Thread(threadDownload.Work);
-            thr.Start(SynchronizationContext.Current);
+            downloadAbstractor = new DownloadAbstractor();
+            int errorCode = await downloadAbstractor.Download(OutputFilePath,
+                StreamRootUrl, _chunks, _chunkFrom, ChunkTo, DownloadMode,
+                OnConnecting, OnChunkDownloadStarted, OnChunkDownloadProgressed,
+                OnChunkDownloadFinished, OnChunkChanged, OnChunkMergingFinished, config.SaveChunksInfo);
+
+            timerElapsed.Enabled = false;
+            timerFcst.Enabled = false;
+
+            string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
+            switch (errorCode)
+            {
+                case 200:
+                    {
+                        if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
+                        {
+                            string infoFp;
+                            if (DownloadMode == DownloadingMode.WholeFile)
+                            {
+                                string fn = Path.GetFileNameWithoutExtension(OutputFilePath);
+                                infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
+                            }
+                            else
+                            {
+                                infoFp = Path.Combine(OutputFilePath, "_info.json");
+                            }
+                            File.WriteAllText(infoFp, StreamInfo.InfoStringJson);
+                        }
+
+                        MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    break;
+
+                case FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER:
+                    MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    break;
+
+                case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
+                    MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
+                    MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
+                    MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                default:
+                    MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
+                        $"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+            }
+
+            editFrom.Enabled = true;
+            editTo.Enabled = true;
+            btnSetMaxChunkTo.Enabled = true;
+            rbDownloadOneBigFile.Enabled = true;
+            rbDownloadChunksSeparatelly.Enabled = true;
+            btnStartDownload.Enabled = true;
         }
 
         public void StopDownload()
         {
-            threadDownload?.Cancel();
+            downloadAbstractor?.Stop();
         }
 
         private void BtnStartDownload_Click(object sender, EventArgs e)
@@ -379,7 +353,7 @@ namespace Twitch_prime_downloader
             StreamInfo = vod;
             lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
             FixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
-            if (DownloadingMode == DownloadingMode.WholeFile)
+            if (DownloadMode == DownloadingMode.WholeFile)
             {
                 OutputFilePathOrig = Path.Combine(OutputDirPath,
                      StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
@@ -539,7 +513,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
-            DownloadingMode = DownloadingMode.WholeFile;
+            DownloadMode = DownloadingMode.WholeFile;
             string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
             lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
@@ -547,7 +521,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
-            DownloadingMode = DownloadingMode.Chunked;
+            DownloadMode = DownloadingMode.Chunked;
             string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight]" : FixedFileName;
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
             lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
