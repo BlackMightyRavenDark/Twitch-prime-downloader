@@ -131,7 +131,7 @@ namespace Twitch_prime_downloader
                 int xStart = (panelWidth / 2) - ((w + gap) * perRow / 2);
                 int x = xStart;
                 int y = -h - gap;
-                for (int i = 0; i < framesStream.Count; i++)
+                for (int i = 0; i < framesStream.Count; ++i)
                 {
                     if (i % perRow == 0)
                     {
@@ -167,7 +167,7 @@ namespace Twitch_prime_downloader
         {
             if (framesDownloading.Count > 0)
             {
-                for (int i = 0; i < framesDownloading.Count; i++)
+                for (int i = 0; i < framesDownloading.Count; ++i)
                 {
                     int locY = i * framesDownloading[i].Height - scrollBarDownloads.Value;
                     framesDownloading[i].Location = new Point(0, locY);
@@ -191,7 +191,7 @@ namespace Twitch_prime_downloader
         private void OnFrameDownload_Closed(object sender)
         {
             int i;
-            for (i = 0; i < framesDownloading.Count; i++)
+            for (i = 0; i < framesDownloading.Count; ++i)
             {
                 if (framesDownloading[i] == sender)
                 {
@@ -214,7 +214,7 @@ namespace Twitch_prime_downloader
         private void OnFrameStream_Activated(object sender)
         {
             activeFrameStream = sender as FrameStream;
-            for (int i = 0; i < framesStream.Count; i++)
+            for (int i = 0; i < framesStream.Count; ++i)
             {
                 framesStream[i].BackColor =
                     activeFrameStream == framesStream[i] ? FrameStream.colorActive : FrameStream.colorInactive;
@@ -303,7 +303,7 @@ namespace Twitch_prime_downloader
             JObject json = JObject.Parse(aJsonString);
             JArray jsonArr = json.Value<JArray>("data");
             TwitchApi api = new TwitchApi();
-            for (int i = 0; i < jsonArr.Count; i++)
+            for (int i = 0; i < jsonArr.Count; ++i)
             {
                 lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                 lbLog.Items.Add($"Обработка данных... {i + 1} / {jsonArr.Count}");
@@ -329,7 +329,7 @@ namespace Twitch_prime_downloader
         {
             if (framesStream.Count > 0)
             {
-                for (int i = 0; i < framesStream.Count; i++)
+                for (int i = 0; i < framesStream.Count; ++i)
                 {
                     lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
                     lbLog.Items.Add($"Скачивание изображений... {i + 1} / {framesStream.Count}");
@@ -508,7 +508,7 @@ namespace Twitch_prime_downloader
             ClearFramesStream();
 
             JArray jsonArray = new JArray();
-            for (int i = 0; i < urls.Length; i++)
+            for (int i = 0; i < urls.Length; ++i)
             {
                 if (string.IsNullOrEmpty(urls[i]) || string.IsNullOrWhiteSpace(urls[i]))
                 {

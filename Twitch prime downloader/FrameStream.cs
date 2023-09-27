@@ -202,7 +202,7 @@ namespace Twitch_prime_downloader
         private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
         {
             string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}";
-            for (int i = 0; i < StreamInfo.MutedSegments.SegmentList.Count; i++)
+            for (int i = 0; i < StreamInfo.MutedSegments.SegmentList.Count; ++i)
             {
                 t += StreamInfo.MutedSegments.SegmentList[i] + Environment.NewLine;
             }

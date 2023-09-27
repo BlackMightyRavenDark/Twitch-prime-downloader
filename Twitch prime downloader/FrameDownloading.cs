@@ -23,7 +23,7 @@ namespace Twitch_prime_downloader
         public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
         public long CurrentChunkFileSize { get; private set; }
         public string StreamRootUrl { get; private set; }
-        public DownloadingMode DownloadMode { get; private set; } = DownloadingMode.WholeFile;
+        public DownloadMode DownloadMode { get; private set; } = DownloadMode.WholeFile;
         public DateTime DownloadStarted { get; private set; }
         private List<TwitchVodChunk> _chunks;
         public TwitchVodChunk[] Chunks => _chunks.ToArray();
@@ -57,7 +57,7 @@ namespace Twitch_prime_downloader
             lblElapsedTime.Text = null;
             imgScrollBar.Top = Height - imgScrollBar.Height;
 
-            lblOutputFilename.Text = DownloadMode == DownloadingMode.WholeFile ?
+            lblOutputFilename.Text = DownloadMode == DownloadMode.WholeFile ?
                 $"Имя файла: {OutputFilePathOrig}" : $"Папка для скачивания: {OutputFilePathOrig}";
         }
 
@@ -196,14 +196,14 @@ namespace Twitch_prime_downloader
         }
 
         private void OnChunkMergingFinished(object sender, long totalSize,
-            DownloadingMode downloadingMode, int chunkId, int chunkCount)
+            DownloadMode downloadMode, int chunkId, int chunkCount)
         {
             Invoke(new MethodInvoker(() =>
             {
                 progressBar1.Value2 = chunkId - ChunkFrom + 1;
                 double percent = 100.0 / chunkCount * progressBar1.Value2;
                 string percentFormatted = string.Format("{0:F2}", percent);
-                string sizeText = downloadingMode == DownloadingMode.WholeFile ? "Размер файла" : "Размер скачанного";
+                string sizeText = downloadMode == DownloadMode.WholeFile ? "Размер файла" : "Размер скачанного";
                 lblProgressOverall.Text = $"Скачано чанков: {progressBar1.Value2} / {chunkCount} " +
                     $"({percentFormatted}%), {sizeText}: {FormatSize(totalSize)}";
 
@@ -218,7 +218,7 @@ namespace Twitch_prime_downloader
             DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
             timerElapsed.Enabled = true;
-            if (DownloadMode == DownloadingMode.WholeFile)
+            if (DownloadMode == DownloadMode.WholeFile)
             {
                 OutputFilePath = GetNumberedFileName(OutputFilePathOrig);
                 lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
@@ -258,7 +258,7 @@ namespace Twitch_prime_downloader
                         if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
                         {
                             string infoFp;
-                            if (DownloadMode == DownloadingMode.WholeFile)
+                            if (DownloadMode == DownloadMode.WholeFile)
                             {
                                 string fn = Path.GetFileNameWithoutExtension(OutputFilePath);
                                 infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
@@ -353,7 +353,7 @@ namespace Twitch_prime_downloader
             StreamInfo = vod;
             lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
             FixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
-            if (DownloadMode == DownloadingMode.WholeFile)
+            if (DownloadMode == DownloadMode.WholeFile)
             {
                 OutputFilePathOrig = Path.Combine(OutputDirPath,
                      StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
@@ -513,7 +513,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
-            DownloadMode = DownloadingMode.WholeFile;
+            DownloadMode = DownloadMode.WholeFile;
             string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
             lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
@@ -521,7 +521,7 @@ namespace Twitch_prime_downloader
 
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
-            DownloadMode = DownloadingMode.Chunked;
+            DownloadMode = DownloadMode.Chunked;
             string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight]" : FixedFileName;
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
             lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
