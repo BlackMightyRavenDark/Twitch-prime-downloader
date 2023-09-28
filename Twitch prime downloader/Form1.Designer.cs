@@ -35,6 +35,8 @@ namespace Twitch_prime_downloader
             this.tabPageDebug = new System.Windows.Forms.TabPage();
             this.memoDebug = new System.Windows.Forms.RichTextBox();
             this.tabPageSettings = new System.Windows.Forms.TabPage();
+            this.chkSaveVodChunksInfo = new System.Windows.Forms.CheckBox();
+            this.chkSaveVodInfo = new System.Windows.Forms.CheckBox();
             this.chkUseLocalTime = new System.Windows.Forms.CheckBox();
             this.btnRestoreDefaultFilenameFormat = new System.Windows.Forms.Button();
             this.textBox_FileNameFormat = new System.Windows.Forms.TextBox();
@@ -77,8 +79,6 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.chkSaveVodInfo = new System.Windows.Forms.CheckBox();
-            this.chkSaveChunksInfo = new System.Windows.Forms.CheckBox();
             this.tabControlMain.SuspendLayout();
             this.tabPageDebug.SuspendLayout();
             this.tabPageSettings.SuspendLayout();
@@ -139,7 +139,7 @@ namespace Twitch_prime_downloader
             // tabPageSettings
             // 
             this.tabPageSettings.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPageSettings.Controls.Add(this.chkSaveChunksInfo);
+            this.tabPageSettings.Controls.Add(this.chkSaveVodChunksInfo);
             this.tabPageSettings.Controls.Add(this.chkSaveVodInfo);
             this.tabPageSettings.Controls.Add(this.chkUseLocalTime);
             this.tabPageSettings.Controls.Add(this.btnRestoreDefaultFilenameFormat);
@@ -157,6 +157,28 @@ namespace Twitch_prime_downloader
             this.tabPageSettings.Size = new System.Drawing.Size(818, 482);
             this.tabPageSettings.TabIndex = 1;
             this.tabPageSettings.Text = "Настройки";
+            // 
+            // chkSaveVodChunksInfo
+            // 
+            this.chkSaveVodChunksInfo.AutoSize = true;
+            this.chkSaveVodChunksInfo.Location = new System.Drawing.Point(403, 165);
+            this.chkSaveVodChunksInfo.Name = "chkSaveVodChunksInfo";
+            this.chkSaveVodChunksInfo.Size = new System.Drawing.Size(194, 17);
+            this.chkSaveVodChunksInfo.TabIndex = 18;
+            this.chkSaveVodChunksInfo.Text = "Сохранять информацию о чанках";
+            this.chkSaveVodChunksInfo.UseVisualStyleBackColor = true;
+            this.chkSaveVodChunksInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodChunksInfo_CheckedChanged);
+            // 
+            // chkSaveVodInfo
+            // 
+            this.chkSaveVodInfo.AutoSize = true;
+            this.chkSaveVodInfo.Location = new System.Drawing.Point(207, 165);
+            this.chkSaveVodInfo.Name = "chkSaveVodInfo";
+            this.chkSaveVodInfo.Size = new System.Drawing.Size(190, 17);
+            this.chkSaveVodInfo.TabIndex = 17;
+            this.chkSaveVodInfo.Text = "Сохранять информацию о видео";
+            this.chkSaveVodInfo.UseVisualStyleBackColor = true;
+            this.chkSaveVodInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodInfo_CheckedChanged);
             // 
             // chkUseLocalTime
             // 
@@ -545,69 +567,47 @@ namespace Twitch_prime_downloader
             this.toolStripMenuItem1,
             this.openVideoInBrowserToolStripMenuItem});
             this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-            this.contextMenuStreamImage.Size = new System.Drawing.Size(317, 130);
+            this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 120);
             // 
             // miCopyVideoUrl
             // 
             this.miCopyVideoUrl.Name = "miCopyVideoUrl";
-            this.miCopyVideoUrl.Size = new System.Drawing.Size(316, 24);
+            this.miCopyVideoUrl.Size = new System.Drawing.Size(282, 22);
             this.miCopyVideoUrl.Text = "Скопировать ссылку на видео";
             this.miCopyVideoUrl.Click += new System.EventHandler(this.miCopyVideoUrl_Click);
             // 
             // copyImageUrlToolStripMenuItem
             // 
             this.copyImageUrlToolStripMenuItem.Name = "copyImageUrlToolStripMenuItem";
-            this.copyImageUrlToolStripMenuItem.Size = new System.Drawing.Size(316, 24);
+            this.copyImageUrlToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.copyImageUrlToolStripMenuItem.Text = "Скопировать ссылку на изображение";
             this.copyImageUrlToolStripMenuItem.Click += new System.EventHandler(this.CopyImageUrlToolStripMenuItem_Click);
             // 
             // copyStreamInfoJsonToolStripMenuItem
             // 
             this.copyStreamInfoJsonToolStripMenuItem.Name = "copyStreamInfoJsonToolStripMenuItem";
-            this.copyStreamInfoJsonToolStripMenuItem.Size = new System.Drawing.Size(316, 24);
+            this.copyStreamInfoJsonToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.copyStreamInfoJsonToolStripMenuItem.Text = "Скопировать информацию о стриме";
             this.copyStreamInfoJsonToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamInfoJsonToolStripMenuItem_Click);
             // 
             // saveImageAssToolStripMenuItem
             // 
             this.saveImageAssToolStripMenuItem.Name = "saveImageAssToolStripMenuItem";
-            this.saveImageAssToolStripMenuItem.Size = new System.Drawing.Size(316, 24);
+            this.saveImageAssToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.saveImageAssToolStripMenuItem.Text = "Сохранить изображение как...";
             this.saveImageAssToolStripMenuItem.Click += new System.EventHandler(this.saveImageAssToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(313, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(279, 6);
             // 
             // openVideoInBrowserToolStripMenuItem
             // 
             this.openVideoInBrowserToolStripMenuItem.Name = "openVideoInBrowserToolStripMenuItem";
-            this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(316, 24);
+            this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
             this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
-            // 
-            // chkSaveVodInfo
-            // 
-            this.chkSaveVodInfo.AutoSize = true;
-            this.chkSaveVodInfo.Location = new System.Drawing.Point(207, 165);
-            this.chkSaveVodInfo.Name = "chkSaveVodInfo";
-            this.chkSaveVodInfo.Size = new System.Drawing.Size(190, 17);
-            this.chkSaveVodInfo.TabIndex = 17;
-            this.chkSaveVodInfo.Text = "Сохранять информацию о видео";
-            this.chkSaveVodInfo.UseVisualStyleBackColor = true;
-            this.chkSaveVodInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodInfo_CheckedChanged);
-            // 
-            // chkSaveChunksInfo
-            // 
-            this.chkSaveChunksInfo.AutoSize = true;
-            this.chkSaveChunksInfo.Location = new System.Drawing.Point(403, 165);
-            this.chkSaveChunksInfo.Name = "chkSaveChunksInfo";
-            this.chkSaveChunksInfo.Size = new System.Drawing.Size(194, 17);
-            this.chkSaveChunksInfo.TabIndex = 18;
-            this.chkSaveChunksInfo.Text = "Сохранять информацию о чанках";
-            this.chkSaveChunksInfo.UseVisualStyleBackColor = true;
-            this.chkSaveChunksInfo.CheckedChanged += new System.EventHandler(this.chkSaveChunksInfo_CheckedChanged);
             // 
             // Form1
             // 
@@ -690,6 +690,6 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox chkUseLocalTime;
         private System.Windows.Forms.CheckBox chkSaveVodInfo;
-        private System.Windows.Forms.CheckBox chkSaveChunksInfo;
+        private System.Windows.Forms.CheckBox chkSaveVodChunksInfo;
     }
 }

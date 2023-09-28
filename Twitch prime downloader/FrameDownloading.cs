@@ -245,7 +245,7 @@ namespace Twitch_prime_downloader
             int errorCode = await downloadAbstractor.Download(OutputFilePath,
                 StreamRootUrl, _chunks, _chunkFrom, ChunkTo, DownloadMode,
                 OnConnecting, OnChunkDownloadStarted, OnChunkDownloadProgressed,
-                OnChunkDownloadFinished, OnChunkChanged, OnChunkMergingFinished, config.SaveChunksInfo);
+                OnChunkDownloadFinished, OnChunkChanged, OnChunkMergingFinished, config.SaveVodChunksInfo);
 
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;

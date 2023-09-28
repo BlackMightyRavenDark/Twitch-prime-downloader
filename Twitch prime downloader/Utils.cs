@@ -15,7 +15,7 @@ namespace Twitch_prime_downloader
         public static List<FrameStream> framesStream = new List<FrameStream>();
         public static List<FrameDownloading> framesDownloading = new List<FrameDownloading>();
 
-        public static readonly MainConfiguration config = new MainConfiguration();
+        public static readonly Configurator config = new Configurator();
 
         public static readonly Random random = new Random((int)DateTime.Now.Ticks);
 
