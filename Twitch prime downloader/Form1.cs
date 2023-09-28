@@ -25,10 +25,75 @@ namespace Twitch_prime_downloader
         {
             MultiThreadedDownloader.SetMaximumConnectionsLimit(100);
 
+            config.Saving += (s, json) =>
+            {
+                json["downloadingPath"] = config.DownloadingDirPath;
+                json["tempPath"] = config.TempDirPath;
+                json["fileNameFormat"] = config.FileNameFormat;
+                json["lastUsedPath"] = config.LastUsedDirPath;
+                json["browserExe"] = config.BrowserExeFiLePath;
+                json["useLocalVodDate"] = config.UseLocalVodDate;
+                json["saveVodInfo"] = config.SaveVodInfo;
+                json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
+            };
+            config.Loading += (s, json) =>
+            {
+                JToken jt = json.Value<JToken>("downloadingPath");
+                if (jt != null)
+                {
+                    config.DownloadingDirPath = jt.Value<string>();
+                }
+
+                jt = json.Value<JToken>("tempPath");
+                if (jt != null)
+                {
+                    config.TempDirPath = jt.Value<string>();
+                }
+
+                jt = json.Value<JToken>("lastUsedPath");
+                if (jt != null)
+                {
+                    config.LastUsedDirPath = jt.Value<string>();
+                }
+
+                jt = json.Value<JToken>("fileNameFormat");
+                if (jt != null)
+                {
+                    config.FileNameFormat = jt.Value<string>();
+                    if (string.IsNullOrEmpty(config.FileNameFormat))
+                    {
+                        config.FileNameFormat = FILENAME_FORMAT_DEFAULT;
+                    }
+                }
+
+                jt = json.Value<JToken>("browserExe");
+                if (jt != null)
+                {
+                    config.BrowserExeFiLePath = jt.Value<string>();
+                }
+
+                jt = json.Value<JToken>("useLocalVodDate");
+                config.UseLocalVodDate = jt != null ? jt.Value<bool>() : false;
+
+                jt = json.Value<JToken>("saveVodInfo");
+                if (jt != null)
+                {
+                    config.SaveVodInfo = jt.Value<bool>();
+                }
+
+                jt = json.Value<JToken>("saveVodChunksInfo");
+                if (jt != null)
+                {
+                    config.SaveVodChunksInfo = jt.Value<bool>();
+                }
+            };
+            config.Loaded += (s) =>
+            {
+                chkUseLocalTime.Checked = config.UseLocalVodDate;
+                chkSaveVodInfo.Checked = config.SaveVodInfo;
+                chkSaveVodChunksInfo.Checked = config.SaveVodChunksInfo;
+            };
             config.Load();
-            chkUseLocalTime.Checked = config.UseLocalVodDate;
-            chkSaveVodInfo.Checked = config.SaveVodInfo;
-            chkSaveChunksInfo.Checked = config.SaveChunksInfo;
 
             if (File.Exists(config.ChannelListFilePath))
             {
@@ -594,9 +659,7 @@ namespace Twitch_prime_downloader
                 config.DownloadingDirPath : config.SelfDirPath;
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                config.DownloadingDirPath =
-                    folderBrowserDialog.SelectedPath.EndsWith("\\")
-                    ? folderBrowserDialog.SelectedPath : folderBrowserDialog.SelectedPath + "\\";
+                config.DownloadingDirPath = folderBrowserDialog.SelectedPath;
 
                 textBox_DownloadingPath.Text = config.DownloadingDirPath;
             }
@@ -715,9 +778,9 @@ namespace Twitch_prime_downloader
             config.SaveVodInfo = chkSaveVodInfo.Checked;
         }
 
-        private void chkSaveChunksInfo_CheckedChanged(object sender, EventArgs e)
+        private void chkSaveVodChunksInfo_CheckedChanged(object sender, EventArgs e)
         {
-            config.SaveChunksInfo = chkSaveChunksInfo.Checked;
+            config.SaveVodChunksInfo = chkSaveVodChunksInfo.Checked;
         }
     }
 }
