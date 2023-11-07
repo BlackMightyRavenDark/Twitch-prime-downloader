@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Web;
 using Newtonsoft.Json.Linq;
 using MultiThreadedDownloaderLib;
@@ -18,7 +19,6 @@ namespace Twitch_prime_downloader
         /// </summary>
         public const string TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko";
 
-        public const string TWITCH_ACCEPT_V5_STRING = "application/vnd.twitchtv.v5+json";
         public const string TWITCH_HELIX_VIDEOS_ENDPOINT_URL = "https://api.twitch.tv/helix/videos";
         public const string TWITCH_HELIX_USERS_ENDPOINT_URL = "https://api.twitch.tv/helix/users";
 
@@ -124,31 +124,6 @@ namespace Twitch_prime_downloader
             json.Add(new JProperty("extensions", jExtensions));
 
             return json;
-        }
-
-        /// <summary>
-        /// WARNING!!! Do not use this body if you are signed in!!!
-        /// </summary>
-        public static JArray GenerateVodMutedSegmentsInfoRequestBody(string vodId)
-        {
-            const string hashValue = "c36e7400657815f4704e6063d265dff766ed8fc1590361c6d71e4368805e0b49";
-            JObject jPersistedQuery = new JObject();
-            jPersistedQuery["version"] = 1;
-            jPersistedQuery["sha256Hash"] = hashValue;
-
-            JObject jExtensions = new JObject();
-            jExtensions.Add(new JProperty("persistedQuery", jPersistedQuery));
-
-            JObject jVariables = new JObject();
-            jVariables["vodID"] = vodId;
-            
-            JObject json = new JObject();
-            json["operationName"] = "VideoPlayer_MutedSegmentsAlertOverlay";
-            json.Add(new JProperty("variables", jVariables));
-            json.Add(new JProperty("extensions", jExtensions));
-
-
-            return new JArray() { json };
         }
 
         /// <summary>
@@ -404,61 +379,61 @@ namespace Twitch_prime_downloader
                 vod.GameInfo.ImagePreviewTemplateUrl = UNKNOWN_GAME_URL;
             }
 
-            TwitchVodMutedSegmentsResult mutedSegmentsResult = GetVodMutedSegments(vod.VideoId);
-            if (mutedSegmentsResult.ErrorCode == 200)
-            {
-                ParseMutedSegments(mutedSegmentsResult.MutedSegments, vod.MutedSegments);
-            }
+            vod.MutedSegments = GetVodMutedSegments(vod);
 
             return vod;
         }
 
-        /// <summary>
-        /// WARNING!!! Do not use this method if you are signed in!!!
-        /// </summary>
-        public TwitchVodMutedSegmentsResult GetVodMutedSegments(string vodId)
+        public TwitchVodMutedSegments GetVodMutedSegments(TwitchVod vod)
         {
-            //Official Helix API does not working properly. So, we need to use the GQL API.
-            JArray body = GenerateVodMutedSegmentsInfoRequestBody(vodId);
-            int errorCode = HttpsPost(TWITCH_GQL_API_URL, body.ToString(), out string response);
+            //Official Helix API does not working properly.
+            //So, we need to do some dirty perversions.
+
+            VodPlaylistDownloader vodPlaylistDownloader = new VodPlaylistDownloader();
+            int errorCode = vodPlaylistDownloader.DownloadAndParse(
+                vod.VideoId, vod.StreamId, vod.ImagePreviewTemplateUrl, vod.IsHighlight(), null);
             if (errorCode == 200)
             {
-                try
+                TwitchVodMutedSegments mutedSegments = new TwitchVodMutedSegments();
+                ParseMutedSegments(vodPlaylistDownloader.ParsedPlaylist, mutedSegments);
+                if (mutedSegments.Segments.Count > 0)
                 {
-                    JArray jArray = JArray.Parse(response);
-                    JObject jVideo = jArray.Value<JObject>(0).Value<JObject>("data").Value<JObject>("video");
-                    JObject jMutedSegmentConnection = jVideo.Value<JObject>("muteInfo").Value<JObject>("mutedSegmentConnection");
-                    JArray segments = jMutedSegmentConnection != null ? jMutedSegmentConnection.Value<JArray>("nodes") : null;
-                    if (segments == null)
-                    {
-                        errorCode = 404;
-                    }
-                    return new TwitchVodMutedSegmentsResult(segments, errorCode);
+                    mutedSegments.CalculateTotalLength();
+                    mutedSegments.BuildSegmentList();
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-                    return new TwitchVodMutedSegmentsResult(null, 404);
-                }
+                return mutedSegments;
             }
-            return new TwitchVodMutedSegmentsResult(null, errorCode);
+
+            return null;
         }
 
-        public static void ParseMutedSegments(JArray jArray, TwitchVodMutedSegments mutedChunks)
+        public static void ParseMutedSegments(List<TwitchVodChunk> chunkList, TwitchVodMutedSegments result)
         {
-            mutedChunks.Clear();
-            if (jArray != null && jArray.Count > 0)
+            result.Clear();
+            List<TwitchVodChunk> segmentList = null;
+            for (int i = 0; i < chunkList.Count; ++i)
             {
-                for (int i = 0; i < jArray.Count; ++i)
+                if (chunkList[i].GetState() != TwitchVodChunkState.NotMuted)
                 {
-                    int offset = jArray[i].Value<int>("offset");
-                    int dur = jArray[i].Value<int>("duration");
-                    mutedChunks.Segments.Add(new TwitchVodMutedSegment(offset, dur));
-                    mutedChunks.TotalLength = new TimeSpan(mutedChunks.TotalLength.Ticks + TimeSpan.FromSeconds(dur).Ticks);
-                    DateTime start = DateTime.MinValue + TimeSpan.FromSeconds(offset);
-                    DateTime end = DateTime.MinValue + TimeSpan.FromSeconds(offset + dur);
-                    mutedChunks.SegmentList.Add($"{start:HH:mm:ss} - {end:HH:mm:ss}");
+                    if (segmentList == null)
+                    {
+                        segmentList = new List<TwitchVodChunk>();
+                    }
+
+                    TwitchVodChunk chunk = new TwitchVodChunk(
+                        chunkList[i].FileName, chunkList[i].Offset, chunkList[i].Duration);
+                    segmentList.Add(chunk);
                 }
+                else if (segmentList != null)
+                {
+                    result.Segments.Add(segmentList);
+                    segmentList = null;
+                }
+            }
+
+            if (segmentList != null)
+            {
+                result.Segments.Add(segmentList);
             }
         }
         
@@ -502,43 +477,50 @@ namespace Twitch_prime_downloader
             return 400;
         }
 
-        public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
+        public static int GetVodPlaylistUrl(string vodId, string streamId,
+            string imagePreviewUrl, bool isHighlight, out string playlistUrl)
         {
             playlistUrl = null;
-            int errorCode = GetVodAccessToken(vod.VideoId, out JObject token);
+            int errorCode = GetVodAccessToken(vodId, out JObject token);
             if (errorCode == 200)
             {
-                playlistUrl = GenerateVodPlaylistManifestUrl(vod.VideoId, token);
+                playlistUrl = GenerateVodPlaylistManifestUrl(vodId, token);
                 errorCode = DownloadString(playlistUrl, out string manifest);
                 if (errorCode == 200)
                 {
                     TwitchPlaylistManifestParser parser = new TwitchPlaylistManifestParser(manifest);
                     playlistUrl = parser.FindPlaylistUrl("chunked");
                     return !string.IsNullOrEmpty(playlistUrl) && !string.IsNullOrWhiteSpace(playlistUrl) &&
-                        FileDownloader.GetUrlContentLength(playlistUrl, null, out _, out _) == 200 ? 200 : 400;
+                        FileDownloader.GetUrlResponseHeaders(playlistUrl, null, out _, out _) == 200 ? 200 : 400;
                 }
             }
-            if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
+            if (!string.IsNullOrEmpty(imagePreviewUrl) && !string.IsNullOrWhiteSpace(imagePreviewUrl))
             {
                 errorCode = 404;
                 for (int i = 0; i < TwitchFileServerIds.Length && errorCode != 200; ++i)
                 {
-                    if (vod.IsHighlight())
+                    if (isHighlight)
                     {
                         playlistUrl = TWITCH_PLAYLIST_HIGHLIGHT_URL_TEMPLATE.Replace("<server_id>", TwitchFileServerIds[i])
-                            .Replace("<stream_id>", vod.StreamId).Replace("<video_id>", vod.VideoId);
+                            .Replace("<stream_id>", streamId).Replace("<video_id>", vodId);
                     }
                     else
                     {
                         playlistUrl = TWITCH_PLAYLIST_ARCHIVE_URL_TEMPLATE.Replace("<server_id>", TwitchFileServerIds[i])
-                            .Replace("<stream_id>", vod.StreamId);
+                            .Replace("<stream_id>", streamId);
                     }
-                    errorCode = FileDownloader.GetUrlContentLength(playlistUrl, null, out _, out _);
+                    errorCode = FileDownloader.GetUrlResponseHeaders(playlistUrl, null, out _, out _);
                 }
                 return errorCode;
             }
 
             return 400;
+        }
+
+        public static int GetVodPlaylistUrl(TwitchVod vod, out string playlistUrl)
+        {
+            return GetVodPlaylistUrl(vod.VideoId, vod.StreamId,
+                vod.ImagePreviewTemplateUrl, vod.IsHighlight(), out playlistUrl);
         }
 
         /// <summary>
@@ -592,24 +574,42 @@ namespace Twitch_prime_downloader
         }
     }
 
-
-    public sealed class TwitchVodMutedSegment
-    {
-        public int Offset { get; private set; }
-        public int Duration { get; private set; }
-
-        public TwitchVodMutedSegment(int offset, int duration)
-        {
-            Offset = offset;
-            Duration = duration;
-        }
-    }
-
     public sealed class TwitchVodMutedSegments
     {
-        public List<TwitchVodMutedSegment> Segments { get; private set; } = new List<TwitchVodMutedSegment>();
+        public List<List<TwitchVodChunk>> Segments { get; private set; } = new List<List<TwitchVodChunk>>();
         public List<string> SegmentList { get; private set; } = new List<string>();
-        public TimeSpan TotalLength { get; set; } = new TimeSpan(0L);
+        public TimeSpan TotalLength { get; private set; } = TimeSpan.Zero;
+
+        public void CalculateTotalLength()
+        {
+            TotalLength = TimeSpan.Zero;
+
+            foreach (List<TwitchVodChunk> list in Segments)
+            {
+                foreach (TwitchVodChunk chunk in list)
+                {
+                    TotalLength = TotalLength.Add(TimeSpan.FromSeconds(chunk.Duration));
+                }
+            }
+        }
+
+        public void BuildSegmentList()
+        {
+            SegmentList.Clear();
+            foreach (List<TwitchVodChunk> list in Segments)
+            {
+                string t = SegmentToString(list);
+                SegmentList.Add(t);
+            }
+        }
+
+        private string SegmentToString(List<TwitchVodChunk> segment)
+        {
+            double dur = segment.Select(x => x.Duration).Sum();
+            TimeSpan start = TimeSpan.FromSeconds(segment[0].Offset);
+            TimeSpan end = TimeSpan.FromSeconds(segment[0].Offset + dur);
+            return $"{start:hh':'mm':'ss} - {end:hh':'mm':'ss}";
+        }
 
         public void Clear()
         {
@@ -619,33 +619,31 @@ namespace Twitch_prime_downloader
         }
     }
 
-    public sealed class TwitchVodMutedSegmentsResult
-    {
-        public JArray MutedSegments { get; private set; }
-        public int ErrorCode { get; private set; }
-
-        public TwitchVodMutedSegmentsResult(JArray mutedSegments, int errorCode)
-        {
-            MutedSegments = mutedSegments;
-            ErrorCode = errorCode;
-        }
-    }
-
     public enum TwitchVodChunkState { NotMuted, Muted, Unmuted };
 
     public sealed class TwitchVodChunk
     {
         public string FileName { get; private set; }
+        public double Offset { get; }
+        public double Duration { get; }
 
-        public TwitchVodChunk(string fileName)
+        public TwitchVodChunk(string fileName, double offset, double duration)
         {
             FileName = fileName;
+            Offset = offset;
+            Duration = duration;
         }
+
+        public TwitchVodChunk(TwitchVodChunk chunk) :
+            this(chunk.FileName, chunk.Offset, chunk.Duration)
+        { }
 
         public string GetName()
         {
-            return FileName.Substring(0, FileName.IndexOf(
-                GetState() == TwitchVodChunkState.NotMuted ? ".ts" : "-"));
+            int n = FileName.IndexOf(
+                GetState() == TwitchVodChunkState.NotMuted ? ".ts" : "-",
+                StringComparison.OrdinalIgnoreCase);
+            return FileName.Substring(0, n);
         }
 
         public TwitchVodChunkState GetState()
@@ -745,7 +743,7 @@ namespace Twitch_prime_downloader
         public TimeSpan Length { get; set; }
         public int ViewCount { get; set; }
         public string Type { get; set; }
-        public TwitchVodMutedSegments MutedSegments { get; private set; } = new TwitchVodMutedSegments();
+        public TwitchVodMutedSegments MutedSegments { get; set; }
         public string DateCreationString { get; set; }
         public DateTime DateCreation { get; set; }
         public DateTime DateDeletion { get; set; }

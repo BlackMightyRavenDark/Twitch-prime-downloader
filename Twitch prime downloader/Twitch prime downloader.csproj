@@ -83,11 +83,11 @@
     <Compile Include="Configurator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ThreadGetVodPlaylist.cs" />
     <Compile Include="TwitchApi.cs" />
     <Compile Include="TwitchPlaylistManifestParser.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoChunk.cs" />
+    <Compile Include="VodPlaylistDownloader.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
