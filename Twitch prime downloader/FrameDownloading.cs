@@ -190,7 +190,7 @@ namespace Twitch_prime_downloader
         {
             Invoke(new MethodInvoker(() =>
             {
-                _chunks[chunkId] = new TwitchVodChunk(chunk.FileName);
+                _chunks[chunkId] = new TwitchVodChunk(chunk);
                 lbFileList.Items[chunkId] = chunk.FileName;
             }));
         }

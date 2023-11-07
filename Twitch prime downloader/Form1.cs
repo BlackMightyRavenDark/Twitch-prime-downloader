@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using MultiThreadedDownloaderLib;
@@ -286,51 +286,42 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void OnThreadGetVodPlaylist_Completed(object sender, int errorCode)
+        private void OnVodPlaylistDownloader_WorkFinished(object sender, int errorCode)
         {
-            ThreadGetVodPlaylist thrObj = sender as ThreadGetVodPlaylist;
-            if (errorCode == 200)
+            Invoke(new MethodInvoker(() =>
             {
-                if (config.DebugMode)
+                VodPlaylistDownloader playlistDownloader = sender as VodPlaylistDownloader;
+                if (errorCode == 200)
                 {
-                    memoDebug.Text = thrObj.PlaylistString;
-                }
+                    if (config.DebugMode)
+                    {
+                        memoDebug.Text = playlistDownloader.PlaylistRaw;
+                    }
 
-                string streamRoot = ExtractUrlFilePath(thrObj.PlaylistUrl);
-                FrameDownloading frd = new FrameDownloading(thrObj.StreamInfo, streamRoot);
-                frd.Parent = panelDownloads;
-                frd.Location = new Point(0, 0);
-                frd.Closed += OnFrameDownload_Closed;
-                frd.SetChunks(thrObj.Chunks);
+                    string streamRoot = ExtractUrlFilePath(playlistDownloader.PlaylistUrl);
+                    FrameDownloading frd = new FrameDownloading(playlistDownloader.TwitchVod, streamRoot);
+                    frd.Parent = panelDownloads;
+                    frd.Location = new Point(0, 0);
+                    frd.Closed += OnFrameDownload_Closed;
+                    frd.SetChunks(playlistDownloader.ParsedPlaylist);
 
-                frd.ChunkFrom = 0;
-                frd.ChunkTo = frd.Chunks.Length - 1;
+                    frd.ChunkFrom = 0;
+                    frd.ChunkTo = frd.Chunks.Length - 1;
 
-                framesDownloading.Add(frd);
+                    framesDownloading.Add(frd);
 
-                tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
-                if (tabControlMain.SelectedTab == tabPageDownloading)
-                {
-                    StackFramesDownloading();
-                }
-            }
-            else
-            {
-                MessageBox.Show($"Error {errorCode}", "Ошибка!",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-         
-            foreach (object ctl in thrObj.controls)
-            {
-                if (ctl is ToolStripMenuItem)
-                {
-                    (ctl as ToolStripMenuItem).Enabled = true;
+                    tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
+                    if (tabControlMain.SelectedTab == tabPageDownloading)
+                    {
+                        StackFramesDownloading();
+                    }
                 }
                 else
                 {
-                    (ctl as Control).Enabled = true;
+                    MessageBox.Show($"Error {errorCode}", "Ошибка!",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }
+            }));
         }
 
         private void OnStreamImageMouseDown(object sender, MouseEventArgs e)
@@ -631,7 +622,7 @@ namespace Twitch_prime_downloader
             btnSearchByUrls.Enabled = true;
         }
 
-        private void OnDownloadButtonClick(object sender)
+        private async void OnDownloadButtonClick(object sender)
         {
             if (string.IsNullOrEmpty(config.DownloadingDirPath))
             {
@@ -642,12 +633,14 @@ namespace Twitch_prime_downloader
 
             FrameStream frameStream = sender as FrameStream;
             frameStream.btnDownload.Enabled = false;
-            ThreadGetVodPlaylist threadGetVodPlaylist = new ThreadGetVodPlaylist(frameStream.StreamInfo);
-            threadGetVodPlaylist.controls.Add(frameStream.btnDownload);
-            threadGetVodPlaylist.Completed += OnThreadGetVodPlaylist_Completed;
 
-            Thread thr = new Thread(threadGetVodPlaylist.Work);
-            thr.Start(SynchronizationContext.Current);
+            await Task.Run(() =>
+            {
+                VodPlaylistDownloader playlistDownloader = new VodPlaylistDownloader();
+                playlistDownloader.DownloadAndParse(frameStream.StreamInfo, OnVodPlaylistDownloader_WorkFinished);
+            });
+
+            frameStream.btnDownload.Enabled = true;
         }
 
         private void btnSelectDownloadingPath_Click(object sender, EventArgs e)
