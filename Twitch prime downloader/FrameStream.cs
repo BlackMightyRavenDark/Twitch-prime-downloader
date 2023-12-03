@@ -54,7 +54,7 @@ namespace Twitch_prime_downloader
             lblChannelName.Text = StreamInfo.UserInfo.DisplayName;
             lblGameName.Text = StreamInfo.GameInfo.Title;
             lblBroadcastType.Text = StreamInfo.Type;
-            if (StreamInfo.MutedSegments.Segments.Count > 0)
+            if (StreamInfo.MutedSegments != null && StreamInfo.MutedSegments.Segments.Count > 0)
             {
                 lblMutedChunks.Text = $"Muted segments: {StreamInfo.MutedSegments.Segments.Count}";
                 lblMutedChunks.Left = Width - lblMutedChunks.Width;
