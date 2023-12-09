@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using TwitchApiLib;
 using MultiThreadedDownloaderLib;
-using static Twitch_prime_downloader.TwitchApi;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
@@ -32,7 +32,7 @@ namespace Twitch_prime_downloader
                 json["fileNameFormat"] = config.FileNameFormat;
                 json["lastUsedPath"] = config.LastUsedDirPath;
                 json["browserExe"] = config.BrowserExeFiLePath;
-                json["useLocalVodDate"] = config.UseLocalVodDate;
+                json["useGmtVodDates"] = config.UseGmtVodDates;
                 json["saveVodInfo"] = config.SaveVodInfo;
                 json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
             };
@@ -72,8 +72,8 @@ namespace Twitch_prime_downloader
                     config.BrowserExeFiLePath = jt.Value<string>();
                 }
 
-                jt = json.Value<JToken>("useLocalVodDate");
-                config.UseLocalVodDate = jt != null ? jt.Value<bool>() : false;
+                jt = json.Value<JToken>("useGmtVodDates");
+                config.UseGmtVodDates = jt != null ? jt.Value<bool>() : true;
 
                 jt = json.Value<JToken>("saveVodInfo");
                 if (jt != null)
@@ -89,27 +89,35 @@ namespace Twitch_prime_downloader
             };
             config.Loaded += (s) =>
             {
-                chkUseLocalTime.Checked = config.UseLocalVodDate;
+                chkUseGmtTime.Checked = config.UseGmtVodDates;
                 chkSaveVodInfo.Checked = config.SaveVodInfo;
                 chkSaveVodChunksInfo.Checked = config.SaveVodChunksInfo;
+                textBox_DownloadingPath.Text = config.DownloadingDirPath;
+                textBox_FileNameFormat.Text = config.FileNameFormat;
+                textBox_Browser.Text = config.BrowserExeFiLePath;
+
+                if (File.Exists(config.ChannelListFilePath))
+                {
+                    cboxChannelName.LoadFromFile(config.ChannelListFilePath);
+
+                    if (cboxChannelName.Items.Count > 0)
+                    {
+                        cboxChannelName.SelectedIndex = 0;
+                    }
+                }
+
+                if (File.Exists(config.UrlListFilePath))
+                {
+                    string[] strings = File.ReadAllLines(config.UrlListFilePath);
+                    textBoxUrls.Lines = strings;
+                }
+
+                if (!config.DebugMode)
+                {
+                    tabControlMain.TabPages.Remove(tabPageDebug);
+                }
             };
             config.Load();
-
-            if (File.Exists(config.ChannelListFilePath))
-            {
-                cboxChannelName.LoadFromFile(config.ChannelListFilePath);
-
-                if (cboxChannelName.Items.Count > 0)
-                {
-                    cboxChannelName.SelectedIndex = 0;
-                }
-            }
-
-            if (File.Exists(config.UrlListFilePath))
-            {
-                string[] strings = File.ReadAllLines(config.UrlListFilePath);
-                textBoxUrls.Lines = strings;
-            }
 
             foreach (string s in Environment.GetCommandLineArgs())
             {
@@ -119,14 +127,6 @@ namespace Twitch_prime_downloader
                     break;
                 }
             }
-
-            if (!config.DebugMode)
-            {
-                tabControlMain.TabPages.Remove(tabPageDebug);
-            }
-            textBox_DownloadingPath.Text = config.DownloadingDirPath;
-            textBox_FileNameFormat.Text = config.FileNameFormat;
-            textBox_Browser.Text = config.BrowserExeFiLePath;
 
             tabControlMain.SelectedTab = tabPageSearch;
         }
@@ -279,52 +279,14 @@ namespace Twitch_prime_downloader
         private void OnFrameStream_Activated(object sender)
         {
             activeFrameStream = sender as FrameStream;
-            for (int i = 0; i < framesStream.Count; ++i)
+            foreach (FrameStream frameStream in framesStream)
             {
-                framesStream[i].BackColor =
-                    activeFrameStream == framesStream[i] ? FrameStream.colorActive : FrameStream.colorInactive;
+                frameStream.BackColor = frameStream == activeFrameStream ?
+                    FrameStream.ColorActive : FrameStream.ColorInactive;
             }
         }
 
-        private void OnVodPlaylistDownloader_WorkFinished(object sender, int errorCode)
-        {
-            Invoke(new MethodInvoker(() =>
-            {
-                VodPlaylistDownloader playlistDownloader = sender as VodPlaylistDownloader;
-                if (errorCode == 200)
-                {
-                    if (config.DebugMode)
-                    {
-                        memoDebug.Text = playlistDownloader.PlaylistRaw;
-                    }
-
-                    string streamRoot = ExtractUrlFilePath(playlistDownloader.PlaylistUrl);
-                    FrameDownloading frd = new FrameDownloading(playlistDownloader.TwitchVod, streamRoot);
-                    frd.Parent = panelDownloads;
-                    frd.Location = new Point(0, 0);
-                    frd.Closed += OnFrameDownload_Closed;
-                    frd.SetChunks(playlistDownloader.ParsedPlaylist);
-
-                    frd.ChunkFrom = 0;
-                    frd.ChunkTo = frd.Chunks.Length - 1;
-
-                    framesDownloading.Add(frd);
-
-                    tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
-                    if (tabControlMain.SelectedTab == tabPageDownloading)
-                    {
-                        StackFramesDownloading();
-                    }
-                }
-                else
-                {
-                    MessageBox.Show($"Error {errorCode}", "Ошибка!",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }));
-        }
-
-        private void OnStreamImageMouseDown(object sender, MouseEventArgs e)
+        private void OnFrameStream_ImageMouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -332,98 +294,12 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private int GetChannelVideoList_Helix(string channelName, int maxVideos, out string videoList)
-        {
-            videoList = null;
-            TwitchApi api = new TwitchApi();
-            TwitchUserInfo userInfo = new TwitchUserInfo();
-            int errorCode = api.GetUserInfo_Helix(channelName, userInfo, out _);
-            if (errorCode == 200)
-            {
-                errorCode = api.HelixOauthToken.Update(TWITCH_CLIENT_ID);
-                if (errorCode == 200)
-                {
-                    string url = api.GetChannelVideosRequestUrl_Helix(userInfo.Id, maxVideos, null);
-                    FileDownloader d = new FileDownloader();
-                    d.Url = url;
-                    d.Headers.Add("Client-ID", TWITCH_CLIENT_ID);
-                    d.Headers.Add("Authorization", "Bearer " + api.HelixOauthToken.AccessToken);
-                    errorCode = d.DownloadString(out videoList);
-                }
-            }
-            return errorCode;
-        }
-
-        private int ParseVideosList_Helix(string aJsonString)
-        {
-            JObject json = JObject.Parse(aJsonString);
-            JArray jsonArr = json.Value<JArray>("data");
-            TwitchApi api = new TwitchApi();
-            for (int i = 0; i < jsonArr.Count; ++i)
-            {
-                lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
-                lbLog.Items.Add($"Обработка данных... {i + 1} / {jsonArr.Count}");
-
-                TwitchVod vod = api.ParseVodInfo(jsonArr[i] as JObject);
-
-                FrameStream frameStream = new FrameStream();
-                frameStream.Parent = panelStreams;
-                frameStream.Location = new Point(0, 0);
-                frameStream.Activated += OnFrameStream_Activated;
-                frameStream.ImageMouseDown += OnStreamImageMouseDown;
-                frameStream.DownloadButtonPressed += OnDownloadButtonClick;
-                frameStream.BackColor = FrameStream.colorInactive;
-                frameStream.SetStreamInfo(vod);
-                framesStream.Add(frameStream);
-
-                Application.DoEvents();
-            }
-            return jsonArr.Count;
-        }
-
-        private void DownloadImages()
-        {
-            if (framesStream.Count > 0)
-            {
-                for (int i = 0; i < framesStream.Count; ++i)
-                {
-                    lbLog.Items.RemoveAt(lbLog.Items.Count - 1);
-                    lbLog.Items.Add($"Скачивание изображений... {i + 1} / {framesStream.Count}");
-
-                    TwitchVod vod = framesStream[i].StreamInfo;
-
-                    string imgUrl = vod.ImagePreviewTemplateUrl.Replace("%{width}", "1920").Replace("%{height}", "1080");
-                    FileDownloader downloader = new FileDownloader();
-                    downloader.Url = imgUrl;
-                    
-                    if (downloader.Download(vod.ImageData) == 200)
-                    {
-                        framesStream[i].imageStream.Image = Image.FromStream(vod.ImageData);
-                    }
-                    else
-                    {
-                        Bitmap bmp = GenerateErrorImage();
-                        bmp.Save(vod.ImageData, ImageFormat.Bmp);
-                        framesStream[i].imageStream.Image = bmp;
-                    }
-
-                    downloader.Url = vod.GameInfo.ImagePreviewTemplateUrl.Replace("{width}", "52").Replace("{height}", "72");
-                    if (downloader.Download(vod.GameInfo.ImageData) == 200)
-                    {
-                        framesStream[i].imageGame.Image = Image.FromStream(vod.GameInfo.ImageData);
-                    }
-
-                    Application.DoEvents();
-                }
-            }
-        }
-
         private void CopyImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
         {
             TwitchVod vod = activeFrameStream.StreamInfo;
-            if (!string.IsNullOrEmpty(vod.ImagePreviewTemplateUrl) && !string.IsNullOrWhiteSpace(vod.ImagePreviewTemplateUrl))
+            if (!string.IsNullOrEmpty(vod.ThumbnailUrl) && !string.IsNullOrWhiteSpace(vod.ThumbnailUrl))
             {
-                string url = vod.ImagePreviewTemplateUrl.Replace("%{width}", "1920").Replace("%{height}", "1080");
+                string url = vod.FormatThumbnailUrl(1920, 1080);
                 SetClipboardText(url);
             }
         }
@@ -436,9 +312,9 @@ namespace Twitch_prime_downloader
         private void CopyStreamInfoJsonToolStripMenuItem_Click(object sender, EventArgs e)
         {
             TwitchVod vod = activeFrameStream.StreamInfo;
-            if (!string.IsNullOrEmpty(vod.InfoStringJson) && !string.IsNullOrWhiteSpace(vod.InfoStringJson))
+            if (!string.IsNullOrEmpty(vod.RawData) && !string.IsNullOrWhiteSpace(vod.RawData))
             {
-                SetClipboardText(vod.InfoStringJson);
+                SetClipboardText(vod.RawData);
             }
             else
             {
@@ -489,11 +365,11 @@ namespace Twitch_prime_downloader
                 cboxChannelName.Text = null;
             }
         }
-        
-        private void btnSearchChannelName_Click(object sender, EventArgs e)
+
+        private async void btnSearchChannelName_Click(object sender, EventArgs e)
         {
             btnSearchChannelName.Enabled = false;
-            string channelName = cboxChannelName.Text;
+            string channelName = cboxChannelName.Text?.Trim();
             if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
             {
                 MessageBox.Show("Не введено название канала!", "Ошибка!",
@@ -510,41 +386,68 @@ namespace Twitch_prime_downloader
             }
 
             lbLog.Items.Clear();
-            lbLog.Items.Add($"Скачивание списка стримов канала {channelName}...");
+            lbLog.Items.Add($"Скачивание списка видео канала {channelName}...");
             tabControlMain.SelectedTab = tabPageLog;
-            lbLog.Update();
             ClearFramesStream();
             tabPageStreams.Text = "Стримы";
 
-            int limit = 100;
-            if (rbSearchLimit.Checked)
+            uint limit = rbSearchLimit.Checked ? (uint)numericUpDownSearchLimit.Value : uint.MaxValue;
+            TwitchUserResult userResult = await Task.Run(() => TwitchUser.Get(channelName.ToLower()));
+            if (userResult.ErrorCode != 200)
             {
-                limit = (int)numericUpDownSearchLimit.Value;
+                lbLog.Items.Add($"Канал \"{channelName}\" не найден!");
+                btnSearchChannelName.Enabled = true;
+                return;
             }
-            int errorCode = GetChannelVideoList_Helix(channelName, limit, out string resList);
-            if (errorCode == 200)
+
+            List<TwitchVodResult> vodResults = await Task.Run(() => userResult.User.GetVideosMultiThreaded(limit));
+            if (vodResults.Count == 0)
             {
-                lbLog.Items.Add("Обработка данных...");
-                int count = ParseVideosList_Helix(resList);
-                tabPageStreams.Text = $"Стримы ({count})";
-                if (tabControlMain.SelectedTab == tabPageStreams)
+                lbLog.Items.Add("Видео не найдены!");
+                btnSearchChannelName.Enabled = true;
+                return;
+            }
+
+            vodResults.Sort((x, y) =>
+            {
+                if (x.ErrorCode != 200 || y.ErrorCode != 200) { return 0; }
+                return x.Vod.CreationDate > y.Vod.CreationDate ? -1 : 1;
+            });
+
+            lbLog.Items.Add($"Найдено {vodResults.Count} видео");
+            int errorCount = 0;
+            foreach (TwitchVodResult vodResult in vodResults)
+            {
+                if (vodResult.ErrorCode == 200)
                 {
-                    StackFramesStream();
+                    lbLog.Items.Add($"Создание фрейма для видео {vodResult.Vod.Id} \"{vodResult.Vod.Title}\"...");
+                    AddStreamItem(vodResult.Vod);
                 }
-                lbLog.Items.Add("Скачивание изображений...");
-                DownloadImages();
-                tabControlMain.SelectedTab = tabPageStreams;
-                lbLog.Items.Add("Готово!");
+                else
+                {
+                    errorCount++;
+                }
             }
-            else
+
+            if (errorCount > 0)
             {
-                lbLog.Items.Add("Стримы не найдены!");
+                lbLog.Items.Add($"Количество ошибок: {errorCount}");
+            }
+
+            int actualStreamCount = vodResults.Count - errorCount;
+            if (actualStreamCount > 0)
+            {
+                tabPageStreams.Text = $"Стримы ({actualStreamCount})";
+
+                StackFramesStream();
+
+                tabControlMain.SelectedTab = tabPageStreams;
             }
 
             btnSearchChannelName.Enabled = true;
         }
 
-        private void btnSearchByUrls_Click(object sender, EventArgs e)
+        private async void btnSearchByUrls_Click(object sender, EventArgs e)
         {
             btnSearchByUrls.Enabled = false;
 
@@ -563,7 +466,6 @@ namespace Twitch_prime_downloader
 
             ClearFramesStream();
 
-            JArray jsonArray = new JArray();
             for (int i = 0; i < urls.Length; ++i)
             {
                 if (string.IsNullOrEmpty(urls[i]) || string.IsNullOrWhiteSpace(urls[i]))
@@ -578,51 +480,56 @@ namespace Twitch_prime_downloader
                     continue;
                 }
 
-                TwitchApi twitchApi = new TwitchApi();
-                int errorCode = twitchApi.GetVodInfo(vodId, out string infoStringJson);
-                if (errorCode == 200)
+                if (uint.TryParse(vodId, out uint id))
                 {
-                    JObject jObject = JObject.Parse(infoStringJson);
+                    TwitchVodResult vodResult = await Task.Run(() => TwitchVod.Get(id));
+                    if (vodResult.ErrorCode == 200)
+                    {
+                        AddStreamItem(vodResult.Vod);
 
-                    jsonArray.Add(jObject.Value<JArray>("data")[0] as JObject);
-                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...OK");
+                        lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...OK");
+                    }
+                    else
+                    {
+                        lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED! Error code {vodResult.ErrorCode}");
+                    }
                 }
                 else
                 {
-                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED! Error code {errorCode}");
+                    lbLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED! Can't parse video ID!");
                 }
-                Application.DoEvents();
             }
 
-            if (jsonArray.Count > 0)
+            if (framesStream.Count > 0)
             {
-                lbLog.Items.Add("Обработка данных...");
-                JObject json = new JObject();
-                json.Add(new JProperty("data", jsonArray));
-                int count = ParseVideosList_Helix(json.ToString());
-                if (count > 0)
-                {
-                    tabPageStreams.Text = $"Стримы ({count})";
-                    lbLog.Items.Add("Скачивание изображений...");
-                    DownloadImages();
-                    StackFramesStream();
-                    tabControlMain.SelectedTab = tabPageStreams;
-                    lbLog.Items.Add("Готово!");
-                }
-                else
-                {
-                    lbLog.Items.Add("Стримы не найдены!");
-                }
-            }
-            else
-            {
-                lbLog.Items.Add("Стримы не найдены!");
+                tabPageStreams.Text = $"Стримы ({framesStream.Count})";
+                tabControlMain.SelectedTab = tabPageStreams;
             }
 
             btnSearchByUrls.Enabled = true;
         }
 
-        private async void OnDownloadButtonClick(object sender)
+        private void panelStreams_MouseDown(object sender, MouseEventArgs e)
+        {
+            foreach (FrameStream frameStream in framesStream)
+            {
+                frameStream.BackColor = FrameStream.ColorInactive;
+            }
+
+            activeFrameStream = null;
+        }
+
+        private void AddStreamItem(TwitchVod vod)
+        {
+            FrameStream frameStream = new FrameStream(vod);
+            frameStream.Parent = panelStreams;
+            frameStream.Activated += OnFrameStream_Activated;
+            frameStream.ImageMouseDown += OnFrameStream_ImageMouseDown;
+            frameStream.DownloadButtonClicked += OnFrameStream_DownloadButtonClick;
+            framesStream.Add(frameStream);
+        }
+
+        private async void OnFrameStream_DownloadButtonClick(object sender)
         {
             if (string.IsNullOrEmpty(config.DownloadingDirPath))
             {
@@ -634,11 +541,42 @@ namespace Twitch_prime_downloader
             FrameStream frameStream = sender as FrameStream;
             frameStream.btnDownload.Enabled = false;
 
-            await Task.Run(() =>
+            TwitchVodPlaylist playlist = null;
+            int errorCode = await Task.Run(() =>
             {
-                VodPlaylistDownloader playlistDownloader = new VodPlaylistDownloader();
-                playlistDownloader.DownloadAndParse(frameStream.StreamInfo, OnVodPlaylistDownloader_WorkFinished);
+                int e = frameStream.StreamInfo.GetPlaylist(out playlist);
+                if (e == 200) { playlist.Parse(); }
+                return e;
             });
+
+            if (errorCode == 200)
+            {
+                if (config.DebugMode)
+                {
+                    memoDebug.Text = playlist.PlaylistRaw;
+                }
+
+                FrameDownloading frd = new FrameDownloading(frameStream.StreamInfo, playlist);
+                frd.Parent = panelDownloads;
+                frd.Location = new Point(0, 0);
+                frd.Closed += OnFrameDownload_Closed;
+
+                frd.ChunkFrom = 0;
+                frd.ChunkTo = frd.Playlist.Count - 1;
+
+                framesDownloading.Add(frd);
+
+                tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
+                if (tabControlMain.SelectedTab == tabPageDownloading)
+                {
+                    StackFramesDownloading();
+                }
+            }
+            else
+            {
+                MessageBox.Show($"Error {errorCode}", "Ошибка!",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             frameStream.btnDownload.Enabled = true;
         }
@@ -674,7 +612,7 @@ namespace Twitch_prime_downloader
             if (sfd.ShowDialog() != DialogResult.Cancel)
             {
                 config.LastUsedDirPath = sfd.FileName;
-                activeFrameStream.StreamInfo.ImageData.SaveToFile(sfd.FileName);
+                activeFrameStream.StreamInfo.PreviewImageData.SaveToFile(sfd.FileName);
             }
             sfd.Dispose();
         }
@@ -713,7 +651,7 @@ namespace Twitch_prime_downloader
             Process process = new Process();
             process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFiLePath);
             process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFiLePath);
-            process.StartInfo.Arguments = activeFrameStream.StreamInfo.VideoUrl;
+            process.StartInfo.Arguments = activeFrameStream.StreamInfo.Url;
             process.Start();
         }
 
@@ -731,10 +669,10 @@ namespace Twitch_prime_downloader
         {
             if (activeFrameStream != null && activeFrameStream.StreamInfo != null)
             {
-                if (!string.IsNullOrEmpty(activeFrameStream.StreamInfo.VideoUrl) &&
-                    !string.IsNullOrWhiteSpace(activeFrameStream.StreamInfo.VideoUrl))
+                if (!string.IsNullOrEmpty(activeFrameStream.StreamInfo.Url) &&
+                    !string.IsNullOrWhiteSpace(activeFrameStream.StreamInfo.Url))
                 {
-                    SetClipboardText(activeFrameStream.StreamInfo.VideoUrl);
+                    SetClipboardText(activeFrameStream.StreamInfo.Url);
                 }
             }
         }
@@ -757,12 +695,12 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void chkUseLocalTime_CheckedChanged(object sender, EventArgs e)
+        private void chkUseGmtTime_CheckedChanged(object sender, EventArgs e)
         {
-            config.UseLocalVodDate = chkUseLocalTime.Checked;
+            config.UseGmtVodDates = chkUseGmtTime.Checked;
             foreach (FrameStream frameStream in framesStream)
             {
-                frameStream.UseLocalTime = config.UseLocalVodDate;
+                frameStream.UseGmtTime = config.UseGmtVodDates;
             }
         }
 

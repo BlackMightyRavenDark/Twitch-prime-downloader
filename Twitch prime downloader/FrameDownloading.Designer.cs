@@ -195,13 +195,13 @@
             this.contextMenuStreamTitle.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyStreamTitleToolStripMenuItem});
             this.contextMenuStreamTitle.Name = "contextMenuStreamTitle";
-            this.contextMenuStreamTitle.Size = new System.Drawing.Size(163, 26);
+            this.contextMenuStreamTitle.Size = new System.Drawing.Size(200, 48);
             // 
             // copyStreamTitleToolStripMenuItem
             // 
             this.copyStreamTitleToolStripMenuItem.Name = "copyStreamTitleToolStripMenuItem";
-            this.copyStreamTitleToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
-            this.copyStreamTitleToolStripMenuItem.Text = "CopyStreamTitle";
+            this.copyStreamTitleToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.copyStreamTitleToolStripMenuItem.Text = "Скопировать название";
             this.copyStreamTitleToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamTitleToolStripMenuItem_Click);
             // 
             // lbFileList
@@ -325,7 +325,7 @@
             this.progressBar1.Text = "doubleGauge1";
             this.progressBar1.Value2 = 65;
             // 
-            // FrameDownload
+            // FrameDownloading
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -348,7 +348,7 @@
             this.Controls.Add(this.lblOutputFilename);
             this.Controls.Add(this.pictureBoxStreamImage);
             this.Controls.Add(this.lblStreamTitle);
-            this.Name = "FrameDownload";
+            this.Name = "FrameDownloading";
             this.Size = new System.Drawing.Size(1141, 313);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FrameDownload_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseDown);

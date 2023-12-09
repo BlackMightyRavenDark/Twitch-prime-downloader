@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
@@ -12,7 +13,7 @@ namespace Twitch_prime_downloader
             string res = string.Empty;
             foreach (string str in collection)
             {
-                res += str + "\n";
+                res += str + Environment.NewLine;
             }
             return res;
         }
@@ -74,10 +75,50 @@ namespace Twitch_prime_downloader
             {
                 stream.Seek(0, SeekOrigin.Begin);
             }
-            bool res = MultiThreadedDownloaderLib.MultiThreadedDownloader.AppendStream(stream, fileStream);
+            bool res = MultiThreadedDownloaderLib.StreamAppender.Append(stream, fileStream);
             fileStream.Dispose();
             return res;
         }
 
+        public static DateTime ToLocal(this DateTime dateTime)
+        {
+            return dateTime.IsGmt() ? dateTime.ToLocalTime() : dateTime;
+        }
+
+        public static string FormatThumbnailUrl(this TwitchVod vod, ushort imageWidth, ushort imageHeight)
+        {
+            return vod.ThumbnailUrl?
+                .Replace("%{width}", imageWidth.ToString())
+                .Replace("%{height}", imageHeight.ToString());
+        }
+
+        public static TwitchVodMutedSegments GetMutedSegments(this TwitchVod vod)
+        {
+            TwitchVodPlaylist playlist = vod.GetPlaylist();
+            if (playlist != null)
+            {
+                playlist.Parse();
+                if (playlist.Count > 0)
+                {
+                    List<TwitchVodChunk> chunks = playlist.GetChunkList();
+                    TwitchVodMutedSegments mutedSegments = TwitchVodMutedSegments.ParseMutedSegments(chunks);
+                    mutedSegments.BuildSegmentList();
+                    mutedSegments.CalculateTotalDuration();
+                    return mutedSegments;
+                }
+            }
+
+            return null;
+        }
+
+        public static List<TwitchVodChunk> GetChunkList(this TwitchVodPlaylist playlist)
+        {
+            List<TwitchVodChunk> chunks = new List<TwitchVodChunk>();
+            for (int i = 0; i < playlist.Count; ++i)
+            {
+                chunks.Add(playlist.GetChunk(i));
+            }
+            return chunks;
+        }
     }
 }

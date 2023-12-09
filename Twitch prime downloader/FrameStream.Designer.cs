@@ -136,6 +136,7 @@
             this.lblMutedChunks.Size = new System.Drawing.Size(83, 13);
             this.lblMutedChunks.TabIndex = 6;
             this.lblMutedChunks.Text = "lblMutedChunks";
+            this.lblMutedChunks.Visible = false;
             this.lblMutedChunks.DoubleClick += new System.EventHandler(this.lblMutedChunks_DoubleClick);
             this.lblMutedChunks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
@@ -150,6 +151,7 @@
             this.lblPrime.TabIndex = 7;
             this.lblPrime.Text = "$";
             this.toolTip1.SetToolTip(this.lblPrime, "Очень платное видео");
+            this.lblPrime.Visible = false;
             this.lblPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
             // 
             // imageGame
