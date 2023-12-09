@@ -15,7 +15,7 @@ namespace Twitch_prime_downloader
         public static readonly Configurator config = new Configurator();
 
         public const string FILENAME_FORMAT_DEFAULT =
-            "<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second>] <video_title>";
+            "<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second><GMT>] <video_title>";
 
         public enum DownloadMode { WholeFile, Chunked };
 
@@ -179,6 +179,7 @@ namespace Twitch_prime_downloader
                 .Replace("<hour>", LeadZero(creationDate.Hour))
                 .Replace("<minute>", LeadZero(creationDate.Minute))
                 .Replace("<second>", LeadZero(creationDate.Second))
+                .Replace("<GMT>", config.UseGmtVodDates ? " GMT" : string.Empty)
                 .Replace("<video_title>", twitchVod.Title)
                 .Replace("<channel_name>", twitchVod.User.DisplayName);
         }
