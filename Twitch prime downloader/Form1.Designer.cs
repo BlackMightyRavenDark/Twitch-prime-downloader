@@ -37,7 +37,7 @@ namespace Twitch_prime_downloader
             this.tabPageSettings = new System.Windows.Forms.TabPage();
             this.chkSaveVodChunksInfo = new System.Windows.Forms.CheckBox();
             this.chkSaveVodInfo = new System.Windows.Forms.CheckBox();
-            this.chkUseLocalTime = new System.Windows.Forms.CheckBox();
+            this.chkUseGmtTime = new System.Windows.Forms.CheckBox();
             this.btnRestoreDefaultFilenameFormat = new System.Windows.Forms.Button();
             this.textBox_FileNameFormat = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -141,7 +141,7 @@ namespace Twitch_prime_downloader
             this.tabPageSettings.BackColor = System.Drawing.SystemColors.Control;
             this.tabPageSettings.Controls.Add(this.chkSaveVodChunksInfo);
             this.tabPageSettings.Controls.Add(this.chkSaveVodInfo);
-            this.tabPageSettings.Controls.Add(this.chkUseLocalTime);
+            this.tabPageSettings.Controls.Add(this.chkUseGmtTime);
             this.tabPageSettings.Controls.Add(this.btnRestoreDefaultFilenameFormat);
             this.tabPageSettings.Controls.Add(this.textBox_FileNameFormat);
             this.tabPageSettings.Controls.Add(this.label2);
@@ -161,7 +161,7 @@ namespace Twitch_prime_downloader
             // chkSaveVodChunksInfo
             // 
             this.chkSaveVodChunksInfo.AutoSize = true;
-            this.chkSaveVodChunksInfo.Location = new System.Drawing.Point(403, 165);
+            this.chkSaveVodChunksInfo.Location = new System.Drawing.Point(388, 165);
             this.chkSaveVodChunksInfo.Name = "chkSaveVodChunksInfo";
             this.chkSaveVodChunksInfo.Size = new System.Drawing.Size(194, 17);
             this.chkSaveVodChunksInfo.TabIndex = 18;
@@ -172,7 +172,7 @@ namespace Twitch_prime_downloader
             // chkSaveVodInfo
             // 
             this.chkSaveVodInfo.AutoSize = true;
-            this.chkSaveVodInfo.Location = new System.Drawing.Point(207, 165);
+            this.chkSaveVodInfo.Location = new System.Drawing.Point(192, 165);
             this.chkSaveVodInfo.Name = "chkSaveVodInfo";
             this.chkSaveVodInfo.Size = new System.Drawing.Size(190, 17);
             this.chkSaveVodInfo.TabIndex = 17;
@@ -180,16 +180,16 @@ namespace Twitch_prime_downloader
             this.chkSaveVodInfo.UseVisualStyleBackColor = true;
             this.chkSaveVodInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodInfo_CheckedChanged);
             // 
-            // chkUseLocalTime
+            // chkUseGmtTime
             // 
-            this.chkUseLocalTime.AutoSize = true;
-            this.chkUseLocalTime.Location = new System.Drawing.Point(10, 165);
-            this.chkUseLocalTime.Name = "chkUseLocalTime";
-            this.chkUseLocalTime.Size = new System.Drawing.Size(191, 17);
-            this.chkUseLocalTime.TabIndex = 16;
-            this.chkUseLocalTime.Text = "Использовать локальное время";
-            this.chkUseLocalTime.UseVisualStyleBackColor = true;
-            this.chkUseLocalTime.CheckedChanged += new System.EventHandler(this.chkUseLocalTime_CheckedChanged);
+            this.chkUseGmtTime.AutoSize = true;
+            this.chkUseGmtTime.Location = new System.Drawing.Point(10, 165);
+            this.chkUseGmtTime.Name = "chkUseGmtTime";
+            this.chkUseGmtTime.Size = new System.Drawing.Size(176, 17);
+            this.chkUseGmtTime.TabIndex = 16;
+            this.chkUseGmtTime.Text = "Использовать время по GMT";
+            this.chkUseGmtTime.UseVisualStyleBackColor = true;
+            this.chkUseGmtTime.CheckedChanged += new System.EventHandler(this.chkUseGmtTime_CheckedChanged);
             // 
             // btnRestoreDefaultFilenameFormat
             // 
@@ -407,10 +407,11 @@ namespace Twitch_prime_downloader
             this.rbSearchAll.Checked = true;
             this.rbSearchAll.Location = new System.Drawing.Point(8, 18);
             this.rbSearchAll.Name = "rbSearchAll";
-            this.rbSearchAll.Size = new System.Drawing.Size(76, 17);
+            this.rbSearchAll.Size = new System.Drawing.Size(196, 17);
             this.rbSearchAll.TabIndex = 0;
             this.rbSearchAll.TabStop = true;
-            this.rbSearchAll.Text = "100 видео";
+            this.rbSearchAll.Text = "Все видео канала (кроме клипов)";
+            this.toolTip1.SetToolTip(this.rbSearchAll, "Может быть очень долго!");
             this.rbSearchAll.UseVisualStyleBackColor = true;
             // 
             // btnAddChannel
@@ -511,6 +512,7 @@ namespace Twitch_prime_downloader
             this.panelStreams.Name = "panelStreams";
             this.panelStreams.Size = new System.Drawing.Size(795, 482);
             this.panelStreams.TabIndex = 2;
+            this.panelStreams.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelStreams_MouseDown);
             // 
             // scrollBarStreams
             // 
@@ -688,7 +690,7 @@ namespace Twitch_prime_downloader
         private System.Windows.Forms.Button btnSearchByUrls;
         private System.Windows.Forms.TextBox textBoxUrls;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.CheckBox chkUseLocalTime;
+        private System.Windows.Forms.CheckBox chkUseGmtTime;
         private System.Windows.Forms.CheckBox chkSaveVodInfo;
         private System.Windows.Forms.CheckBox chkSaveVodChunksInfo;
     }

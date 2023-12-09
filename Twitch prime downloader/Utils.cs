@@ -3,10 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Globalization;
-using MultiThreadedDownloaderLib;
-using static Twitch_prime_downloader.TwitchApi;
-using System.Collections.Specialized;
+using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
@@ -17,93 +14,10 @@ namespace Twitch_prime_downloader
 
         public static readonly Configurator config = new Configurator();
 
-        public static readonly Random random = new Random((int)DateTime.Now.Ticks);
-
         public const string FILENAME_FORMAT_DEFAULT =
             "<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second>] <video_title>";
 
         public enum DownloadMode { WholeFile, Chunked };
-
-        public static int DownloadString(string url, out string resString)
-        {
-            FileDownloader d = new FileDownloader();
-            d.Url = url;
-            return d.DownloadString(out resString);
-        }
-
-        public static int HttpsPost(string url, string body, NameValueCollection headers, out string responseString)
-        {
-            try
-            {
-                using (HttpRequestResult requestResult = HttpRequestSender.Send("POST", url, body, headers))
-                {
-                    if (requestResult.ErrorCode == 200)
-                    {
-                        return requestResult.WebContent.ContentToString(out responseString);
-                    }
-                    else
-                    {
-                        responseString = requestResult.ErrorMessage;
-                        return requestResult.ErrorCode;
-                    }    
-                }
-            } catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                responseString = ex.Message;
-                return ex.HResult;
-            }
-        }
-
-        public static int HttpsPost(string url, string body, out string responseString)
-        {
-            NameValueCollection headers = null;
-            if (!string.IsNullOrEmpty(body))
-            {
-                headers = new NameValueCollection();
-                headers.Add("Content-Type", "application/json");
-                headers.Add("Client-ID", TWITCH_CLIENT_ID_PRIVATE);
-            }
-
-            return HttpsPost(url, body, headers, out responseString);
-        }
-
-        public static int HttpsPost(string url, out string responseString)
-        {
-            return HttpsPost(url, null, null, out responseString);
-        }
-
-        public static string ExtractStreamIDFromImageURL(string url)
-        {
-            string res = string.Empty;
-            int n = url.IndexOf(".tv/");
-            if (n > 0)
-            {
-                res = url.Remove(0, n + 5);
-            }
-            else
-            {
-                n = url.IndexOf("vods/");
-                if (n > 0)
-                {
-                    res = url.Remove(0, n + 5);
-                    n = res.IndexOf("/");
-                    string t = res.Substring(n + 1);
-                    res = t.Substring(0, t.IndexOf('/'));
-                }
-                else
-                {
-                    n = url.IndexOf(".net/");
-                    if (n > 0)
-                    {
-                        res = url.Remove(0, n + 5);
-                        res = res.Substring(0, res.IndexOf("/"));
-                    }
-                }
-            }
-
-            return res;
-        }
 
         public static string ExtractVodIdFromUrl(string url)
         {
@@ -122,12 +36,32 @@ namespace Twitch_prime_downloader
                     int n = t.IndexOf("&");
                     return n < 0 ? t : t.Substring(0, n);
                 }
-                return null;            
+                return null;
             }
             catch (Exception)
             {
                 return null;
             }
+        }
+
+        public static string GetNumberedDirectoryName(string dirPathOrig)
+        {
+            if (dirPathOrig.EndsWith("\\"))
+            {
+                dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
+            }
+            if (Directory.Exists(dirPathOrig))
+            {
+                int n = 2;
+                string dirPathNew;
+                do
+                {
+                    dirPathNew = $"{dirPathOrig}_{n++}";
+                }
+                while (Directory.Exists(dirPathNew));
+                return dirPathNew + "\\";
+            }
+            return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
         }
 
         public static string FormatSize(long n)
@@ -153,57 +87,6 @@ namespace Twitch_prime_downloader
             return string.Format("{0} {1:D3} {2:D3} {3:D3} bytes", gb, mb, kb, b);
         }
 
-        public static string ExtractUrlFilePath(string url)
-        {
-            return url.Substring(0, url.LastIndexOf("/") + 1);
-        }
-
-        public static DateTime TwitchTimeToDateTime(string t, bool localTime)
-        {
-            return DateTime.ParseExact(t, "MM/dd/yyyy HH:mm:ss",
-                CultureInfo.InvariantCulture,
-                localTime ? DateTimeStyles.AssumeUniversal : DateTimeStyles.AssumeLocal);
-        }
-
-        public static string GetNumberedFileName(string fnOrig)
-        {
-            if (File.Exists(fnOrig))
-            {
-                string dir = Path.GetDirectoryName(fnOrig) + "\\";
-                string fn = Path.GetFileNameWithoutExtension(fnOrig);
-                string ext = Path.GetExtension(fnOrig);
-                string fnNew;
-                int n = 2;
-                do
-                {
-                    fnNew = $"{dir}{fn}_{n++}{ext}";
-                } while (File.Exists(fnNew));
-                return fnNew;
-            }
-
-            return fnOrig;
-        }
-
-        public static string GetNumberedDirectoryName(string dirPathOrig)
-        {
-            if (dirPathOrig.EndsWith("\\"))
-            {
-                dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
-            }
-            if (Directory.Exists(dirPathOrig))
-            {
-                int n = 2;
-                string dirPathNew;
-                do
-                {
-                    dirPathNew = $"{dirPathOrig}_{n++}";
-                }
-                while (Directory.Exists(dirPathNew));
-                return dirPathNew + "\\";
-            }
-            return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
-        }
-
         public static Color IntToColor(int color)
         {
             //TODO: Rewrite this shit
@@ -222,6 +105,7 @@ namespace Twitch_prime_downloader
             g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
             Font fnt = new Font("Arial", 12);
             Point center = new Point(bmp.Width / 2, bmp.Height / 2);
+            Random random = new Random(Environment.TickCount);
             int n = random.Next(10);
             if (n < 5)
             {
@@ -287,14 +171,16 @@ namespace Twitch_prime_downloader
 
         public static string FormatFileName(string fmt, TwitchVod twitchVod)
         {
-            return fmt.Replace("<year>", LeadZero(twitchVod.DateCreation.Year))
-                .Replace("<month>", LeadZero(twitchVod.DateCreation.Month))
-                .Replace("<day>", LeadZero(twitchVod.DateCreation.Day))
-                .Replace("<hour>", LeadZero(twitchVod.DateCreation.Hour))
-                .Replace("<minute>", LeadZero(twitchVod.DateCreation.Minute))
-                .Replace("<second>", LeadZero(twitchVod.DateCreation.Second))
+            DateTime creationDate = config.UseGmtVodDates ?
+                twitchVod.CreationDate : twitchVod.CreationDate.ToLocal();
+            return fmt.Replace("<year>", LeadZero(creationDate.Year))
+                .Replace("<month>", LeadZero(creationDate.Month))
+                .Replace("<day>", LeadZero(creationDate.Day))
+                .Replace("<hour>", LeadZero(creationDate.Hour))
+                .Replace("<minute>", LeadZero(creationDate.Minute))
+                .Replace("<second>", LeadZero(creationDate.Second))
                 .Replace("<video_title>", twitchVod.Title)
-                .Replace("<channel_name>", twitchVod.UserInfo.DisplayName);
+                .Replace("<channel_name>", twitchVod.User.DisplayName);
         }
 
         public static string FixFileName(string fn)
@@ -302,6 +188,37 @@ namespace Twitch_prime_downloader
             return fn.Replace("\\", "\u29F9").Replace("|", "\u2758").Replace("/", "\u2044")
                 .Replace("?", "\u2753").Replace(":", "\uFE55").Replace("<", "\u227A").Replace(">", "\u227B")
                 .Replace("\"", "\u201C").Replace("*", "\uFE61").Replace("^", "\u2303").Replace("\n", string.Empty);
+        }
+
+        public static Image TryLoadImageFromStream(Stream stream, out string errorText)
+        {
+            if (stream == null)
+            {
+                errorText = "Stream is null";
+                return null;
+            }
+            else if (stream.Length == 0L)
+            {
+                errorText = "Stream is empty";
+                return null;
+            }
+
+            try
+            {
+                errorText = null;
+                return Image.FromStream(stream);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                errorText = ex.Message;
+                return null;
+            }
+        }
+
+        public static Image TryLoadImageFromStream(Stream stream)
+        {
+            return TryLoadImageFromStream(stream, out _);
         }
     }
 }

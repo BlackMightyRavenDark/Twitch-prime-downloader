@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using MultiThreadedDownloaderLib;
+using TwitchApiLib;
+using static TwitchApiLib.TwitchVodChunk;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
 
@@ -22,26 +23,24 @@ namespace Twitch_prime_downloader
         public int ChunkFrom { get { return _chunkFrom; } set { SetChunkFrom(value); } }
         public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
         public long CurrentChunkFileSize { get; private set; }
-        public string StreamRootUrl { get; private set; }
         public DownloadMode DownloadMode { get; private set; } = DownloadMode.WholeFile;
         public DateTime DownloadStarted { get; private set; }
-        private List<TwitchVodChunk> _chunks;
-        public TwitchVodChunk[] Chunks => _chunks.ToArray();
+        public TwitchVodPlaylist Playlist { get; }
 
         public const int EXTRA_WIDTH = 450;
         private int fcstId = 0;
         private int oldX;
 
-        public int TotalChunksCount => _chunks.Count;
+        public int TotalChunksCount => Playlist != null ? Playlist.Count : 0;
 
         public delegate void ClosedDelegate(object sender);
         public ClosedDelegate Closed;
 
-        public FrameDownloading(TwitchVod streamInfo, string streamRootUrl)
+        public FrameDownloading(TwitchVod streamInfo, TwitchVodPlaylist vodPlaylist)
         {
             InitializeComponent();
 
-            StreamRootUrl = streamRootUrl;
+            Playlist = vodPlaylist;
             OutputDirPath = config.DownloadingDirPath;
             SetStreamInfo(streamInfo);
 
@@ -50,7 +49,6 @@ namespace Twitch_prime_downloader
 
         public void OnFrameCreate()
         {
-            _chunks = new List<TwitchVodChunk>();
             progressBar1.MaxValue2 = ChunkTo;
             lblCurrentChunkName.Text = null;
             lblProgressCurrentChunk.Text = null;
@@ -119,14 +117,14 @@ namespace Twitch_prime_downloader
             {
                 using (Font fnt = new Font("Arial", 12.0f))
                 {
-                    if (StreamInfo.Length > TimeSpan.MinValue)
+                    if (StreamInfo.Duration > TimeSpan.MinValue)
                     {
-                        string t = StreamInfo.Length.ToString("h':'mm':'ss");
+                        string t = StreamInfo.Duration.ToString("h':'mm':'ss");
                         SizeF sz = e.Graphics.MeasureString(t, fnt);
                         e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
                         e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
                     }
-                    if (StreamInfo.IsPrime)
+                    if (StreamInfo.IsSubscribersOnly)
                     {
                         SizeF sz = e.Graphics.MeasureString("$", fnt);
                         float x = (sender as PictureBox).Width - sz.Width;
@@ -190,7 +188,6 @@ namespace Twitch_prime_downloader
         {
             Invoke(new MethodInvoker(() =>
             {
-                _chunks[chunkId] = new TwitchVodChunk(chunk);
                 lbFileList.Items[chunkId] = chunk.FileName;
             }));
         }
@@ -220,7 +217,7 @@ namespace Twitch_prime_downloader
             timerElapsed.Enabled = true;
             if (DownloadMode == DownloadMode.WholeFile)
             {
-                OutputFilePath = GetNumberedFileName(OutputFilePathOrig);
+                OutputFilePath = MultiThreadedDownloader.GetNumberedFileName(OutputFilePathOrig);
                 lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
             }
             else
@@ -241,21 +238,21 @@ namespace Twitch_prime_downloader
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
 
-            downloadAbstractor = new DownloadAbstractor();
+            downloadAbstractor = new DownloadAbstractor(Playlist);
             int errorCode = await downloadAbstractor.Download(OutputFilePath,
-                StreamRootUrl, _chunks, _chunkFrom, ChunkTo, DownloadMode,
+                _chunkFrom, ChunkTo, DownloadMode,
                 OnConnecting, OnChunkDownloadStarted, OnChunkDownloadProgressed,
                 OnChunkDownloadFinished, OnChunkChanged, OnChunkMergingFinished, config.SaveVodChunksInfo);
 
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;
 
-            string msgCaption = StreamInfo.IsPrime ? "Скачиватор платного бесплатно" : "Скачивание";
+            string msgCaption = StreamInfo.IsSubscribersOnly ? "Скачиватор платного бесплатно" : "Скачивание";
             switch (errorCode)
             {
                 case 200:
                     {
-                        if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.InfoStringJson))
+                        if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.RawData))
                         {
                             string infoFp;
                             if (DownloadMode == DownloadMode.WholeFile)
@@ -267,7 +264,7 @@ namespace Twitch_prime_downloader
                             {
                                 infoFp = Path.Combine(OutputFilePath, "_info.json");
                             }
-                            File.WriteAllText(infoFp, StreamInfo.InfoStringJson);
+                            File.WriteAllText(infoFp, StreamInfo.RawData);
                         }
 
                         MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
@@ -356,7 +353,7 @@ namespace Twitch_prime_downloader
             if (DownloadMode == DownloadMode.WholeFile)
             {
                 OutputFilePathOrig = Path.Combine(OutputDirPath,
-                     StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
+                     StreamInfo.IsHighlight ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
                 lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
             }
             else
@@ -364,19 +361,10 @@ namespace Twitch_prime_downloader
                 OutputFilePathOrig = Path.Combine(OutputDirPath, FixedFileName);
                 lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
             }
-            if (vod.ImageData != null)
-            {
-                pictureBoxStreamImage.Image = Image.FromStream(vod.ImageData);
-            }
-        }
 
-        public void SetChunks(IEnumerable<TwitchVodChunk> chunks)
-        {
-            foreach (TwitchVodChunk chunk in chunks)
-            {
-                _chunks.Add(chunk);
-                lbFileList.Items.Add(chunk.FileName);
-            }
+            Image image = TryLoadImageFromStream(vod.PreviewImageData);
+            if (image == null) { image = GenerateErrorImage(); }
+            pictureBoxStreamImage.Image = image;
         }
 
         private void SetChunkIndicators()
@@ -514,7 +502,7 @@ namespace Twitch_prime_downloader
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
             DownloadMode = DownloadMode.WholeFile;
-            string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
+            string fn = StreamInfo.IsHighlight ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
             lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
         }
@@ -522,7 +510,7 @@ namespace Twitch_prime_downloader
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
             DownloadMode = DownloadMode.Chunked;
-            string fn = StreamInfo.IsHighlight() ? $"{FixedFileName} [highlight]" : FixedFileName;
+            string fn = StreamInfo.IsHighlight ? $"{FixedFileName} [highlight]" : FixedFileName;
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
             lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
         }
@@ -535,6 +523,5 @@ namespace Twitch_prime_downloader
             Rectangle r = new Rectangle(xLeft, 0, xRight - xLeft, imgScrollBar.Height);
             e.Graphics.FillRectangle(Brushes.Black, r);
         }
-
     }
 }

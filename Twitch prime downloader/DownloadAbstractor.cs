@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MultiThreadedDownloaderLib;
 using Newtonsoft.Json.Linq;
+using TwitchApiLib;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
     internal class DownloadAbstractor
     {
+        public TwitchVodPlaylist VodPlaylist { get; }
+
         public delegate void ConnectingDelegate(object sender, TwitchVodChunk chunk);
         public delegate void ChunkDownloadStartedDelegate(object sender, long contentLength, int chunkId);
         public delegate void ChunkDownloadProgressedDelegate(object sender, long downloadedBytes, long contentLength);
@@ -22,16 +24,16 @@ namespace Twitch_prime_downloader
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _cancellationToken;
 
-        public DownloadAbstractor()
+        public DownloadAbstractor(TwitchVodPlaylist vodPlaylist)
         {
+            VodPlaylist = vodPlaylist;
+
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
         }
 
         public async Task<int> Download(
             string outputFilePath,
-            string streamRootUrl,
-            List<TwitchVodChunk> chunkList,
             int firstChunkId,
             int lastChunkId,
             DownloadMode downloadMode,
@@ -72,7 +74,7 @@ namespace Twitch_prime_downloader
                     fileDownloader.UpdateIntervalMilliseconds = 50;
                     fileDownloader.Connecting = (s, url) =>
                     {
-                        connecting?.Invoke(this, chunkList[currentChunkId]);
+                        connecting?.Invoke(this, VodPlaylist.GetChunk(currentChunkId));
                     };
                     fileDownloader.WorkStarted = (s, len) =>
                     {
@@ -91,17 +93,19 @@ namespace Twitch_prime_downloader
                         chunkDownloadFinished?.Invoke(this, bytesTransfered, contentLength, errCode);
                     };
 
-                    if (!streamRootUrl.EndsWith("/")) { streamRootUrl += "/"; }
+                    string streamRootUrl = VodPlaylist.StreamRoot.EndsWith("/") ?
+                        VodPlaylist.StreamRoot : $"{VodPlaylist.StreamRoot}/";
 
                     JArray jaChunks = new JArray();
 
                     while (currentChunkId <= lastChunkId && !_cancellationToken.IsCancellationRequested)
                     {
+                        TwitchVodChunk chunk = VodPlaylist.GetChunk(currentChunkId);
                         Stream mem = new MemoryStream();
-                        errorCode = DownloadChunk(fileDownloader, chunkList[currentChunkId], streamRootUrl, ref mem,
+                        errorCode = DownloadChunk(fileDownloader, chunk, streamRootUrl, ref mem,
                             () =>
                             {
-                                chunkChanged?.Invoke(this, chunkList[currentChunkId], currentChunkId);
+                                chunkChanged?.Invoke(this, chunk, currentChunkId);
                             });
                         if (errorCode != 200)
                         {
@@ -116,7 +120,7 @@ namespace Twitch_prime_downloader
                             long chunkPosition = outputStream.Position;
 
                             mem.Position = 0L;
-                            if (!MultiThreadedDownloader.AppendStream(mem, outputStream))
+                            if (!StreamAppender.Append(mem, outputStream))
                             {
                                 errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
                                 mem.Close();
@@ -128,12 +132,12 @@ namespace Twitch_prime_downloader
                             JObject jChunk = new JObject();
                             jChunk["position"] = chunkPosition;
                             jChunk["size"] = mem.Length;
-                            jChunk["fileName"] = chunkList[currentChunkId].FileName;
+                            jChunk["fileName"] = chunk.FileName;
                             jaChunks.Add(jChunk);
                         }
                         else
                         {
-                            if (!SaveStreamToFile(mem, Path.Combine(outputFilePath, chunkList[currentChunkId].FileName)))
+                            if (!SaveStreamToFile(mem, Path.Combine(outputFilePath, chunk.FileName)))
                             {
                                 errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
                                 mem.Close();
