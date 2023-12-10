@@ -195,7 +195,7 @@
             this.contextMenuStreamTitle.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyStreamTitleToolStripMenuItem});
             this.contextMenuStreamTitle.Name = "contextMenuStreamTitle";
-            this.contextMenuStreamTitle.Size = new System.Drawing.Size(200, 48);
+            this.contextMenuStreamTitle.Size = new System.Drawing.Size(200, 26);
             // 
             // copyStreamTitleToolStripMenuItem
             // 
@@ -206,11 +206,13 @@
             // 
             // lbFileList
             // 
+            this.lbFileList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.lbFileList.FormattingEnabled = true;
             this.lbFileList.Location = new System.Drawing.Point(898, 19);
             this.lbFileList.Name = "lbFileList";
             this.lbFileList.Size = new System.Drawing.Size(174, 212);
             this.lbFileList.TabIndex = 13;
+            this.lbFileList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbFileList_DrawItem);
             // 
             // lblFilelist
             // 
