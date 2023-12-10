@@ -100,6 +100,31 @@ namespace Twitch_prime_downloader
             imgScrollBar.Refresh();
         }
 
+        private void lbFileList_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            try
+            {
+                using (Bitmap bitmap = new Bitmap(e.Bounds.Width, e.Bounds.Height))
+                {
+                    using (Graphics g = Graphics.FromImage(bitmap))
+                    {
+                        TwitchVodChunkItem chunkItem = lbFileList.Items[e.Index] as TwitchVodChunkItem;
+                        TwitchVodChunkState chunkState = chunkItem.Chunk.GetState();
+                        Brush brush = chunkState == TwitchVodChunkState.NotMuted ? Brushes.Black : Brushes.Red;
+                        bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+                        if (selected) { brush = chunkState == TwitchVodChunkState.NotMuted ? Brushes.White : Brushes.Gold; }
+                        g.FillRectangle(selected ? SystemBrushes.Highlight : Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
+                        g.DrawString(chunkItem.Chunk.FileName, lbFileList.Font, brush, 0f, 0f);
+                        e.Graphics.DrawImage(bitmap, e.Bounds.X, e.Bounds.Y);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+        }
+
         private void BtnClose_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Закрыть фрейм?", "Быть или не быть?",
@@ -188,7 +213,7 @@ namespace Twitch_prime_downloader
         {
             Invoke(new MethodInvoker(() =>
             {
-                lbFileList.Items[chunkId] = chunk.FileName;
+                lbFileList.Items[chunkId] = new TwitchVodChunkItem(chunk);
             }));
         }
 
@@ -365,6 +390,16 @@ namespace Twitch_prime_downloader
             Image image = TryLoadImageFromStream(vod.PreviewImageData);
             if (image == null) { image = GenerateErrorImage(); }
             pictureBoxStreamImage.Image = image;
+
+            lbFileList.Items.Clear();
+            if (Playlist != null)
+            {
+                for (int i = 0; i < Playlist.Count; ++i)
+                {
+                    TwitchVodChunkItem item = new TwitchVodChunkItem(Playlist.GetChunk(i));
+                    lbFileList.Items.Add(item);
+                }
+            }
         }
 
         private void SetChunkIndicators()
