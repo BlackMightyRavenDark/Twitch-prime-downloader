@@ -83,7 +83,7 @@ namespace Twitch_prime_downloader
             grpDownloadRange.Left = grpDownloadOptions.Left;
 
             lblFilelist.Left = grpDownloadRange.Left + grpDownloadRange.Width + 10;
-            lbFileList.Left = lblFilelist.Left;
+            lbFileList.Left = btnCopyUrlList.Left = lblFilelist.Left;
 
             int max = ChunkTo - ChunkFrom + 1;
             if (max > 0)
@@ -133,6 +133,20 @@ namespace Twitch_prime_downloader
                 FrameDispose();
                 Closed?.Invoke(this);
                 Dispose();               
+            }
+        }
+
+        private void btnCopyUrlList_Click(object sender, EventArgs e)
+        {
+            if (Playlist != null && Playlist.Count > 0)
+            {
+                string t = Playlist.ToString();
+                SetClipboardText(t);
+            }
+            else
+            {
+                MessageBox.Show("Ошибка!", "Ошибатор ошибок",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
