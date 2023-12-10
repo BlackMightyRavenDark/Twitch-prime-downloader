@@ -58,6 +58,7 @@
             this.imgScrollBar = new System.Windows.Forms.PictureBox();
             this.pictureBoxStreamImage = new System.Windows.Forms.PictureBox();
             this.progressBar1 = new Twitch_prime_downloader.DoubleGauge();
+            this.btnCopyUrlList = new System.Windows.Forms.Button();
             this.grpDownloadRange.SuspendLayout();
             this.contextMenuStreamTitle.SuspendLayout();
             this.grpDownloadOptions.SuspendLayout();
@@ -327,12 +328,23 @@
             this.progressBar1.Text = "doubleGauge1";
             this.progressBar1.Value2 = 65;
             // 
+            // btnCopyUrlList
+            // 
+            this.btnCopyUrlList.Location = new System.Drawing.Point(898, 237);
+            this.btnCopyUrlList.Name = "btnCopyUrlList";
+            this.btnCopyUrlList.Size = new System.Drawing.Size(174, 23);
+            this.btnCopyUrlList.TabIndex = 20;
+            this.btnCopyUrlList.Text = "Скопировать ссылки";
+            this.btnCopyUrlList.UseVisualStyleBackColor = true;
+            this.btnCopyUrlList.Click += new System.EventHandler(this.btnCopyUrlList_Click);
+            // 
             // FrameDownloading
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
             this.BackColor = System.Drawing.SystemColors.Control;
+            this.Controls.Add(this.btnCopyUrlList);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.imgScrollBar);
             this.Controls.Add(this.imgFcst);
@@ -400,5 +412,6 @@
         private System.Windows.Forms.Timer timerFcst;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.PictureBox imgScrollBar;
+        private System.Windows.Forms.Button btnCopyUrlList;
     }
 }
