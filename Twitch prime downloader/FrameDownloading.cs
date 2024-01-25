@@ -1,6 +1,8 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using MultiThreadedDownloaderLib;
 using TwitchApiLib;
@@ -14,24 +16,27 @@ namespace Twitch_prime_downloader
     { 
         private DownloadAbstractor downloadAbstractor = null;
         public TwitchVod StreamInfo { get; private set; }
-        private string FixedFileName;
         public string OutputDirPath { get; private set; }
         public string OutputFilePathOrig { get; private set; }
         public string OutputFilePath { get; private set; }
-        private int _chunkFrom = 0;
-        private int _chunkTo = 10;
         public int ChunkFrom { get { return _chunkFrom; } set { SetChunkFrom(value); } }
         public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
-        public long CurrentChunkFileSize { get; private set; }
-        public DownloadMode DownloadMode { get; private set; } = DownloadMode.WholeFile;
+        public int ChunkGroupSize { get; private set; } = 3;
+        public DownloadMode DownloadMode { get; private set; }
         public DateTime DownloadStarted { get; private set; }
         public TwitchVodPlaylist Playlist { get; }
+        public int TotalChunkDownloadedCount { get; private set; }
+        public long TotalByteDownloadedCount { get; private set; }
+        public bool IsDownloading { get; private set; }
+        public int TotalChunksCount => Playlist != null ? Playlist.Count : 0;
+
+        private int _chunkFrom = 0;
+        private int _chunkTo = 10;
+        private string _fixedFileName;
 
         public const int EXTRA_WIDTH = 450;
         private int fcstId = 0;
         private int oldX;
-
-        public int TotalChunksCount => Playlist != null ? Playlist.Count : 0;
 
         public delegate void ClosedDelegate(object sender);
         public ClosedDelegate Closed;
@@ -49,9 +54,7 @@ namespace Twitch_prime_downloader
 
         public void OnFrameCreate()
         {
-            progressBar1.MaxValue2 = ChunkTo;
-            lblCurrentChunkName.Text = null;
-            lblProgressCurrentChunk.Text = null;
+            lblGroupProgress.Text = null;
             lblElapsedTime.Text = null;
             imgScrollBar.Top = Height - imgScrollBar.Height;
 
@@ -66,38 +69,74 @@ namespace Twitch_prime_downloader
 
         private void FrameDownload_Resize(object sender, EventArgs e)
         {
-            int panelWidth = Parent.Parent.Parent.Width - 20;
+            int panelWidth = Parent.Parent.Parent.Width - 24;
             btnClose.Location = new Point(panelWidth - btnClose.Width - 6, 2);
             pictureBoxStreamImage.Left = panelWidth - pictureBoxStreamImage.Width - 6;
-            lblStreamTitle.Width = pictureBoxStreamImage.Left - lblStreamTitle.Left - 4;
+            lblStreamTitle.Width = pictureBoxStreamImage.Left - lblStreamTitle.Left - 6;
             lblOutputFilename.Width = lblStreamTitle.Width;
-            progressBar1.Left = lblStreamTitle.Left;
-            progressBar1.Width = pictureBoxStreamImage.Left + pictureBoxStreamImage.Width;
-            btnStopDownload.Left = panelWidth - btnStopDownload.Width;
+            multipleProgressBarGroup.Left = lblStreamTitle.Left;
+            multipleProgressBarGroup.Width = pictureBoxStreamImage.Left + pictureBoxStreamImage.Width - multipleProgressBarGroup.Left;
+            multipleProgressBarOverall.Left = multipleProgressBarGroup.Left;
+            multipleProgressBarOverall.Width = multipleProgressBarGroup.Width;
+            btnStopDownload.Left = panelWidth - btnStopDownload.Width - 6;
             btnStartDownload.Left = btnStopDownload.Left - btnStartDownload.Width - 6;
 
             imgScrollBar.Left = -Left;
             imgScrollBar.Width = panelWidth;
 
-            grpDownloadOptions.Left = panelWidth + 6;
+            grpDownloadOptions.Left = panelWidth + 10;
             grpDownloadRange.Left = grpDownloadOptions.Left;
 
             lblFilelist.Left = grpDownloadRange.Left + grpDownloadRange.Width + 10;
             lbFileList.Left = btnCopyUrlList.Left = lblFilelist.Left;
 
             int max = ChunkTo - ChunkFrom + 1;
-            if (max > 0)
-            {
-                int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / max;
-                imgFcst.Left = x;
-            }
+            int animationPositionX = max > 0 ? TotalChunkDownloadedCount * (multipleProgressBarGroup.Width - imgFcst.Width) / max : 0;
+            imgFcst.Left = animationPositionX;
         }
 
         private void FrameDownload_Paint(object sender, PaintEventArgs e)
         {
-            progressBar1.Refresh();
+            multipleProgressBarGroup.Refresh();
             pictureBoxStreamImage.Refresh();
             imgScrollBar.Refresh();
+        }
+
+        private void PictureBoxStreamImage_Paint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                using (Font fnt = new Font("Arial", 12.0f))
+                {
+                    if (StreamInfo.Duration > TimeSpan.MinValue)
+                    {
+                        string t = StreamInfo.Duration.ToString("h':'mm':'ss");
+                        SizeF sz = e.Graphics.MeasureString(t, fnt);
+                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
+                        e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
+                    }
+                    if (StreamInfo.IsSubscribersOnly)
+                    {
+                        SizeF sz = e.Graphics.MeasureString("$", fnt);
+                        float x = (sender as PictureBox).Width - sz.Width;
+                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(x, 0.0f, sz.Width, sz.Height));
+                        e.Graphics.DrawString("$", fnt, Brushes.Lime, x, 0.0f);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            }
+        }
+
+        private void imgScrollBar_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.FillRectangle(Brushes.White, e.ClipRectangle);
+            int xLeft = (int)Math.Round(imgScrollBar.Width / (double)Width * -Left);
+            int xRight = (int)Math.Round(imgScrollBar.Width / (double)Width * (-Left + Parent.Width));
+            Rectangle r = new Rectangle(xLeft, 0, xRight - xLeft, imgScrollBar.Height);
+            e.Graphics.FillRectangle(Brushes.Black, r);
         }
 
         private void lbFileList_DrawItem(object sender, DrawItemEventArgs e)
@@ -150,77 +189,12 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void PictureBoxStreamImage_Paint(object sender, PaintEventArgs e)
+        private void multipleProgressBarGroup_MouseDown(object sender, MouseEventArgs e)
         {
-            try
+            if (e.Button == MouseButtons.Right)
             {
-                using (Font fnt = new Font("Arial", 12.0f))
-                {
-                    if (StreamInfo.Duration > TimeSpan.MinValue)
-                    {
-                        string t = StreamInfo.Duration.ToString("h':'mm':'ss");
-                        SizeF sz = e.Graphics.MeasureString(t, fnt);
-                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
-                        e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
-                    }
-                    if (StreamInfo.IsSubscribersOnly)
-                    {
-                        SizeF sz = e.Graphics.MeasureString("$", fnt);
-                        float x = (sender as PictureBox).Width - sz.Width;
-                        e.Graphics.FillRectangle(Brushes.Black, new RectangleF(x, 0.0f, sz.Width, sz.Height));
-                        e.Graphics.DrawString("$", fnt, Brushes.Lime, x, 0.0f);
-                    }
-                }
+                contextMenuProgressBarGroup.Show(Cursor.Position);
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-            }
-        }
-
-        private void OnConnecting(object sender, TwitchVodChunk chunk)
-        {
-            Invoke(new MethodInvoker(() =>
-            {
-                progressBar1.Value1 = 0;
-                lblCurrentChunkName.Text = chunk.FileName;
-                lblCurrentChunkName.ForeColor = chunk.GetState() == TwitchVodChunkState.NotMuted ? Color.Black : Color.Red;
-                lblProgressCurrentChunk.Text = ": Connecting...";
-                lblProgressCurrentChunk.Left = lblCurrentChunkName.Left + lblCurrentChunkName.Width;
-            }));
-        }
-
-        private void OnChunkDownloadStarted(object sender, long fileSize, int chunkId)
-        {
-            Invoke(new MethodInvoker(() =>
-            {
-                CurrentChunkFileSize = fileSize;
-                progressBar1.Value1 = 0;
-                lblProgressCurrentChunk.Text = $": 0 / {FormatSize(fileSize)}";
-            }));
-        }
-
-        private void OnChunkDownloadProgressed(object sender, long downloadedBytes, long contentLength)
-        {
-            Invoke(new MethodInvoker(() =>
-            {
-                double percent = 100.0 / contentLength * downloadedBytes;
-                string percentFormatted = string.Format("{0:F2}", percent);
-                progressBar1.Value1 = (int)percent;
-                lblProgressCurrentChunk.Text = $": {FormatSize(downloadedBytes)} / {FormatSize(CurrentChunkFileSize)}" +
-                    $" ({percentFormatted}%)";
-            }));
-        }
-
-        private void OnChunkDownloadFinished(object sender, long downloadedBytes, long contentLength, int errorCode)
-        {
-            Invoke(new MethodInvoker(() =>
-            {
-                double percent = 100.0 / contentLength * downloadedBytes;
-                progressBar1.Value1 = (int)percent;
-                string percentFormatted = string.Format("{0:F2}", percent);
-                lblProgressCurrentChunk.Text = $": {FormatSize(downloadedBytes)} / {FormatSize(contentLength)} ({percentFormatted}%)";
-            }));
         }
 
         private void OnChunkChanged(object sender, TwitchVodChunk chunk, int chunkId)
@@ -231,25 +205,128 @@ namespace Twitch_prime_downloader
             }));
         }
 
-        private void OnChunkMergingFinished(object sender, long totalSize,
-            DownloadMode downloadMode, int chunkId, int chunkCount)
+        private void OnGroupDownloadProgressed(object sender, IEnumerable<DownloadItem> items)
         {
             Invoke(new MethodInvoker(() =>
             {
-                progressBar1.Value2 = chunkId - ChunkFrom + 1;
-                double percent = 100.0 / chunkCount * progressBar1.Value2;
-                string percentFormatted = string.Format("{0:F2}", percent);
-                string sizeText = downloadMode == DownloadMode.WholeFile ? "Размер файла" : "Размер скачанного";
-                lblProgressOverall.Text = $"Скачано чанков: {progressBar1.Value2} / {chunkCount} " +
-                    $"({percentFormatted}%), {sizeText}: {FormatSize(totalSize)}";
+                long chunksSummarySize = items.Select(item => item.ChunkSize).Sum();
+                long downloaded = items.Select(item => item.DownloadedSize).Sum();
 
-                int x = progressBar1.Value2 * (progressBar1.Width - imgFcst.Width) / (ChunkTo - ChunkFrom + 1);
-                imgFcst.Left = x;
+                if (chunksSummarySize > 0L)
+                {
+                    double percent = 100.0 / chunksSummarySize * downloaded;
+                    string percentFormatted = string.Format("{0:F2}", percent);
+                    lblGroupProgress.Text = $"Скачано: {FormatSize(downloaded)} / {FormatSize(chunksSummarySize)} ({percentFormatted}%)";
+                }
+                else
+                {
+                    lblGroupProgress.Text = "Подключение...";
+                }
+
+                LinkedList<MultipleProgressBarItem> list = new LinkedList<MultipleProgressBarItem>();
+                foreach (DownloadItem item in items)
+                {
+                    double percent = 100.0 / item.ChunkSize * item.DownloadedSize;
+                    string percentFormatted = string.Format("{0:F2}", percent);
+
+                    string itemText;
+                    switch (item.State)
+                    {
+                        case DownloadItemState.Connecting:
+                            itemText = $"{item.VodChunk.FileName}: Connecting...";
+                            break;
+
+                        case DownloadItemState.Downloading:
+                        case DownloadItemState.Finished:
+                        case DownloadItemState.Errored:
+                            itemText = $"{item.VodChunk.FileName}: " +
+                                $"{FormatSize(item.DownloadedSize)} / {FormatSize(item.ChunkSize)} ({percentFormatted}%)";
+                            break;
+
+                        default:
+                            itemText = null;
+                            break;
+                    }
+
+                    int percentRounded = item.ChunkSize > 0L && item.DownloadedSize == item.ChunkSize ? 100 : (int)Math.Floor(percent);
+
+                    MultipleProgressBarItem mpi = new MultipleProgressBarItem(
+                        0, 100, percentRounded, itemText, Color.Lime);
+                    list.AddLast(mpi);
+                }
+                multipleProgressBarGroup.SetItems(list);
+            }));
+        }
+
+        private void OnGroupDownloadFinished(object sender, IEnumerable<DownloadItem> items, int errorCode)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                TotalChunkDownloadedCount += items.Count();
+
+                long chunksSummarySize = items.Select(item => item.ChunkSize).Sum();
+                long downloaded = items.Select(item => item.DownloadedSize).Sum();
+
+                TotalByteDownloadedCount += downloaded;
+                lblGroupProgress.Text = $"Скачано: {FormatSize(downloaded)} / {FormatSize(chunksSummarySize)}";
+            }));
+        }
+
+        private void OnChunkMergingProgressed(object sender,
+            long processedBytes, long totalSize,
+            int chunkId, int chunkCount, DownloadMode downloadMode)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                if (totalSize > 0L)
+                {
+                    double percent = 100.0 / totalSize * processedBytes;
+                    string percentFormatted = string.Format("{0:F2}", percent);
+                    string progressText = $"Объединение чанков: {chunkId + 1} / {chunkCount} | " +
+                        $"{FormatSize(processedBytes)} / {FormatSize(totalSize)} ({percentFormatted}%)";
+
+                    lblGroupProgress.Text = progressText;
+
+                    int percentRounded = (int)Math.Floor(percent);
+                    multipleProgressBarGroup.SetItem(0, 100, percentRounded, progressText, Color.Lime);
+                }
+                else
+                {
+                    string progressText = $"Объединение чанков: {chunkId + 1} / {chunkCount} | " +
+                        $"{FormatSize(processedBytes)} / <unknown>";
+                    lblGroupProgress.Text = progressText;
+                    multipleProgressBarGroup.SetItem(0, 100, 0, progressText, Color.Lime);
+                }
+            }));
+        }
+
+        private void OnGroupMergingFinished(object sender, IEnumerable<DownloadItem> groupItems, int errorCode)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                int chunkCountMax = ChunkTo - ChunkFrom + 1;
+                double percent = 100.0 / chunkCountMax * TotalChunkDownloadedCount;
+                string percentFormatted = string.Format("{0:F2}", percent);
+                string progressText = $"Скачано чанков: {TotalChunkDownloadedCount} / {chunkCountMax}" +
+                    $" ({percentFormatted}%), Размер файла: {FormatSize(TotalByteDownloadedCount)}";
+
+                multipleProgressBarOverall.SetItem(0, chunkCountMax, TotalChunkDownloadedCount, progressText, Color.Lime);
+
+                int animationPositionX = chunkCountMax > 0 ? TotalChunkDownloadedCount * (multipleProgressBarGroup.Width - imgFcst.Width) / chunkCountMax : 0;
+                imgFcst.Left = animationPositionX;
             }));
         }
 
         private async void StartDownload()
         {
+            if (IsDownloading)
+            {
+                btnStartDownload.Enabled = false;
+                btnStopDownload.Enabled = true;
+                return;
+            }
+
+            IsDownloading = true;
             btnStartDownload.Enabled = false;
             DownloadStarted = DateTime.Now;
             lblElapsedTime.Text = "Прошло времени: 0:00:00";
@@ -264,24 +341,30 @@ namespace Twitch_prime_downloader
                 OutputFilePath = GetNumberedDirectoryName(OutputFilePathOrig);
                 lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePath}";
             }
-            lblProgressOverall.Text = $"Скачано чанков: 0 / {ChunkTo - ChunkFrom + 1} (0.00%), Размер файла: 0 bytes";
-            progressBar1.Value1 = 0;
-            progressBar1.Value2 = 0;
+            TotalChunkDownloadedCount = 0;
+            TotalByteDownloadedCount = 0L;
+
+            multipleProgressBarGroup.ClearItems();
+            int chunkCountMax = ChunkTo - ChunkFrom + 1;
+            string progressText = $"Скачано чанков: 0 / {chunkCountMax} (0.00%), Размер файла: 0 bytes";
+            multipleProgressBarOverall.SetItem(0, chunkCountMax, 0, progressText, Color.Lime);
+
             editFrom.Enabled = false;
             editTo.Enabled = false;
             btnSetMaxChunkTo.Enabled = false;
             rbDownloadOneBigFile.Enabled = false;
             rbDownloadChunksSeparatelly.Enabled = false;
 
-            imgFcst.Left = progressBar1.Left;
+            imgFcst.Left = multipleProgressBarGroup.Left;
             imgFcst.Visible = true;
             timerFcst.Enabled = true;
 
-            downloadAbstractor = new DownloadAbstractor(Playlist);
+            downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
             int errorCode = await downloadAbstractor.Download(OutputFilePath,
                 _chunkFrom, ChunkTo, DownloadMode,
-                OnConnecting, OnChunkDownloadStarted, OnChunkDownloadProgressed,
-                OnChunkDownloadFinished, OnChunkChanged, OnChunkMergingFinished, config.SaveVodChunksInfo);
+                null, OnGroupDownloadProgressed, OnGroupDownloadFinished,
+                OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
+            downloadAbstractor = null;
 
             timerElapsed.Enabled = false;
             timerFcst.Enabled = false;
@@ -306,7 +389,8 @@ namespace Twitch_prime_downloader
                             File.WriteAllText(infoFp, StreamInfo.RawData);
                         }
 
-                        MessageBox.Show($"{StreamInfo.Title}\nСкачано успешно!", msgCaption,
+                        string msg = $"{StreamInfo.Title}\nСкачано успешно!";
+                        MessageBox.Show(msg, msgCaption,
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     break;
@@ -326,8 +410,23 @@ namespace Twitch_prime_downloader
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
+                case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_DIR_NOT_EXISTS:
+                    MessageBox.Show($"{StreamInfo.Title}\nПапка для скачивания не найдена!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
                 case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
                     MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_EMPTY:
+                    MessageBox.Show($"{StreamInfo.Title}\nГруппа чанков пуста!",
+                        msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
+                case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_RANGE:
+                    MessageBox.Show($"{StreamInfo.Title}\nУказан неверный диапазон чанков!",
                         msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
@@ -344,6 +443,8 @@ namespace Twitch_prime_downloader
             rbDownloadOneBigFile.Enabled = true;
             rbDownloadChunksSeparatelly.Enabled = true;
             btnStartDownload.Enabled = true;
+
+            IsDownloading = false;
         }
 
         public void StopDownload()
@@ -388,16 +489,18 @@ namespace Twitch_prime_downloader
         {
             StreamInfo = vod;
             lblStreamTitle.Text = $"Стрим: {StreamInfo.Title}";
-            FixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
-            if (DownloadMode == DownloadMode.WholeFile)
+            _fixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
+            if (rbDownloadOneBigFile.Checked)
             {
+                DownloadMode = DownloadMode.WholeFile;
                 OutputFilePathOrig = Path.Combine(OutputDirPath,
-                     StreamInfo.IsHighlight ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts");
+                     StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts");
                 lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
             }
             else
             {
-                OutputFilePathOrig = Path.Combine(OutputDirPath, FixedFileName);
+                DownloadMode = DownloadMode.Chunked;
+                OutputFilePathOrig = Path.Combine(OutputDirPath, _fixedFileName);
                 lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
             }
 
@@ -406,7 +509,7 @@ namespace Twitch_prime_downloader
             pictureBoxStreamImage.Image = image;
 
             lbFileList.Items.Clear();
-            if (Playlist != null)
+            if (Playlist != null && Playlist.Count > 0)
             {
                 for (int i = 0; i < Playlist.Count; ++i)
                 {
@@ -416,14 +519,9 @@ namespace Twitch_prime_downloader
             }
         }
 
-        private void SetChunkIndicators()
+        private void SetChunkCountIndicators()
         {
-            lblProgressCurrentChunk.Text = null;
-            progressBar1.Value1 = 0;
             lblProgressOverall.Text = $"Всего чанков: {TotalChunksCount}, Скачивать: {ChunkTo - ChunkFrom + 1}";
-            progressBar1.MinValue2 = 0;
-            progressBar1.Value2 = 0;
-            progressBar1.MaxValue2 = ChunkTo - ChunkFrom;
         }
 
         private void SetChunkFrom(int chunkId)
@@ -445,7 +543,8 @@ namespace Twitch_prime_downloader
                     editTo.Text = (_chunkTo + 1).ToString();
                 }
                 editFrom.Text = (_chunkFrom + 1).ToString();
-                SetChunkIndicators();
+
+                SetChunkCountIndicators();
             }
         }
 
@@ -460,7 +559,8 @@ namespace Twitch_prime_downloader
                     _chunkFrom = _chunkTo;
                     editFrom.Text = (_chunkFrom + 1).ToString();
                 }
-                SetChunkIndicators();
+
+                SetChunkCountIndicators();
             }
         }
 
@@ -483,7 +583,7 @@ namespace Twitch_prime_downloader
                 editTo.Text = (_chunkTo + 1).ToString();
             }
 
-            SetChunkIndicators();
+            SetChunkCountIndicators();
         }
 
         private void EditTo_Leave(object sender, EventArgs e)
@@ -505,7 +605,7 @@ namespace Twitch_prime_downloader
                 editFrom.Text = (_chunkFrom + 1).ToString();
             }
 
-            SetChunkIndicators();
+            SetChunkCountIndicators();
         }
 
         private void BtnSetMaxChunkTo_Click(object sender, EventArgs e)
@@ -551,7 +651,7 @@ namespace Twitch_prime_downloader
         private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
         {
             DownloadMode = DownloadMode.WholeFile;
-            string fn = StreamInfo.IsHighlight ? $"{FixedFileName} [highlight].ts" : $"{FixedFileName}.ts";
+            string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts";
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
             lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
         }
@@ -559,18 +659,33 @@ namespace Twitch_prime_downloader
         private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
         {
             DownloadMode = DownloadMode.Chunked;
-            string fn = StreamInfo.IsHighlight ? $"{FixedFileName} [highlight]" : FixedFileName;
+            string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight]" : _fixedFileName;
             OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
             lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
         }
 
-        private void imgScrollBar_Paint(object sender, PaintEventArgs e)
+        private void miIncreaseGroupSizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            e.Graphics.FillRectangle(Brushes.White, e.ClipRectangle);
-            int xLeft = (int)Math.Round(imgScrollBar.Width / (double)Width * -Left);
-            int xRight = (int)Math.Round(imgScrollBar.Width / (double)Width * (-Left + Parent.Width));
-            Rectangle r = new Rectangle(xLeft, 0, xRight - xLeft, imgScrollBar.Height);
-            e.Graphics.FillRectangle(Brushes.Black, r);
+            if (ChunkGroupSize < 10)
+            {
+                ChunkGroupSize++;
+                if (downloadAbstractor != null)
+                {
+                    downloadAbstractor.MaxGroupSize = ChunkGroupSize;
+                }
+            }
+        }
+
+        private void miDecreaseGroupSizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ChunkGroupSize > 1)
+            {
+                ChunkGroupSize--;
+                if (downloadAbstractor != null)
+                {
+                    downloadAbstractor.MaxGroupSize = ChunkGroupSize;
+                }
+            }
         }
     }
 }

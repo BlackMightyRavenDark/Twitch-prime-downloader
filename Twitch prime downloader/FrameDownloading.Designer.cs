@@ -32,7 +32,6 @@
             this.btnClose = new System.Windows.Forms.Button();
             this.lblStreamTitle = new System.Windows.Forms.Label();
             this.lblOutputFilename = new System.Windows.Forms.Label();
-            this.lblProgressCurrentChunk = new System.Windows.Forms.Label();
             this.lblProgressOverall = new System.Windows.Forms.Label();
             this.btnStartDownload = new System.Windows.Forms.Button();
             this.btnStopDownload = new System.Windows.Forms.Button();
@@ -46,7 +45,7 @@
             this.copyStreamTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lbFileList = new System.Windows.Forms.ListBox();
             this.lblFilelist = new System.Windows.Forms.Label();
-            this.lblCurrentChunkName = new System.Windows.Forms.Label();
+            this.lblGroupProgress = new System.Windows.Forms.Label();
             this.grpDownloadOptions = new System.Windows.Forms.GroupBox();
             this.rbDownloadChunksSeparatelly = new System.Windows.Forms.RadioButton();
             this.rbDownloadOneBigFile = new System.Windows.Forms.RadioButton();
@@ -57,14 +56,19 @@
             this.imgFcst = new System.Windows.Forms.PictureBox();
             this.imgScrollBar = new System.Windows.Forms.PictureBox();
             this.pictureBoxStreamImage = new System.Windows.Forms.PictureBox();
-            this.progressBar1 = new Twitch_prime_downloader.DoubleGauge();
             this.btnCopyUrlList = new System.Windows.Forms.Button();
+            this.multipleProgressBarOverall = new Twitch_prime_downloader.MultipleProgressBar();
+            this.multipleProgressBarGroup = new Twitch_prime_downloader.MultipleProgressBar();
+            this.contextMenuProgressBarGroup = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.miIncreaseGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miDecreaseGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grpDownloadRange.SuspendLayout();
             this.contextMenuStreamTitle.SuspendLayout();
             this.grpDownloadOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imgFcst)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imgScrollBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStreamImage)).BeginInit();
+            this.contextMenuProgressBarGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnClose
@@ -88,24 +92,16 @@
             // 
             // lblOutputFilename
             // 
-            this.lblOutputFilename.Location = new System.Drawing.Point(3, 62);
+            this.lblOutputFilename.Location = new System.Drawing.Point(3, 57);
             this.lblOutputFilename.Name = "lblOutputFilename";
-            this.lblOutputFilename.Size = new System.Drawing.Size(516, 32);
+            this.lblOutputFilename.Size = new System.Drawing.Size(516, 57);
             this.lblOutputFilename.TabIndex = 3;
             this.lblOutputFilename.Text = "lblOutputFilename";
-            // 
-            // lblProgressCurrentChunk
-            // 
-            this.lblProgressCurrentChunk.Location = new System.Drawing.Point(117, 114);
-            this.lblProgressCurrentChunk.Name = "lblProgressCurrentChunk";
-            this.lblProgressCurrentChunk.Size = new System.Drawing.Size(333, 12);
-            this.lblProgressCurrentChunk.TabIndex = 7;
-            this.lblProgressCurrentChunk.Text = "lblProgressCurrentChunk";
             // 
             // lblProgressOverall
             // 
             this.lblProgressOverall.AutoSize = true;
-            this.lblProgressOverall.Location = new System.Drawing.Point(3, 161);
+            this.lblProgressOverall.Location = new System.Drawing.Point(3, 182);
             this.lblProgressOverall.Name = "lblProgressOverall";
             this.lblProgressOverall.Size = new System.Drawing.Size(91, 13);
             this.lblProgressOverall.TabIndex = 8;
@@ -113,7 +109,8 @@
             // 
             // btnStartDownload
             // 
-            this.btnStartDownload.Location = new System.Drawing.Point(447, 265);
+            this.btnStartDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnStartDownload.Location = new System.Drawing.Point(472, 273);
             this.btnStartDownload.Name = "btnStartDownload";
             this.btnStartDownload.Size = new System.Drawing.Size(90, 23);
             this.btnStartDownload.TabIndex = 9;
@@ -123,7 +120,8 @@
             // 
             // btnStopDownload
             // 
-            this.btnStopDownload.Location = new System.Drawing.Point(568, 265);
+            this.btnStopDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnStopDownload.Location = new System.Drawing.Point(568, 273);
             this.btnStopDownload.Name = "btnStopDownload";
             this.btnStopDownload.Size = new System.Drawing.Size(99, 23);
             this.btnStopDownload.TabIndex = 10;
@@ -224,14 +222,14 @@
             this.lblFilelist.TabIndex = 14;
             this.lblFilelist.Text = "Файлы для скачивания:";
             // 
-            // lblCurrentChunkName
+            // lblGroupProgress
             // 
-            this.lblCurrentChunkName.AutoSize = true;
-            this.lblCurrentChunkName.Location = new System.Drawing.Point(3, 114);
-            this.lblCurrentChunkName.Name = "lblCurrentChunkName";
-            this.lblCurrentChunkName.Size = new System.Drawing.Size(110, 13);
-            this.lblCurrentChunkName.TabIndex = 15;
-            this.lblCurrentChunkName.Text = "lblCurrentChunkName";
+            this.lblGroupProgress.AutoSize = true;
+            this.lblGroupProgress.Location = new System.Drawing.Point(3, 114);
+            this.lblGroupProgress.Name = "lblGroupProgress";
+            this.lblGroupProgress.Size = new System.Drawing.Size(110, 13);
+            this.lblGroupProgress.TabIndex = 15;
+            this.lblGroupProgress.Text = "lblCurrentChunkName";
             // 
             // grpDownloadOptions
             // 
@@ -276,8 +274,9 @@
             // 
             // lblElapsedTime
             // 
+            this.lblElapsedTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblElapsedTime.AutoSize = true;
-            this.lblElapsedTime.Location = new System.Drawing.Point(16, 272);
+            this.lblElapsedTime.Location = new System.Drawing.Point(3, 280);
             this.lblElapsedTime.Name = "lblElapsedTime";
             this.lblElapsedTime.Size = new System.Drawing.Size(78, 13);
             this.lblElapsedTime.TabIndex = 17;
@@ -290,7 +289,7 @@
             // imgFcst
             // 
             this.imgFcst.Image = global::Twitch_prime_downloader.Properties.Resources.fcst_istra_01;
-            this.imgFcst.Location = new System.Drawing.Point(6, 177);
+            this.imgFcst.Location = new System.Drawing.Point(6, 198);
             this.imgFcst.Name = "imgFcst";
             this.imgFcst.Size = new System.Drawing.Size(70, 70);
             this.imgFcst.TabIndex = 18;
@@ -300,7 +299,8 @@
             // 
             // imgScrollBar
             // 
-            this.imgScrollBar.Location = new System.Drawing.Point(0, 295);
+            this.imgScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.imgScrollBar.Location = new System.Drawing.Point(0, 302);
             this.imgScrollBar.Name = "imgScrollBar";
             this.imgScrollBar.Size = new System.Drawing.Size(667, 15);
             this.imgScrollBar.TabIndex = 19;
@@ -317,17 +317,6 @@
             this.pictureBoxStreamImage.TabStop = false;
             this.pictureBoxStreamImage.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBoxStreamImage_Paint);
             // 
-            // progressBar1
-            // 
-            this.progressBar1.ColorForeground1 = System.Drawing.Color.Lime;
-            this.progressBar1.ColorForeground2 = System.Drawing.Color.YellowGreen;
-            this.progressBar1.Location = new System.Drawing.Point(6, 130);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(661, 29);
-            this.progressBar1.TabIndex = 12;
-            this.progressBar1.Text = "doubleGauge1";
-            this.progressBar1.Value2 = 65;
-            // 
             // btnCopyUrlList
             // 
             this.btnCopyUrlList.Location = new System.Drawing.Point(898, 237);
@@ -338,32 +327,74 @@
             this.btnCopyUrlList.UseVisualStyleBackColor = true;
             this.btnCopyUrlList.Click += new System.EventHandler(this.btnCopyUrlList_Click);
             // 
+            // multipleProgressBarOverall
+            // 
+            this.multipleProgressBarOverall.Location = new System.Drawing.Point(6, 156);
+            this.multipleProgressBarOverall.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
+            this.multipleProgressBarOverall.Name = "multipleProgressBarOverall";
+            this.multipleProgressBarOverall.Size = new System.Drawing.Size(661, 23);
+            this.multipleProgressBarOverall.TabIndex = 22;
+            this.multipleProgressBarOverall.Text = "multipleProgressBar2";
+            // 
+            // multipleProgressBarGroup
+            // 
+            this.multipleProgressBarGroup.BackColor = System.Drawing.SystemColors.Control;
+            this.multipleProgressBarGroup.ForeColor = System.Drawing.Color.Black;
+            this.multipleProgressBarGroup.Location = new System.Drawing.Point(6, 130);
+            this.multipleProgressBarGroup.Name = "multipleProgressBarGroup";
+            this.multipleProgressBarGroup.Size = new System.Drawing.Size(661, 23);
+            this.multipleProgressBarGroup.TabIndex = 21;
+            this.multipleProgressBarGroup.Text = "multipleProgressBar1";
+            this.multipleProgressBarGroup.MouseDown += new System.Windows.Forms.MouseEventHandler(this.multipleProgressBarGroup_MouseDown);
+            // 
+            // contextMenuProgressBarGroup
+            // 
+            this.contextMenuProgressBarGroup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miIncreaseGroupSizeToolStripMenuItem,
+            this.miDecreaseGroupSizeToolStripMenuItem});
+            this.contextMenuProgressBarGroup.Name = "contextMenuProgressBarGroup";
+            this.contextMenuProgressBarGroup.Size = new System.Drawing.Size(185, 48);
+            // 
+            // miIncreaseGroupSizeToolStripMenuItem
+            // 
+            this.miIncreaseGroupSizeToolStripMenuItem.Name = "miIncreaseGroupSizeToolStripMenuItem";
+            this.miIncreaseGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.miIncreaseGroupSizeToolStripMenuItem.Text = "Увеличить размер группы";
+            this.miIncreaseGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miIncreaseGroupSizeToolStripMenuItem_Click);
+            // 
+            // miDecreaseGroupSizeToolStripMenuItem
+            // 
+            this.miDecreaseGroupSizeToolStripMenuItem.Name = "miDecreaseGroupSizeToolStripMenuItem";
+            this.miDecreaseGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.miDecreaseGroupSizeToolStripMenuItem.Text = "Уменьшить размер группы";
+            this.miDecreaseGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miDecreaseGroupSizeToolStripMenuItem_Click);
+            // 
             // FrameDownloading
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
             this.BackColor = System.Drawing.SystemColors.Control;
+            this.Controls.Add(this.multipleProgressBarOverall);
+            this.Controls.Add(this.multipleProgressBarGroup);
             this.Controls.Add(this.btnCopyUrlList);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.imgScrollBar);
             this.Controls.Add(this.imgFcst);
             this.Controls.Add(this.lblElapsedTime);
             this.Controls.Add(this.grpDownloadOptions);
-            this.Controls.Add(this.lblCurrentChunkName);
+            this.Controls.Add(this.lblGroupProgress);
             this.Controls.Add(this.lblFilelist);
             this.Controls.Add(this.lbFileList);
-            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.grpDownloadRange);
             this.Controls.Add(this.btnStopDownload);
             this.Controls.Add(this.btnStartDownload);
             this.Controls.Add(this.lblProgressOverall);
-            this.Controls.Add(this.lblProgressCurrentChunk);
             this.Controls.Add(this.lblOutputFilename);
             this.Controls.Add(this.pictureBoxStreamImage);
             this.Controls.Add(this.lblStreamTitle);
             this.Name = "FrameDownloading";
-            this.Size = new System.Drawing.Size(1141, 313);
+            this.Size = new System.Drawing.Size(1141, 320);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FrameDownload_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FrameDownload_MouseMove);
@@ -376,6 +407,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.imgFcst)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.imgScrollBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStreamImage)).EndInit();
+            this.contextMenuProgressBarGroup.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -387,7 +419,6 @@
         public System.Windows.Forms.Label lblStreamTitle;
         public System.Windows.Forms.PictureBox pictureBoxStreamImage;
         public System.Windows.Forms.Label lblOutputFilename;
-        public System.Windows.Forms.Label lblProgressCurrentChunk;
         public System.Windows.Forms.Label lblProgressOverall;
         public System.Windows.Forms.Button btnStartDownload;
         public System.Windows.Forms.Button btnStopDownload;
@@ -399,10 +430,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStreamTitle;
         private System.Windows.Forms.ToolStripMenuItem copyStreamTitleToolStripMenuItem;
-        public DoubleGauge progressBar1;
         public System.Windows.Forms.ListBox lbFileList;
         private System.Windows.Forms.Label lblFilelist;
-        private System.Windows.Forms.Label lblCurrentChunkName;
+        private System.Windows.Forms.Label lblGroupProgress;
         private System.Windows.Forms.GroupBox grpDownloadOptions;
         private System.Windows.Forms.RadioButton rbDownloadChunksSeparatelly;
         private System.Windows.Forms.RadioButton rbDownloadOneBigFile;
@@ -413,5 +443,10 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.PictureBox imgScrollBar;
         private System.Windows.Forms.Button btnCopyUrlList;
+        private MultipleProgressBar multipleProgressBarGroup;
+        private MultipleProgressBar multipleProgressBarOverall;
+        private System.Windows.Forms.ContextMenuStrip contextMenuProgressBarGroup;
+        private System.Windows.Forms.ToolStripMenuItem miIncreaseGroupSizeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miDecreaseGroupSizeToolStripMenuItem;
     }
 }

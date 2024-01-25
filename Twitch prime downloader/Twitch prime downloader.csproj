@@ -36,33 +36,27 @@
     <ApplicationIcon>Resources\twitch.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MultiThreadedDownloader, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MultiThreadedDownloader.1.3.0\lib\netstandard2.0\MultiThreadedDownloader.dll</HintPath>
+    <Reference Include="MultiThreadedDownloader, Version=1.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MultiThreadedDownloader.1.3.1\lib\netstandard2.0\MultiThreadedDownloader.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="TwitchApiLib, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\TwitchApiLib.0.0.1\lib\netstandard2.0\TwitchApiLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DoubleGauge.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="DownloadAbstractor.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -84,6 +78,9 @@
     </Compile>
     <Compile Include="Helper.cs" />
     <Compile Include="Configurator.cs" />
+    <Compile Include="MultipleProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TwitchVodChunkItem.cs" />
