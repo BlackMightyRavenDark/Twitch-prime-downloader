@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using TwitchApiLib;
@@ -71,13 +72,15 @@ namespace Twitch_prime_downloader
         public static bool SaveToFile(this Stream stream, string fileName, bool fromOrigin = true)
         {
             Stream fileStream = File.OpenWrite(fileName);
-            if (fromOrigin)
-            {
-                stream.Seek(0, SeekOrigin.Begin);
-            }
+            if (fromOrigin) { stream.Position = 0L; }
             bool res = MultiThreadedDownloaderLib.StreamAppender.Append(stream, fileStream);
             fileStream.Dispose();
             return res;
+        }
+
+        public static Rectangle Deflate(this Rectangle rectangle, int width, int height)
+        {
+            return new Rectangle(rectangle.X, rectangle.Y, rectangle.Width - width, rectangle.Height - height);
         }
 
         public static DateTime ToLocal(this DateTime dateTime)
