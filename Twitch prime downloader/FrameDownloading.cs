@@ -248,8 +248,7 @@ namespace Twitch_prime_downloader
                             break;
                     }
 
-                    int percentRounded = item.ChunkSize > 0L && item.DownloadedSize == item.ChunkSize ? 100 : (int)Math.Floor(percent);
-
+                    int percentRounded = (int)Math.Round(percent, 3);
                     MultipleProgressBarItem mpi = new MultipleProgressBarItem(
                         0, 100, percentRounded, itemText, Color.Lime);
                     list.AddLast(mpi);
@@ -287,7 +286,7 @@ namespace Twitch_prime_downloader
 
                     lblGroupProgress.Text = progressText;
 
-                    int percentRounded = (int)Math.Floor(percent);
+                    int percentRounded = (int)Math.Round(percent, 3);
                     multipleProgressBarGroup.SetItem(0, 100, percentRounded, progressText, Color.Lime);
                 }
                 else
