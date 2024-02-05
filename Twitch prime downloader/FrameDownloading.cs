@@ -352,7 +352,7 @@ namespace Twitch_prime_downloader
             editTo.Enabled = false;
             btnSetMaxChunkTo.Enabled = false;
             rbDownloadOneBigFile.Enabled = false;
-            rbDownloadChunksSeparatelly.Enabled = false;
+            rbDownloadChunksSeparately.Enabled = false;
 
             imgFcst.Left = multipleProgressBarGroup.Left;
             imgFcst.Visible = true;
@@ -440,7 +440,7 @@ namespace Twitch_prime_downloader
             editTo.Enabled = true;
             btnSetMaxChunkTo.Enabled = true;
             rbDownloadOneBigFile.Enabled = true;
-            rbDownloadChunksSeparatelly.Enabled = true;
+            rbDownloadChunksSeparately.Enabled = true;
             btnStartDownload.Enabled = true;
 
             IsDownloading = false;
@@ -655,7 +655,7 @@ namespace Twitch_prime_downloader
             lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
         }
 
-        private void rbDownloadChunksSeparatelly_CheckedChanged(object sender, EventArgs e)
+        private void rbDownloadChunksSeparately_CheckedChanged(object sender, EventArgs e)
         {
             DownloadMode = DownloadMode.Chunked;
             string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight]" : _fixedFileName;
