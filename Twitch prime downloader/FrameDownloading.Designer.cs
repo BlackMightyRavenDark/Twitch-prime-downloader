@@ -47,7 +47,7 @@
             this.lblFilelist = new System.Windows.Forms.Label();
             this.lblGroupProgress = new System.Windows.Forms.Label();
             this.grpDownloadOptions = new System.Windows.Forms.GroupBox();
-            this.rbDownloadChunksSeparatelly = new System.Windows.Forms.RadioButton();
+            this.rbDownloadChunksSeparately = new System.Windows.Forms.RadioButton();
             this.rbDownloadOneBigFile = new System.Windows.Forms.RadioButton();
             this.timerElapsed = new System.Windows.Forms.Timer(this.components);
             this.lblElapsedTime = new System.Windows.Forms.Label();
@@ -233,7 +233,7 @@
             // 
             // grpDownloadOptions
             // 
-            this.grpDownloadOptions.Controls.Add(this.rbDownloadChunksSeparatelly);
+            this.grpDownloadOptions.Controls.Add(this.rbDownloadChunksSeparately);
             this.grpDownloadOptions.Controls.Add(this.rbDownloadOneBigFile);
             this.grpDownloadOptions.Location = new System.Drawing.Point(673, 3);
             this.grpDownloadOptions.Name = "grpDownloadOptions";
@@ -242,17 +242,17 @@
             this.grpDownloadOptions.TabStop = false;
             this.grpDownloadOptions.Text = "Параметры скачивания";
             // 
-            // rbDownloadChunksSeparatelly
+            // rbDownloadChunksSeparately
             // 
-            this.rbDownloadChunksSeparatelly.AutoSize = true;
-            this.rbDownloadChunksSeparatelly.Location = new System.Drawing.Point(17, 33);
-            this.rbDownloadChunksSeparatelly.Name = "rbDownloadChunksSeparatelly";
-            this.rbDownloadChunksSeparatelly.Size = new System.Drawing.Size(188, 17);
-            this.rbDownloadChunksSeparatelly.TabIndex = 1;
-            this.rbDownloadChunksSeparatelly.TabStop = true;
-            this.rbDownloadChunksSeparatelly.Text = "Каждый чанк в отдельный файл";
-            this.rbDownloadChunksSeparatelly.UseVisualStyleBackColor = true;
-            this.rbDownloadChunksSeparatelly.CheckedChanged += new System.EventHandler(this.rbDownloadChunksSeparatelly_CheckedChanged);
+            this.rbDownloadChunksSeparately.AutoSize = true;
+            this.rbDownloadChunksSeparately.Location = new System.Drawing.Point(17, 33);
+            this.rbDownloadChunksSeparately.Name = "rbDownloadChunksSeparately";
+            this.rbDownloadChunksSeparately.Size = new System.Drawing.Size(188, 17);
+            this.rbDownloadChunksSeparately.TabIndex = 1;
+            this.rbDownloadChunksSeparately.TabStop = true;
+            this.rbDownloadChunksSeparately.Text = "Каждый чанк в отдельный файл";
+            this.rbDownloadChunksSeparately.UseVisualStyleBackColor = true;
+            this.rbDownloadChunksSeparately.CheckedChanged += new System.EventHandler(this.rbDownloadChunksSeparately_CheckedChanged);
             // 
             // rbDownloadOneBigFile
             // 
@@ -434,7 +434,7 @@
         private System.Windows.Forms.Label lblFilelist;
         private System.Windows.Forms.Label lblGroupProgress;
         private System.Windows.Forms.GroupBox grpDownloadOptions;
-        private System.Windows.Forms.RadioButton rbDownloadChunksSeparatelly;
+        private System.Windows.Forms.RadioButton rbDownloadChunksSeparately;
         private System.Windows.Forms.RadioButton rbDownloadOneBigFile;
         private System.Windows.Forms.Timer timerElapsed;
         private System.Windows.Forms.Label lblElapsedTime;
