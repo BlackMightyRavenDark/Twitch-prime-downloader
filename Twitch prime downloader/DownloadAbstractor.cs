@@ -203,6 +203,7 @@ namespace Twitch_prime_downloader
                         } catch (Exception ex)
                         {
                             System.Diagnostics.Debug.WriteLine(ex.Message);
+                            lastErrorCode = ex.HResult;
                             break;
                         }
 
