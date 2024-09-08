@@ -23,7 +23,7 @@ namespace Twitch_prime_downloader
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-			MultiThreadedDownloader.SetMaximumConnectionsLimit(100);
+			MultiThreadedDownloader.SetDefaultMaximumConnectionLimit(100);
 
 			config.Saving += (s, json) =>
 			{
@@ -296,10 +296,9 @@ namespace Twitch_prime_downloader
 
 		private void CopyImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			TwitchVod vod = activeFrameStream.StreamInfo;
-			if (!string.IsNullOrEmpty(vod.ThumbnailUrl) && !string.IsNullOrWhiteSpace(vod.ThumbnailUrl))
+			string url = activeFrameStream.StreamInfo?.FormatThumbnailTemplateUrl(1920, 1080);
+			if (!string.IsNullOrEmpty(url) && !string.IsNullOrWhiteSpace(url))
 			{
-				string url = vod.FormatThumbnailUrl(1920, 1080);
 				SetClipboardText(url);
 			}
 		}
@@ -541,22 +540,17 @@ namespace Twitch_prime_downloader
 			FrameStream frameStream = sender as FrameStream;
 			frameStream.btnDownload.Enabled = false;
 
-			TwitchVodPlaylist playlist = null;
-			int errorCode = await Task.Run(() =>
-			{
-				int e = frameStream.StreamInfo.GetPlaylist(out playlist);
-				if (e == 200) { playlist.Parse(); }
-				return e;
-			});
-
-			if (errorCode == 200)
+			TwitchPlaylistResult playlistResult = await Task.Run(() => frameStream.StreamInfo.GetPlaylist());
+			if (playlistResult.ErrorCode == 200)
 			{
 				if (config.DebugMode)
 				{
-					memoDebug.Text = playlist.PlaylistRaw;
+					memoDebug.Text = playlistResult.Playlist.PlaylistRaw;
 				}
 
-				FrameDownloading frd = new FrameDownloading(frameStream.StreamInfo, playlist);
+				playlistResult.Playlist.Parse();
+
+				FrameDownloading frd = new FrameDownloading(frameStream.StreamInfo, playlistResult.Playlist);
 				frd.Parent = panelDownloads;
 				frd.Location = new Point(0, 0);
 				frd.Closed += OnFrameDownload_Closed;
@@ -574,7 +568,7 @@ namespace Twitch_prime_downloader
 			}
 			else
 			{
-				MessageBox.Show($"Error {errorCode}", "Ошибка!",
+				MessageBox.Show($"Error {playlistResult.ErrorCode}", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 

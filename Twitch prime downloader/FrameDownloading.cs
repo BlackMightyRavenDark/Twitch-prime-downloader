@@ -24,7 +24,7 @@ namespace Twitch_prime_downloader
 		public int ChunkGroupSize { get; private set; } = 3;
 		public DownloadMode DownloadMode { get; private set; }
 		public DateTime DownloadStarted { get; private set; }
-		public TwitchVodPlaylist Playlist { get; }
+		public TwitchPlaylist Playlist { get; }
 		public int TotalChunkDownloadedCount { get; private set; }
 		public long TotalByteDownloadedCount { get; private set; }
 		public bool IsDownloading { get; private set; }
@@ -41,7 +41,7 @@ namespace Twitch_prime_downloader
 		public delegate void ClosedDelegate(object sender);
 		public ClosedDelegate Closed;
 
-		public FrameDownloading(TwitchVod streamInfo, TwitchVodPlaylist vodPlaylist)
+		public FrameDownloading(TwitchVod streamInfo, TwitchPlaylist vodPlaylist)
 		{
 			InitializeComponent();
 

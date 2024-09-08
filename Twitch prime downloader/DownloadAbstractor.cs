@@ -13,7 +13,7 @@ namespace Twitch_prime_downloader
 {
 	internal class DownloadAbstractor
 	{
-		public TwitchVodPlaylist VodPlaylist { get; }
+		public TwitchPlaylist VodPlaylist { get; }
 		public int MaxGroupSize { get; set; }
 
 		public delegate void GroupDownloadStartedDelegate(object sender, int groupSize);
@@ -31,7 +31,7 @@ namespace Twitch_prime_downloader
 		private CancellationTokenSource _cancellationTokenSource;
 		private CancellationToken _cancellationToken;
 
-		public DownloadAbstractor(TwitchVodPlaylist vodPlaylist, int maxGroupSize)
+		public DownloadAbstractor(TwitchPlaylist vodPlaylist, int maxGroupSize)
 		{
 			VodPlaylist = vodPlaylist;
 			MaxGroupSize = maxGroupSize;
@@ -59,8 +59,8 @@ namespace Twitch_prime_downloader
 			}
 
 			bool saveChunksInfo = config.SaveVodChunksInfo;
-			string streamRootUrl = VodPlaylist.StreamRoot.EndsWith("/") ?
-				VodPlaylist.StreamRoot : $"{VodPlaylist.StreamRoot}/";
+			string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
+				VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
 
 			return await Task.Run(async () =>
 			{
@@ -121,14 +121,14 @@ namespace Twitch_prime_downloader
 
 							Stream chunkStream = null;
 							FileDownloader d = new FileDownloader() { Url = streamRootUrl + chunk.FileName };
-							d.Connecting += (sender, url) =>
+							d.Connecting += (sender, url, tryNumber, maxTryCount) =>
 							{
 								DownloadItem downloadItem = new DownloadItem(
 									taskId, chunk, 0L, 0L, chunkStream, 0, DownloadItemState.Connecting);
 								reporter.Report(downloadItem);
 							};
 
-							d.WorkProgress += (sender, downloadedBytes, contentLength) =>
+							d.WorkProgress += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount) =>
 							{
 								DownloadItem downloadItem = new DownloadItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
@@ -136,7 +136,7 @@ namespace Twitch_prime_downloader
 								reporter.Report(downloadItem);
 							};
 
-							d.WorkFinished += (sender, downloadedBytes, contentLength, errCode) =>
+							d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
 							{
 								lastErrorCode = errCode;
 
