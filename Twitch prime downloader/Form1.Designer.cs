@@ -394,22 +394,22 @@ namespace Twitch_prime_downloader
 			// rbSearchLimit
 			// 
 			this.rbSearchLimit.AutoSize = true;
+			this.rbSearchLimit.Checked = true;
 			this.rbSearchLimit.Location = new System.Drawing.Point(8, 45);
 			this.rbSearchLimit.Name = "rbSearchLimit";
 			this.rbSearchLimit.Size = new System.Drawing.Size(62, 17);
 			this.rbSearchLimit.TabIndex = 1;
+			this.rbSearchLimit.TabStop = true;
 			this.rbSearchLimit.Text = "Только";
 			this.rbSearchLimit.UseVisualStyleBackColor = true;
 			// 
 			// rbSearchAll
 			// 
 			this.rbSearchAll.AutoSize = true;
-			this.rbSearchAll.Checked = true;
 			this.rbSearchAll.Location = new System.Drawing.Point(8, 18);
 			this.rbSearchAll.Name = "rbSearchAll";
 			this.rbSearchAll.Size = new System.Drawing.Size(196, 17);
 			this.rbSearchAll.TabIndex = 0;
-			this.rbSearchAll.TabStop = true;
 			this.rbSearchAll.Text = "Все видео канала (кроме клипов)";
 			this.toolTip1.SetToolTip(this.rbSearchAll, "Может быть очень долго!");
 			this.rbSearchAll.UseVisualStyleBackColor = true;
