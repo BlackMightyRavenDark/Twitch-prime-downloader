@@ -265,7 +265,6 @@ namespace Twitch_prime_downloader
 
 				long chunksSummarySize = items.Select(item => item.ChunkSize).Sum();
 				long downloaded = items.Select(item => item.DownloadedSize).Sum();
-
 				TotalByteDownloadedCount += downloaded;
 				lblGroupProgress.Text = $"Скачано: {FormatSize(downloaded)} / {FormatSize(chunksSummarySize)}";
 			}));
@@ -421,6 +420,11 @@ namespace Twitch_prime_downloader
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_EMPTY:
 					MessageBox.Show($"{StreamInfo.Title}\nГруппа чанков пуста!",
+						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					break;
+
+				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_SEQUENCE:
+					MessageBox.Show($"{StreamInfo.Title}\nНеправильная последовательность чанков!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
