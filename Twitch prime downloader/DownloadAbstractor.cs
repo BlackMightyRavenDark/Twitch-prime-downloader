@@ -27,6 +27,7 @@ namespace Twitch_prime_downloader
 
 		public const int DOWNLOAD_ERROR_CHUNK_RANGE = int.MaxValue;
 		public const int DOWNLOAD_ERROR_GROUP_EMPTY = int.MaxValue - 1;
+		public const int DOWNLOAD_ERROR_GROUP_SEQUENCE = int.MaxValue - 2;
 
 		private CancellationTokenSource _cancellationTokenSource;
 		private CancellationToken _cancellationToken;
@@ -154,6 +155,11 @@ namespace Twitch_prime_downloader
 						try
 						{
 							await Task.WhenAll(tasks);
+
+							if (chunkGroup.Count > 1 && !IsContinuousSequence(dict, chunkGroup.Count))
+							{
+								return DOWNLOAD_ERROR_GROUP_SEQUENCE;
+							}
 
 							var items = dict.Values.ToList();
 							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
@@ -313,6 +319,17 @@ namespace Twitch_prime_downloader
 			}
 
 			return !hasError;
+		}
+
+		private static bool IsContinuousSequence(Dictionary<int, DownloadItem> items, int elementCount)
+		{
+			bool valid = true;
+			for (int i = 0; i < elementCount; ++i)
+			{
+				valid &= items.ContainsKey(i);
+				if (!valid) { return false; }
+			}
+			return valid;
 		}
 
 		private static bool SaveStreamToFile(Stream stream, string filePath)
