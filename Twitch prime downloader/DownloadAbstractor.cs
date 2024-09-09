@@ -144,11 +144,6 @@ namespace Twitch_prime_downloader
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
 									lastErrorCode, DownloadItemState.Finished);
 								reporter.Report(downloadItem);
-
-								if (lastErrorCode != 200 && !_cancellationToken.IsCancellationRequested)
-								{
-									throw new DownloadFailedException($"Download was finished with error code {lastErrorCode}");
-								}
 							};
 
 							int errorCode = DownloadChunk(d, chunk, streamRootUrl, ref chunkStream,
