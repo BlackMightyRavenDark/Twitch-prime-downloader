@@ -205,7 +205,7 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
-		private void OnGroupDownloadProgressed(object sender, IEnumerable<DownloadItem> items)
+		private void OnGroupDownloadProgressed(object sender, IEnumerable<DownloadProgressItem> items)
 		{
 			Invoke(new MethodInvoker(() =>
 			{
@@ -224,7 +224,7 @@ namespace Twitch_prime_downloader
 				}
 
 				LinkedList<MultipleProgressBarItem> list = new LinkedList<MultipleProgressBarItem>();
-				foreach (DownloadItem item in items)
+				foreach (DownloadProgressItem item in items)
 				{
 					double percent = 100.0 / item.ChunkSize * item.DownloadedSize;
 					string percentFormatted = string.Format("{0:F2}", percent);
@@ -257,7 +257,7 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
-		private void OnGroupDownloadFinished(object sender, IEnumerable<DownloadItem> items, int errorCode)
+		private void OnGroupDownloadFinished(object sender, IEnumerable<DownloadProgressItem> items, int errorCode)
 		{
 			Invoke(new MethodInvoker(() =>
 			{
@@ -298,7 +298,7 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
-		private void OnGroupMergingFinished(object sender, IEnumerable<DownloadItem> groupItems, int errorCode)
+		private void OnGroupMergingFinished(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode)
 		{
 			Invoke(new MethodInvoker(() =>
 			{
