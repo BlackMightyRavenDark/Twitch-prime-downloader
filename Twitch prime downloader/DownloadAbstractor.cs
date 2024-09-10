@@ -18,11 +18,11 @@ namespace Twitch_prime_downloader
 		public int MaxGroupSize { get; set; }
 
 		public delegate void GroupDownloadStartedDelegate(object sender, int groupSize);
-		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadItem> groupItems);
-		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadItem> groupItems, int errorCode);
+		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
+		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkMergingProgressedDelegate(object sender,
 			long processedBytes, long totalSize,int chunkId, int chunkCount, DownloadMode downloadMode);
-		public delegate void GroupMergingFinishedDelegate(object sender, IEnumerable<DownloadItem> groupItems, int errorCode);
+		public delegate void GroupMergingFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkChangedDelegate(object sender, TwitchVodChunk chunk, int chunkId);
 		public delegate void DownloadCompletedDelegate(object sender, int errorCode);
 
@@ -95,13 +95,13 @@ namespace Twitch_prime_downloader
 					{
 						groupDownloadStarted?.Invoke(this, chunkGroup.Length);
 
-						ConcurrentDictionary<int, DownloadItem> dictProgress = new ConcurrentDictionary<int, DownloadItem>();
+						ConcurrentDictionary<int, DownloadProgressItem> dictProgress = new ConcurrentDictionary<int, DownloadProgressItem>();
 
-						void OnProgressChanged(DownloadItem downloadItem)
+						void OnProgressChanged(DownloadProgressItem progressItem)
 						{
-							dictProgress[downloadItem.TaskId] = downloadItem;
+							dictProgress[progressItem.TaskId] = progressItem;
 
-							List<DownloadItem> items = dictProgress.Values.ToList();
+							List<DownloadProgressItem> items = dictProgress.Values.ToList();
 							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
 							groupDownloadProgressed?.Invoke(this, items);
 						}
@@ -112,27 +112,27 @@ namespace Twitch_prime_downloader
 							FileDownloader d = new FileDownloader() { Url = streamRootUrl + chunk.FileName };
 							d.Connecting += (sender, url, tryNumber, maxTryCount) =>
 							{
-								DownloadItem downloadItem = new DownloadItem(
+								DownloadProgressItem progressItem = new DownloadProgressItem(
 									taskId, chunk, 0L, 0L, chunkStream, 0, DownloadItemState.Connecting);
-								OnProgressChanged(downloadItem);
+								OnProgressChanged(progressItem);
 							};
 
 							d.WorkProgress += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount) =>
 							{
-								DownloadItem downloadItem = new DownloadItem(
+								DownloadProgressItem progressItem = new DownloadProgressItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
 									(sender as FileDownloader).LastErrorCode, DownloadItemState.Downloading);
-								OnProgressChanged(downloadItem);
+								OnProgressChanged(progressItem);
 							};
 
 							d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
 							{
 								lastErrorCode = errCode;
 
-								DownloadItem downloadItem = new DownloadItem(
+								DownloadProgressItem progressItem = new DownloadProgressItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
 									lastErrorCode, DownloadItemState.Finished);
-								OnProgressChanged(downloadItem);
+								OnProgressChanged(progressItem);
 							};
 
 							int errorCode = DownloadChunk(d, chunk, streamRootUrl, ref chunkStream,
@@ -171,15 +171,15 @@ namespace Twitch_prime_downloader
 								else if (downloadMode == DownloadMode.Chunked)
 								{
 									bool hasError = false;
-									foreach (DownloadItem downloadItem in items)
+									foreach (DownloadProgressItem progressItem in items)
 									{
 										if (!hasError)
 										{
-											string fn = Path.Combine(outputFilePath, downloadItem.VodChunk.FileName);
-											hasError = !SaveStreamToFile(downloadItem.OutputStream, fn);
+											string fn = Path.Combine(outputFilePath, progressItem.VodChunk.FileName);
+											hasError = !SaveStreamToFile(progressItem.OutputStream, fn);
 										}
 
-										downloadItem.OutputStream.Close();
+										progressItem.OutputStream.Close();
 									}
 
 									if (hasError)
@@ -276,7 +276,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private static bool AppendGroup(IEnumerable<DownloadItem> items, Stream stream,
+		private static bool AppendGroup(IEnumerable<DownloadProgressItem> items, Stream stream,
 			JArray chunkList,
 			ChunkMergingProgressedDelegate chunkMergingProgressed, object caller)
 		{
@@ -288,7 +288,7 @@ namespace Twitch_prime_downloader
 
 			bool hasError = false;
 			int iter = 0;
-			foreach (DownloadItem item in items)
+			foreach (DownloadProgressItem item in items)
 			{
 				if (!hasError)
 				{
@@ -321,7 +321,7 @@ namespace Twitch_prime_downloader
 			return !hasError;
 		}
 
-		private static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadItem> items, int elementCount)
+		private static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadProgressItem> items, int elementCount)
 		{
 			bool valid = true;
 			for (int i = 0; i < elementCount; ++i)
@@ -357,7 +357,7 @@ namespace Twitch_prime_downloader
 
 	internal enum DownloadItemState { Connecting, Downloading, Finished, Errored }
 
-	internal class DownloadItem
+	internal class DownloadProgressItem
 	{
 		public int TaskId { get; }
 		public TwitchVodChunk VodChunk { get; }
@@ -367,7 +367,7 @@ namespace Twitch_prime_downloader
 		public int ErrorCode { get; }
 		public DownloadItemState State { get; }
 
-		public DownloadItem(int taskId, TwitchVodChunk vodChunk,
+		public DownloadProgressItem(int taskId, TwitchVodChunk vodChunk,
 			long chunkSize, long downloadedSize, Stream outputStream,
 			int errorCode, DownloadItemState state)
 		{
