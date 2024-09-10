@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -88,45 +89,32 @@ namespace Twitch_prime_downloader
 				int currentChunkId = firstChunkId;
 				while (currentChunkId <= lastChunkId)
 				{
-					LinkedList<TwitchVodChunk> chunkGroup = new LinkedList<TwitchVodChunk>();
-					for (int i = 0; i < MaxGroupSize; ++i)
+					TwitchVodChunk[] chunkGroup = GetChunkGroup(VodPlaylist, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
+
+					if (chunkGroup.Length > 0)
 					{
-						int id = currentChunkId + i;
-						if (id > lastChunkId) { break; }
+						groupDownloadStarted?.Invoke(this, chunkGroup.Length);
 
-						chunkGroup.AddLast(VodPlaylist.GetChunk(id));
-					}
+						ConcurrentDictionary<int, DownloadItem> dictProgress = new ConcurrentDictionary<int, DownloadItem>();
 
-					if (chunkGroup.Count > 0)
-					{
-						groupDownloadStarted?.Invoke(this, chunkGroup.Count);
-
-						Dictionary<int, DownloadItem> dict = new Dictionary<int, DownloadItem>();
-
-						Progress<DownloadItem> progress = new Progress<DownloadItem>();
-						progress.ProgressChanged += (s, progressItem) =>
+						void OnProgressChanged(DownloadItem downloadItem)
 						{
-							lock (dict)
-							{
-								dict[progressItem.TaskId] = progressItem;
+							dictProgress[downloadItem.TaskId] = downloadItem;
 
-								List<DownloadItem> items = dict.Values.ToList();
-								items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
-								groupDownloadProgressed?.Invoke(this, items);
-							}
-						};
+							List<DownloadItem> items = dictProgress.Values.ToList();
+							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
+							groupDownloadProgressed?.Invoke(this, items);
+						}
 
 						var tasks = chunkGroup.Select((chunk, taskId) => Task.Run(() =>
 						{
-							IProgress<DownloadItem> reporter = progress;
-
 							Stream chunkStream = null;
 							FileDownloader d = new FileDownloader() { Url = streamRootUrl + chunk.FileName };
 							d.Connecting += (sender, url, tryNumber, maxTryCount) =>
 							{
 								DownloadItem downloadItem = new DownloadItem(
 									taskId, chunk, 0L, 0L, chunkStream, 0, DownloadItemState.Connecting);
-								reporter.Report(downloadItem);
+								OnProgressChanged(downloadItem);
 							};
 
 							d.WorkProgress += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount) =>
@@ -134,7 +122,7 @@ namespace Twitch_prime_downloader
 								DownloadItem downloadItem = new DownloadItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
 									(sender as FileDownloader).LastErrorCode, DownloadItemState.Downloading);
-								reporter.Report(downloadItem);
+								OnProgressChanged(downloadItem);
 							};
 
 							d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
@@ -144,7 +132,7 @@ namespace Twitch_prime_downloader
 								DownloadItem downloadItem = new DownloadItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
 									lastErrorCode, DownloadItemState.Finished);
-								reporter.Report(downloadItem);
+								OnProgressChanged(downloadItem);
 							};
 
 							int errorCode = DownloadChunk(d, chunk, streamRootUrl, ref chunkStream,
@@ -156,12 +144,12 @@ namespace Twitch_prime_downloader
 						{
 							await Task.WhenAll(tasks);
 
-							if (chunkGroup.Count > 1 && !IsContinuousSequence(dict, chunkGroup.Count))
+							if (chunkGroup.Length > 1 && !IsContinuousSequence(dictProgress, chunkGroup.Length))
 							{
 								return DOWNLOAD_ERROR_GROUP_SEQUENCE;
 							}
 
-							var items = dict.Values.ToList();
+							var items = dictProgress.Values.ToList();
 							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
 
 							groupDownloadFinished?.Invoke(this, items, lastErrorCode);
@@ -208,7 +196,7 @@ namespace Twitch_prime_downloader
 							break;
 						}
 
-						currentChunkId += chunkGroup.Count;
+						currentChunkId += chunkGroup.Length;
 					}
 					else
 					{
@@ -238,6 +226,18 @@ namespace Twitch_prime_downloader
 
 				return lastErrorCode;
 			});
+		}
+
+		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchPlaylist playlist,
+			int currentChunkId, int lastChunkId, int maxGroupSize)
+		{
+			for (int i = 0; i < maxGroupSize; ++i)
+			{
+				int id = currentChunkId + i;
+				if (id > lastChunkId) { break; }
+
+				yield return playlist.GetChunk(id);
+			}
 		}
 
 		private int DownloadChunk(FileDownloader fileDownloader,
@@ -321,7 +321,7 @@ namespace Twitch_prime_downloader
 			return !hasError;
 		}
 
-		private static bool IsContinuousSequence(Dictionary<int, DownloadItem> items, int elementCount)
+		private static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadItem> items, int elementCount)
 		{
 			bool valid = true;
 			for (int i = 0; i < elementCount; ++i)
