@@ -12,7 +12,7 @@ using Twitch_prime_downloader.Properties;
 
 namespace Twitch_prime_downloader
 {
-	public partial class FrameDownloading : UserControl
+	public partial class DownloadFrame : UserControl
 	{ 
 		private DownloadAbstractor downloadAbstractor = null;
 		public TwitchVod StreamInfo { get; private set; }
@@ -41,7 +41,7 @@ namespace Twitch_prime_downloader
 		public delegate void ClosedDelegate(object sender);
 		public ClosedDelegate Closed;
 
-		public FrameDownloading(TwitchVod streamInfo, TwitchPlaylist vodPlaylist)
+		public DownloadFrame(TwitchVod streamInfo, TwitchPlaylist vodPlaylist)
 		{
 			InitializeComponent();
 
@@ -67,7 +67,7 @@ namespace Twitch_prime_downloader
 			StopDownload();
 		}
 
-		private void FrameDownload_Resize(object sender, EventArgs e)
+		private void DownloadFrame_Resize(object sender, EventArgs e)
 		{
 			int panelWidth = Parent.Parent.Parent.Width - 24;
 			btnClose.Location = new Point(panelWidth - btnClose.Width - 6, 2);
@@ -95,7 +95,7 @@ namespace Twitch_prime_downloader
 			imgFcst.Left = animationPositionX;
 		}
 
-		private void FrameDownload_Paint(object sender, PaintEventArgs e)
+		private void DownloadFrame_Paint(object sender, PaintEventArgs e)
 		{
 			multipleProgressBarGroup.Refresh();
 			pictureBoxStreamImage.Refresh();
@@ -460,7 +460,7 @@ namespace Twitch_prime_downloader
 			StartDownload();
 		}
 
-		private void FrameDownload_MouseDown(object sender, MouseEventArgs e)
+		private void DownloadFrame_MouseDown(object sender, MouseEventArgs e)
 		{
 			if (e.Button == MouseButtons.Left)
 			{
@@ -468,7 +468,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private void FrameDownload_MouseMove(object sender, MouseEventArgs e)
+		private void DownloadFrame_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (e.Button == MouseButtons.Left)
 			{

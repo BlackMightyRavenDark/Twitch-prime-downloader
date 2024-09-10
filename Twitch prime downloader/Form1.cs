@@ -134,10 +134,10 @@ namespace Twitch_prime_downloader
 		private void Form1_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			ClearFramesStream();
-			foreach (FrameDownloading frd in framesDownloading)
+			foreach (DownloadFrame frame in downloadFrames)
 			{
-				frd.FrameDispose();
-				frd.Dispose();
+				frame.FrameDispose();
+				frame.Dispose();
 			}
 
 			cboxChannelName.SaveToFile(config.ChannelListFilePath);
@@ -162,7 +162,7 @@ namespace Twitch_prime_downloader
 			}
 			else if (tabControlMain.SelectedTab == tabPageDownloading)
 			{
-				StackFramesDownloading();
+				StackDownloadFrames();
 			}
 		}
 
@@ -228,18 +228,18 @@ namespace Twitch_prime_downloader
 			return 0;
 		}
 
-		private void StackFramesDownloading()
+		private void StackDownloadFrames()
 		{
-			if (framesDownloading.Count > 0)
+			if (downloadFrames.Count > 0)
 			{
-				for (int i = 0; i < framesDownloading.Count; ++i)
+				for (int i = 0; i < downloadFrames.Count; ++i)
 				{
-					int locY = i * framesDownloading[i].Height - scrollBarDownloads.Value;
-					framesDownloading[i].Location = new Point(0, locY);
-					framesDownloading[i].Width = Width - 40 + FrameDownloading.EXTRA_WIDTH;
+					int locY = i * downloadFrames[i].Height - scrollBarDownloads.Value;
+					downloadFrames[i].Location = new Point(0, locY);
+					downloadFrames[i].Width = Width - 40 + DownloadFrame.EXTRA_WIDTH;
 				}
 
-				int h = framesDownloading.Count * framesDownloading[0].Height;
+				int h = downloadFrames.Count * downloadFrames[0].Height;
 				if (h > panelDownloads.Height)
 				{
 					scrollBarDownloads.Maximum = h;
@@ -256,19 +256,19 @@ namespace Twitch_prime_downloader
 		private void OnFrameDownload_Closed(object sender)
 		{
 			int i;
-			for (i = 0; i < framesDownloading.Count; ++i)
+			for (i = 0; i < downloadFrames.Count; ++i)
 			{
-				if (framesDownloading[i] == sender)
+				if (downloadFrames[i] == sender)
 				{
 					break;
 				}
 			}
 
-			framesDownloading.RemoveAt(i);
-			if (framesDownloading.Count > 0)
+			downloadFrames.RemoveAt(i);
+			if (downloadFrames.Count > 0)
 			{
-				tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
-				StackFramesDownloading();
+				tabPageDownloading.Text = $"Скачивание ({downloadFrames.Count})";
+				StackDownloadFrames();
 			}
 			else
 			{
@@ -550,20 +550,20 @@ namespace Twitch_prime_downloader
 
 				playlistResult.Playlist.Parse();
 
-				FrameDownloading frd = new FrameDownloading(frameStream.StreamInfo, playlistResult.Playlist);
-				frd.Parent = panelDownloads;
-				frd.Location = new Point(0, 0);
-				frd.Closed += OnFrameDownload_Closed;
+				DownloadFrame frame = new DownloadFrame(frameStream.StreamInfo, playlistResult.Playlist);
+				frame.Parent = panelDownloads;
+				frame.Location = new Point(0, 0);
+				frame.Closed += OnFrameDownload_Closed;
 
-				frd.ChunkFrom = 0;
-				frd.ChunkTo = frd.Playlist.Count - 1;
+				frame.ChunkFrom = 0;
+				frame.ChunkTo = frame.Playlist.Count - 1;
 
-				framesDownloading.Add(frd);
+				downloadFrames.Add(frame);
 
-				tabPageDownloading.Text = $"Скачивание ({framesDownloading.Count})";
+				tabPageDownloading.Text = $"Скачивание ({downloadFrames.Count})";
 				if (tabControlMain.SelectedTab == tabPageDownloading)
 				{
-					StackFramesDownloading();
+					StackDownloadFrames();
 				}
 			}
 			else
@@ -656,7 +656,7 @@ namespace Twitch_prime_downloader
 
 		private void scrollBarDownloads_Scroll(object sender, ScrollEventArgs e)
 		{
-			StackFramesDownloading();
+			StackDownloadFrames();
 		}
 
 		private void miCopyVideoUrl_Click(object sender, EventArgs e)
@@ -685,7 +685,7 @@ namespace Twitch_prime_downloader
 			}
 			else if (e.TabPage == tabPageDownloading)
 			{
-				StackFramesDownloading();
+				StackDownloadFrames();
 			}
 		}
 

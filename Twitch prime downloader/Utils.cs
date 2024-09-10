@@ -10,7 +10,7 @@ namespace Twitch_prime_downloader
 	public static class Utils
 	{
 		public static List<FrameStream> framesStream = new List<FrameStream>();
-		public static List<FrameDownloading> framesDownloading = new List<FrameDownloading>();
+		public static List<DownloadFrame> downloadFrames = new List<DownloadFrame>();
 
 		public static readonly Configurator config = new Configurator();
 
