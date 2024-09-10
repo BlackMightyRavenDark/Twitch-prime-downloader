@@ -64,11 +64,11 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrameDownloading.cs">
+    <Compile Include="DownloadFrame.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FrameDownloading.Designer.cs">
-      <DependentUpon>FrameDownloading.cs</DependentUpon>
+    <Compile Include="DownloadFrame.Designer.cs">
+      <DependentUpon>DownloadFrame.cs</DependentUpon>
     </Compile>
     <Compile Include="FrameStream.cs">
       <SubType>UserControl</SubType>
@@ -88,8 +88,8 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FrameDownloading.resx">
-      <DependentUpon>FrameDownloading.cs</DependentUpon>
+    <EmbeddedResource Include="DownloadFrame.resx">
+      <DependentUpon>DownloadFrame.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrameStream.resx">
       <DependentUpon>FrameStream.cs</DependentUpon>
