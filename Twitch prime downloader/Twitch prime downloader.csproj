@@ -70,11 +70,11 @@
     <Compile Include="DownloadFrame.Designer.cs">
       <DependentUpon>DownloadFrame.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrameStream.cs">
+    <Compile Include="VodFrame.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FrameStream.designer.cs">
-      <DependentUpon>FrameStream.cs</DependentUpon>
+    <Compile Include="VodFrame.designer.cs">
+      <DependentUpon>VodFrame.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
     <Compile Include="Configurator.cs" />
@@ -91,8 +91,8 @@
     <EmbeddedResource Include="DownloadFrame.resx">
       <DependentUpon>DownloadFrame.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FrameStream.resx">
-      <DependentUpon>FrameStream.cs</DependentUpon>
+    <EmbeddedResource Include="VodFrame.resx">
+      <DependentUpon>VodFrame.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

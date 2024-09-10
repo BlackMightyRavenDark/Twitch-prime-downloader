@@ -14,7 +14,7 @@ namespace Twitch_prime_downloader
 {
 	public partial class Form1 : Form
 	{
-		private FrameStream activeFrameStream = null;
+		private VodFrame activeFrameStream = null;
 
 		public Form1()
 		{
@@ -133,7 +133,7 @@ namespace Twitch_prime_downloader
 
 		private void Form1_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			ClearFramesStream();
+			ClearVodFrames();
 			foreach (DownloadFrame frame in downloadFrames)
 			{
 				frame.FrameDispose();
@@ -158,7 +158,7 @@ namespace Twitch_prime_downloader
 		{
 			if (tabControlMain.SelectedTab == tabPageStreams)
 			{
-				StackFramesStream();
+				StackVodFrames();
 			}
 			else if (tabControlMain.SelectedTab == tabPageDownloading)
 			{
@@ -166,21 +166,21 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private void ClearFramesStream()
+		private void ClearVodFrames()
 		{
-			foreach (FrameStream frameStream in framesStream)
+			foreach (VodFrame frame in vodFrames)
 			{
-				frameStream.Dispose();
+				frame.Dispose();
 			}
-			framesStream.Clear();
+			vodFrames.Clear();
 		}
 
-		private int StackFramesStream()
+		private int StackVodFrames()
 		{
-			if (framesStream.Count > 0)
+			if (vodFrames.Count > 0)
 			{
-				int w = framesStream[0].Width;
-				int h = framesStream[0].Height;
+				int w = vodFrames[0].Width;
+				int h = vodFrames[0].Height;
 				int gap = 4;
 				int panelWidth = tabControlMain.Width - scrollBarStreams.Width - 10;
 				int perRow = panelWidth / (w + gap);
@@ -188,22 +188,22 @@ namespace Twitch_prime_downloader
 				{
 					perRow = 1;
 				}
-				int rowsCount = framesStream.Count / perRow;
-				if (framesStream.Count % perRow != 0)
+				int rowsCount = vodFrames.Count / perRow;
+				if (vodFrames.Count % perRow != 0)
 				{
 					rowsCount++;
 				}
 				int xStart = (panelWidth / 2) - ((w + gap) * perRow / 2);
 				int x = xStart;
 				int y = -h - gap;
-				for (int i = 0; i < framesStream.Count; ++i)
+				for (int i = 0; i < vodFrames.Count; ++i)
 				{
 					if (i % perRow == 0)
 					{
 						y += h + gap;
 						x = xStart;
 					}
-					framesStream[i].Location = new Point(x, y - scrollBarStreams.Value);
+					vodFrames[i].Location = new Point(x, y - scrollBarStreams.Value);
 					x += w + gap;
 				}
 
@@ -276,17 +276,17 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private void OnFrameStream_Activated(object sender)
+		private void OnVodFrame_Activated(object sender)
 		{
-			activeFrameStream = sender as FrameStream;
-			foreach (FrameStream frameStream in framesStream)
+			activeFrameStream = sender as VodFrame;
+			foreach (VodFrame frameStream in vodFrames)
 			{
 				frameStream.BackColor = frameStream == activeFrameStream ?
-					FrameStream.ColorActive : FrameStream.ColorInactive;
+					VodFrame.ColorActive : VodFrame.ColorInactive;
 			}
 		}
 
-		private void OnFrameStream_ImageMouseDown(object sender, MouseEventArgs e)
+		private void OnVodFrame_ImageMouseDown(object sender, MouseEventArgs e)
 		{
 			if (e.Button == MouseButtons.Right)
 			{
@@ -387,7 +387,7 @@ namespace Twitch_prime_downloader
 			lbLog.Items.Clear();
 			lbLog.Items.Add($"Скачивание списка видео канала {channelName}...");
 			tabControlMain.SelectedTab = tabPageLog;
-			ClearFramesStream();
+			ClearVodFrames();
 			tabPageStreams.Text = "Стримы";
 
 			uint limit = rbSearchLimit.Checked ? (uint)numericUpDownSearchLimit.Value : uint.MaxValue;
@@ -438,7 +438,7 @@ namespace Twitch_prime_downloader
 			{
 				tabPageStreams.Text = $"Стримы ({actualStreamCount})";
 
-				StackFramesStream();
+				StackVodFrames();
 
 				tabControlMain.SelectedTab = tabPageStreams;
 			}
@@ -463,7 +463,7 @@ namespace Twitch_prime_downloader
 			lbLog.Items.Add("Поиск видео по ссылкам...");
 			tabPageStreams.Text = "Стримы";
 
-			ClearFramesStream();
+			ClearVodFrames();
 
 			for (int i = 0; i < urls.Length; ++i)
 			{
@@ -499,9 +499,9 @@ namespace Twitch_prime_downloader
 				}
 			}
 
-			if (framesStream.Count > 0)
+			if (vodFrames.Count > 0)
 			{
-				tabPageStreams.Text = $"Стримы ({framesStream.Count})";
+				tabPageStreams.Text = $"Стримы ({vodFrames.Count})";
 				tabControlMain.SelectedTab = tabPageStreams;
 			}
 
@@ -510,9 +510,9 @@ namespace Twitch_prime_downloader
 
 		private void panelStreams_MouseDown(object sender, MouseEventArgs e)
 		{
-			foreach (FrameStream frameStream in framesStream)
+			foreach (VodFrame frame in vodFrames)
 			{
-				frameStream.BackColor = FrameStream.ColorInactive;
+				frame.BackColor = VodFrame.ColorInactive;
 			}
 
 			activeFrameStream = null;
@@ -520,15 +520,15 @@ namespace Twitch_prime_downloader
 
 		private void AddStreamItem(TwitchVod vod)
 		{
-			FrameStream frameStream = new FrameStream(vod);
-			frameStream.Parent = panelStreams;
-			frameStream.Activated += OnFrameStream_Activated;
-			frameStream.ImageMouseDown += OnFrameStream_ImageMouseDown;
-			frameStream.DownloadButtonClicked += OnFrameStream_DownloadButtonClick;
-			framesStream.Add(frameStream);
+			VodFrame frame = new VodFrame(vod);
+			frame.Parent = panelStreams;
+			frame.Activated += OnVodFrame_Activated;
+			frame.ImageMouseDown += OnVodFrame_ImageMouseDown;
+			frame.DownloadButtonClicked += OnVodFrame_DownloadButtonClick;
+			vodFrames.Add(frame);
 		}
 
-		private async void OnFrameStream_DownloadButtonClick(object sender)
+		private async void OnVodFrame_DownloadButtonClick(object sender)
 		{
 			if (string.IsNullOrEmpty(config.DownloadingDirPath))
 			{
@@ -537,7 +537,7 @@ namespace Twitch_prime_downloader
 				return;
 			}
 
-			FrameStream frameStream = sender as FrameStream;
+			VodFrame frameStream = sender as VodFrame;
 			frameStream.btnDownload.Enabled = false;
 
 			TwitchPlaylistResult playlistResult = await Task.Run(() => frameStream.StreamInfo.GetPlaylist());
@@ -592,7 +592,7 @@ namespace Twitch_prime_downloader
 
 		private void scrollBarStreams_Scroll(object sender, ScrollEventArgs e)
 		{
-			StackFramesStream();
+			StackVodFrames();
 		}
 
 		private void saveImageAssToolStripMenuItem_Click(object sender, EventArgs e)
@@ -681,7 +681,7 @@ namespace Twitch_prime_downloader
 		{
 			if (e.TabPage == tabPageStreams)
 			{
-				StackFramesStream();
+				StackVodFrames();
 			}
 			else if (e.TabPage == tabPageDownloading)
 			{
@@ -692,9 +692,9 @@ namespace Twitch_prime_downloader
 		private void chkUseGmtTime_CheckedChanged(object sender, EventArgs e)
 		{
 			config.UseGmtVodDates = chkUseGmtTime.Checked;
-			foreach (FrameStream frameStream in framesStream)
+			foreach (VodFrame frame in vodFrames)
 			{
-				frameStream.UseGmtTime = config.UseGmtVodDates;
+				frame.UseGmtTime = config.UseGmtVodDates;
 			}
 		}
 
