@@ -9,7 +9,7 @@ using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
 {
-	public partial class FrameStream : UserControl
+	public partial class VodFrame : UserControl
 	{
 		public TwitchVod StreamInfo { get; private set; }
 		public TwitchVodMutedSegments MutedSegments { get; private set; }
@@ -34,7 +34,7 @@ namespace Twitch_prime_downloader
 		public FrameActivatedDelegate Activated;
 		public DownloadButtonClickedDelegate DownloadButtonClicked;
 		
-		public FrameStream(TwitchVod twitchVod)
+		public VodFrame(TwitchVod twitchVod)
 		{
 			InitializeComponent();
 
@@ -141,7 +141,7 @@ namespace Twitch_prime_downloader
 			ImageMouseDown?.Invoke(this, e);
 		}
 
-		private void FrameStream_MouseDown(object sender, MouseEventArgs e)
+		private void VodFrame_MouseDown(object sender, MouseEventArgs e)
 		{
 			Activated?.Invoke(this);
 		}

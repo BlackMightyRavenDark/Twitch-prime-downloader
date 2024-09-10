@@ -1,6 +1,6 @@
 ﻿namespace Twitch_prime_downloader
 {
-	partial class FrameStream
+	partial class VodFrame
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -68,7 +68,7 @@
 			this.lblChannelName.Size = new System.Drawing.Size(84, 13);
 			this.lblChannelName.TabIndex = 3;
 			this.lblChannelName.Text = "lblChannelName";
-			this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// lblGameName
 			// 
@@ -79,7 +79,7 @@
 			this.lblGameName.Size = new System.Drawing.Size(73, 13);
 			this.lblGameName.TabIndex = 4;
 			this.lblGameName.Text = "lblGameName";
-			this.lblGameName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.lblGameName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// btnDownload
 			// 
@@ -93,7 +93,7 @@
 			this.btnDownload.UseVisualStyleBackColor = false;
 			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
 			this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.btnDownload_Paint);
-			this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// contextMenuStrip1
 			// 
@@ -138,7 +138,7 @@
 			this.lblMutedChunks.Text = "lblMutedChunks";
 			this.lblMutedChunks.Visible = false;
 			this.lblMutedChunks.DoubleClick += new System.EventHandler(this.lblMutedChunks_DoubleClick);
-			this.lblMutedChunks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.lblMutedChunks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// lblPrime
 			// 
@@ -152,7 +152,7 @@
 			this.lblPrime.Text = "$";
 			this.toolTip1.SetToolTip(this.lblPrime, "Очень платное видео");
 			this.lblPrime.Visible = false;
-			this.lblPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.lblPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// imageGame
 			// 
@@ -162,7 +162,7 @@
 			this.imageGame.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
 			this.imageGame.TabIndex = 2;
 			this.imageGame.TabStop = false;
-			this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
 			// imageStream
 			// 
@@ -184,9 +184,9 @@
 			this.lblBroadcastType.Size = new System.Drawing.Size(89, 13);
 			this.lblBroadcastType.TabIndex = 8;
 			this.lblBroadcastType.Text = "lblBroadcastType";
-			this.lblBroadcastType.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.lblBroadcastType.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			// 
-			// FrameStream
+			// VodFrame
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -200,9 +200,9 @@
 			this.Controls.Add(this.imageGame);
 			this.Controls.Add(this.imageStream);
 			this.Controls.Add(this.lblStreamTitle);
-			this.Name = "FrameStream";
+			this.Name = "VodFrame";
 			this.Size = new System.Drawing.Size(380, 296);
-			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FrameStream_MouseDown);
+			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
 			this.contextMenuStrip1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.imageGame)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.imageStream)).EndInit();
