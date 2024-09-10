@@ -52,7 +52,7 @@ namespace Twitch_prime_downloader
 			OnFrameCreate();
 		}
 
-		public void OnFrameCreate()
+		private void OnFrameCreate()
 		{
 			lblGroupProgress.Text = null;
 			lblElapsedTime.Text = null;
