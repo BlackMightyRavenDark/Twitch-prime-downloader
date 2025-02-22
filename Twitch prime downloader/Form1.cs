@@ -322,6 +322,40 @@ namespace Twitch_prime_downloader
 			}
 		}
 
+		private void miSavePlaylistAsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				string playlistRaw = activeFrameStream.StreamInfo?.Playlist?.PlaylistRaw;
+				if (!string.IsNullOrEmpty(playlistRaw) && !string.IsNullOrWhiteSpace(playlistRaw))
+				{
+					using (SaveFileDialog sfd = new SaveFileDialog())
+					{
+						sfd.Title = "Куда будем сохранять?";
+						sfd.Filter = "*.m3u8|*.M3U8-files";
+						sfd.DefaultExt = ".m3u8";
+						sfd.InitialDirectory = config.DownloadingDirPath;
+						sfd.FileName = FixFileName(FormatFileName(config.FileNameFormat, activeFrameStream.StreamInfo)) + "_playlist.m3u8";
+						if (sfd.ShowDialog() == DialogResult.OK)
+						{
+							if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
+							File.WriteAllText(sfd.FileName, playlistRaw);
+						}
+					}
+				}
+				else
+				{
+					MessageBox.Show("Плейлист не найден!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+		
 		private void btnAddChannel_Click(object sender, EventArgs e)
 		{
 			string channelName = cboxChannelName.Text;

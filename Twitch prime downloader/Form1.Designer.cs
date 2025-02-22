@@ -79,6 +79,7 @@ namespace Twitch_prime_downloader
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.miSavePlaylistAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
@@ -565,11 +566,12 @@ namespace Twitch_prime_downloader
 			this.miCopyVideoUrl,
 			this.copyImageUrlToolStripMenuItem,
 			this.copyStreamInfoJsonToolStripMenuItem,
+			this.miSavePlaylistAsToolStripMenuItem,
 			this.saveImageAssToolStripMenuItem,
 			this.toolStripMenuItem1,
 			this.openVideoInBrowserToolStripMenuItem});
 			this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-			this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 120);
+			this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 164);
 			// 
 			// miCopyVideoUrl
 			// 
@@ -610,6 +612,13 @@ namespace Twitch_prime_downloader
 			this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
 			this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
 			this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
+			// 
+			// miSavePlaylistAsToolStripMenuItem
+			// 
+			this.miSavePlaylistAsToolStripMenuItem.Name = "miSavePlaylistAsToolStripMenuItem";
+			this.miSavePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miSavePlaylistAsToolStripMenuItem.Text = "Сохранить плейлист как...";
+			this.miSavePlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.miSavePlaylistAsToolStripMenuItem_Click);
 			// 
 			// Form1
 			// 
@@ -693,5 +702,6 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.CheckBox chkUseGmtTime;
 		private System.Windows.Forms.CheckBox chkSaveVodInfo;
 		private System.Windows.Forms.CheckBox chkSaveVodChunksInfo;
+		private System.Windows.Forms.ToolStripMenuItem miSavePlaylistAsToolStripMenuItem;
 	}
 }
