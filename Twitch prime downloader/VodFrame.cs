@@ -66,8 +66,18 @@ namespace Twitch_prime_downloader
 			lblBroadcastType.Text = StreamInfo.VodType.ToString();
 			lblPrime.Visible = StreamInfo.IsSubscribersOnly;
 
-			TwitchVodMutedSegments mutedSegments = await Task.Run(() => vod.GetMutedSegments());
-			MutedSegments = mutedSegments;
+			MutedSegments = await Task.Run(() =>
+			{
+				if (vod.Playlist == null) { vod.UpdatePlaylistManifest(); }
+				if (vod.Playlist != null)
+				{
+					vod.Playlist.Parse();
+					return vod.Playlist.MutedSegments;
+				}
+
+				return null;
+			});
+
 			if (MutedSegments != null && MutedSegments.Segments.Count > 0)
 			{
 				lblMutedChunks.Text = $"Muted segments: {MutedSegments.Segments.Count}";
@@ -81,15 +91,14 @@ namespace Twitch_prime_downloader
 
 			Task[] tasks = new Task[]
 			{
-				Task.Run(() => StreamInfo.RetrievePreviewImage(1920, 1080)),
-				Task.Run(() => StreamInfo.Game?.RetrievePreviewImage(52, 72))
+				Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
+				Task.Run(() => StreamInfo.Game?.ReceiveThumbnail(52, 72))
 			};
 			await Task.WhenAll(tasks);
 
-			Image imagePreview = TryLoadImageFromStream(StreamInfo.PreviewImageData);
-			if (imagePreview == null) { imagePreview = GenerateErrorImage(); }
+			Image imagePreview = TryLoadImageFromStream(StreamInfo.ThumbnailImageData) ?? GenerateErrorImage();
 			imageStream.Image = imagePreview;
-			imageGame.Image = TryLoadImageFromStream(StreamInfo.Game?.PreviewImageData);
+			imageGame.Image = TryLoadImageFromStream(StreamInfo.Game?.ThumbnailImageData);
 		}
 
 		private void imageStream_Paint(object sender, PaintEventArgs e)

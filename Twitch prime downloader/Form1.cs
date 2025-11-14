@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using TwitchApiLib;
-using MultiThreadedDownloaderLib;
 using static Twitch_prime_downloader.Utils;
 
 namespace Twitch_prime_downloader
@@ -23,7 +23,14 @@ namespace Twitch_prime_downloader
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-			MultiThreadedDownloader.SetDefaultMaximumConnectionLimit(100);
+			TwitchApi.SetApplication(new TwitchApplication(
+				"Test application", "No description",
+				"gs7pui3law5lsi69yzi9qzyaqvlcsy",
+				"srr2yi260t15ir6w0wq5blir22i9pq"
+				)
+			);
+
+			MultiThreadedDownloaderLib.Utils.ConnectionLimit = 100;
 
 			config.Saving += (s, json) =>
 			{
@@ -433,7 +440,7 @@ namespace Twitch_prime_downloader
 				return;
 			}
 
-			List<TwitchVodResult> vodResults = await Task.Run(() => userResult.User.GetVideosMultiThreaded(limit));
+			List<TwitchVodResult> vodResults = await Task.Run(() => userResult.User.GetVideosMultiThreaded(limit).ToList());
 			if (vodResults.Count == 0)
 			{
 				lbLog.Items.Add("Видео не найдены!");
@@ -574,7 +581,16 @@ namespace Twitch_prime_downloader
 			VodFrame frameStream = sender as VodFrame;
 			frameStream.btnDownload.Enabled = false;
 
-			TwitchPlaylistResult playlistResult = await Task.Run(() => frameStream.StreamInfo.GetPlaylist());
+			TwitchVodPlaylistResult playlistResult = await Task.Run(() =>
+			{
+				if (frameStream.StreamInfo.IsLive && frameStream.StreamInfo.UpdatePlaylistManifest() == 200 &&
+					frameStream.StreamInfo.PlaylistManifest[0].UpdatePlaylist() == 200)
+				{
+					return new TwitchVodPlaylistResult(frameStream.StreamInfo.PlaylistManifest[0].Playlist, 200, null);
+				}
+
+				return frameStream.StreamInfo.GetPlaylist("chunked");
+			});
 			if (playlistResult.ErrorCode == 200)
 			{
 				if (config.DebugMode)
@@ -640,7 +656,7 @@ namespace Twitch_prime_downloader
 			if (sfd.ShowDialog() != DialogResult.Cancel)
 			{
 				config.LastUsedDirPath = sfd.FileName;
-				activeFrameStream.StreamInfo.PreviewImageData.SaveToFile(sfd.FileName);
+				activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
 			}
 			sfd.Dispose();
 		}

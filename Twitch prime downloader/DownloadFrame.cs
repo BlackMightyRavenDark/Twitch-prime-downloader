@@ -24,7 +24,7 @@ namespace Twitch_prime_downloader
 		public int ChunkGroupSize { get; private set; } = 3;
 		public DownloadMode DownloadMode { get; private set; }
 		public DateTime DownloadStarted { get; private set; }
-		public TwitchPlaylist Playlist { get; }
+		public TwitchVodPlaylist Playlist { get; }
 		public int TotalChunkDownloadedCount { get; private set; }
 		public long TotalByteDownloadedCount { get; private set; }
 		public bool IsDownloading { get; private set; }
@@ -41,7 +41,7 @@ namespace Twitch_prime_downloader
 		public delegate void ClosedDelegate(object sender);
 		public ClosedDelegate Closed;
 
-		public DownloadFrame(TwitchVod streamInfo, TwitchPlaylist vodPlaylist)
+		public DownloadFrame(TwitchVod streamInfo, TwitchVodPlaylist vodPlaylist)
 		{
 			InitializeComponent();
 
@@ -331,7 +331,7 @@ namespace Twitch_prime_downloader
 			timerElapsed.Enabled = true;
 			if (DownloadMode == DownloadMode.WholeFile)
 			{
-				OutputFilePath = MultiThreadedDownloader.GetNumberedFileName(OutputFilePathOrig);
+				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOrig);
 				lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
 			}
 			else
@@ -393,13 +393,13 @@ namespace Twitch_prime_downloader
 					}
 					break;
 
-				case FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER:
+				case FileDownloader.DOWNLOAD_ERROR_CANCELED:
 					MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
 						MessageBoxButtons.OK, MessageBoxIcon.Warning);
 					break;
 
-				case FileDownloader.DOWNLOAD_ERROR_INCOMPLETE_DATA_READ:
-					MessageBox.Show($"{StreamInfo.Title}\nОшибка INCOMPLETE_DATA_READ!\nСкачивание прервано!",
+				case FileDownloader.DOWNLOAD_ERROR_DATA_SIZE_MISMATCH:
+					MessageBox.Show($"{StreamInfo.Title}\nОшибка DATA_SIZE_MISMATCH!\nСкачивание прервано!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
@@ -408,7 +408,7 @@ namespace Twitch_prime_downloader
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
-				case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_DIR_NOT_EXISTS:
+				case DownloadAbstractor.DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS:
 					MessageBox.Show($"{StreamInfo.Title}\nПапка для скачивания не найдена!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
@@ -507,7 +507,7 @@ namespace Twitch_prime_downloader
 				lblOutputFilename.Text = $"Папка для скачивания: {OutputFilePathOrig}";
 			}
 
-			Image image = TryLoadImageFromStream(vod.PreviewImageData);
+			Image image = TryLoadImageFromStream(vod.ThumbnailImageData);
 			if (image == null) { image = GenerateErrorImage(); }
 			pictureBoxStreamImage.Image = image;
 

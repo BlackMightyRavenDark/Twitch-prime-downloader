@@ -14,7 +14,7 @@ namespace Twitch_prime_downloader
 {
 	internal class DownloadAbstractor
 	{
-		public TwitchPlaylist VodPlaylist { get; }
+		public TwitchVodPlaylist VodPlaylist { get; }
 		public int MaxGroupSize { get; set; }
 
 		public delegate void GroupDownloadStartedDelegate(object sender, int groupSize);
@@ -29,11 +29,12 @@ namespace Twitch_prime_downloader
 		public const int DOWNLOAD_ERROR_CHUNK_RANGE = int.MaxValue;
 		public const int DOWNLOAD_ERROR_GROUP_EMPTY = int.MaxValue - 1;
 		public const int DOWNLOAD_ERROR_GROUP_SEQUENCE = int.MaxValue - 2;
+		public const int DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS = int.MaxValue - 3;
 
 		private CancellationTokenSource _cancellationTokenSource;
 		private CancellationToken _cancellationToken;
 
-		public DownloadAbstractor(TwitchPlaylist vodPlaylist, int maxGroupSize)
+		public DownloadAbstractor(TwitchVodPlaylist vodPlaylist, int maxGroupSize)
 		{
 			VodPlaylist = vodPlaylist;
 			MaxGroupSize = maxGroupSize;
@@ -72,7 +73,7 @@ namespace Twitch_prime_downloader
 
 					if (!Directory.Exists(outputFilePath))
 					{
-						return MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_DIR_NOT_EXISTS;
+						return DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS;
 					}
 				}
 
@@ -109,7 +110,14 @@ namespace Twitch_prime_downloader
 						var tasks = chunkGroup.Select((chunk, taskId) => Task.Run(() =>
 						{
 							Stream chunkStream = null;
-							FileDownloader d = new FileDownloader() { Url = streamRootUrl + chunk.FileName };
+							FileDownloader d = new FileDownloader()
+							{
+								Url = streamRootUrl + chunk.FileName,
+								ConnectionTimeout = 5000,
+								SkipHeaderRequest = true,
+								TryCountLimit = 2,
+								RetryIntervalMilliseconds = 3000
+							};
 							d.Connecting += (sender, url, tryNumber, maxTryCount) =>
 							{
 								DownloadProgressItem progressItem = new DownloadProgressItem(
@@ -206,7 +214,7 @@ namespace Twitch_prime_downloader
 
 					if (_cancellationToken.IsCancellationRequested)
 					{
-						lastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED_BY_USER;
+						lastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED;
 						break;
 					}
 				}
@@ -228,7 +236,7 @@ namespace Twitch_prime_downloader
 			});
 		}
 
-		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchPlaylist playlist,
+		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchVodPlaylist playlist,
 			int currentChunkId, int lastChunkId, int maxGroupSize)
 		{
 			for (int i = 0; i < maxGroupSize; ++i)
@@ -293,15 +301,21 @@ namespace Twitch_prime_downloader
 				if (!hasError)
 				{
 					void func(long sourcePosition, long sourceLength,
-						long destinationPosition, long destinationLength)
+						long destinationPosition, long destinationLength, long bytesTransferred)
 					{
-						totalProcessed += sourcePosition;
+						totalProcessed = sourcePosition;
 						chunkMergingProgressed?.Invoke(caller, totalProcessed, totalSize,
 							iter, itemCount, DownloadMode.WholeFile);
 					}
 
 					item.OutputStream.Position = 0L;
-					hasError = !StreamAppender.Append(item.OutputStream, stream, func, func, func);
+					hasError = !StreamAppender.Append(item.OutputStream, stream,
+						(sourcePosition, sourceLength, destinationPosition, destinationLength) =>
+						{
+							totalProcessed = 0L;
+							chunkMergingProgressed?.Invoke(caller, totalProcessed, totalSize,
+								iter, itemCount, DownloadMode.WholeFile);
+						}, func, func);
 					if (!hasError)
 					{
 						JObject jChunk = new JObject();
