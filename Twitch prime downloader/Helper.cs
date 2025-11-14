@@ -88,7 +88,7 @@ namespace Twitch_prime_downloader
 			return dateTime.IsGmt() ? dateTime.ToLocalTime() : dateTime;
 		}
 
-		public static List<TwitchVodChunk> GetChunkList(this TwitchPlaylist playlist)
+		public static List<TwitchVodChunk> GetChunkList(this TwitchVodPlaylist playlist)
 		{
 			List<TwitchVodChunk> chunks = new List<TwitchVodChunk>();
 			for (int i = 0; i < playlist.Count; ++i)
