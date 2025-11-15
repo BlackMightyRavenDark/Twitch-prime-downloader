@@ -293,6 +293,7 @@ namespace Twitch_prime_downloader
 
 			long totalSize = items.Select(item => item.ChunkSize).Sum();
 			long totalProcessed = 0L;
+			long outputStreamInitialPosition = stream.Position;
 
 			bool hasError = false;
 			int iter = 0;
@@ -303,7 +304,7 @@ namespace Twitch_prime_downloader
 					void func(long sourcePosition, long sourceLength,
 						long destinationPosition, long destinationLength, long bytesTransferred)
 					{
-						totalProcessed = sourcePosition;
+						totalProcessed = destinationPosition - outputStreamInitialPosition;
 						chunkMergingProgressed?.Invoke(caller, totalProcessed, totalSize,
 							iter, itemCount, DownloadMode.WholeFile);
 					}
