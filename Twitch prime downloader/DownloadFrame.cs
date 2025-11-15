@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MultiThreadedDownloaderLib;
 using TwitchApiLib;
@@ -357,11 +358,14 @@ namespace Twitch_prime_downloader
 			imgFcst.Visible = true;
 			timerFcst.Enabled = true;
 
-			downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
-			int errorCode = await downloadAbstractor.Download(OutputFilePath,
-				_chunkFrom, ChunkTo, DownloadMode,
-				null, OnGroupDownloadProgressed, OnGroupDownloadFinished,
-				OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
+			int errorCode = await Task.Run(() =>
+			{
+				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
+				return downloadAbstractor.Download(OutputFilePath,
+					_chunkFrom, ChunkTo, DownloadMode,
+					null, OnGroupDownloadProgressed, OnGroupDownloadFinished,
+					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
+			});
 			downloadAbstractor = null;
 
 			timerElapsed.Enabled = false;
