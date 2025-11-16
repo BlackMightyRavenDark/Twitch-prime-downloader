@@ -33,18 +33,21 @@ namespace Twitch_prime_downloader
 
 		public Configurator()
 		{
-			SelfDirPath = Path.GetDirectoryName(Application.ExecutablePath);
-			FileName = Path.Combine(SelfDirPath, "tpd_config.json");
+			string exePath = Application.ExecutablePath;
+			SelfDirPath = Path.GetDirectoryName(exePath);
+			string fn = Path.GetFileNameWithoutExtension(exePath);
+			FileName = Path.Combine(SelfDirPath, fn + "_config.json");
 			DebugMode = false;
 		}
 
 		public void LoadDefaults()
 		{
-			ChannelListFilePath = Path.Combine(SelfDirPath, "tpd_channelList.txt");
+			string fn = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
+			ChannelListFilePath = Path.Combine(SelfDirPath, fn + "_channelList.txt");
 			DownloadingDirPath = SelfDirPath;
 			FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
 			LastUsedDirPath = SelfDirPath;
-			UrlListFilePath = Path.Combine(SelfDirPath, "tpd_urls.txt");
+			UrlListFilePath = Path.Combine(SelfDirPath, fn + "_urls.txt");
 			BrowserExeFiLePath = "firefox.exe";
 			UseGmtVodDates = true;
 			SaveVodInfo = true;
