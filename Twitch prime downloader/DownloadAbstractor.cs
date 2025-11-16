@@ -423,9 +423,4 @@ namespace Twitch_prime_downloader
 			State = state;
 		}
 	}
-
-	public class DownloadFailedException : Exception
-	{
-		public DownloadFailedException(string message) : base(message) { }
-	}
 }
