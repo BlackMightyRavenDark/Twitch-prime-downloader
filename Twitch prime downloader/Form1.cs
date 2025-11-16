@@ -38,7 +38,7 @@ namespace Twitch_prime_downloader
 				json["tempPath"] = config.TempDirPath;
 				json["fileNameFormat"] = config.FileNameFormat;
 				json["lastUsedPath"] = config.LastUsedDirPath;
-				json["browserExe"] = config.BrowserExeFiLePath;
+				json["browserExe"] = config.BrowserExeFilePath;
 				json["useGmtVodDates"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
@@ -76,7 +76,7 @@ namespace Twitch_prime_downloader
 				jt = json.Value<JToken>("browserExe");
 				if (jt != null)
 				{
-					config.BrowserExeFiLePath = jt.Value<string>();
+					config.BrowserExeFilePath = jt.Value<string>();
 				}
 
 				jt = json.Value<JToken>("useGmtVodDates");
@@ -101,7 +101,7 @@ namespace Twitch_prime_downloader
 				chkSaveVodChunksInfo.Checked = config.SaveVodChunksInfo;
 				textBox_DownloadingPath.Text = config.DownloadingDirPath;
 				textBox_FileNameFormat.Text = config.FileNameFormat;
-				textBox_Browser.Text = config.BrowserExeFiLePath;
+				textBox_Browser.Text = config.BrowserExeFilePath;
 
 				if (File.Exists(config.ChannelListFilePath))
 				{
@@ -666,12 +666,12 @@ namespace Twitch_prime_downloader
 			OpenFileDialog ofd = new OpenFileDialog();
 			ofd.Title = "Выберите браузер";
 			ofd.Filter = "exe|*.exe";
-			string dir = string.IsNullOrEmpty(config.BrowserExeFiLePath) ?
-				config.SelfDirPath : Path.GetFullPath(config.BrowserExeFiLePath);
+			string dir = string.IsNullOrEmpty(config.BrowserExeFilePath) ?
+				config.SelfDirPath : Path.GetFullPath(config.BrowserExeFilePath);
 			ofd.InitialDirectory = dir;
 			if (ofd.ShowDialog() != DialogResult.Cancel)
 			{
-				config.BrowserExeFiLePath = ofd.FileName;
+				config.BrowserExeFilePath = ofd.FileName;
 				textBox_Browser.Text = ofd.FileName;
 			}
 			ofd.Dispose();
@@ -679,13 +679,13 @@ namespace Twitch_prime_downloader
 
 		private void openVideoInBrowserToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (string.IsNullOrEmpty(config.BrowserExeFiLePath) || string.IsNullOrWhiteSpace(config.BrowserExeFiLePath))
+			if (string.IsNullOrEmpty(config.BrowserExeFilePath) || string.IsNullOrWhiteSpace(config.BrowserExeFilePath))
 			{
 				MessageBox.Show("Браузер не указан!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
-			if (!File.Exists(config.BrowserExeFiLePath))
+			if (!File.Exists(config.BrowserExeFilePath))
 			{
 				MessageBox.Show("Браузер не найден!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -693,8 +693,8 @@ namespace Twitch_prime_downloader
 			}
 
 			Process process = new Process();
-			process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFiLePath);
-			process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFiLePath);
+			process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFilePath);
+			process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFilePath);
 			process.StartInfo.Arguments = activeFrameStream.StreamInfo.Url;
 			process.Start();
 		}

@@ -16,7 +16,7 @@ namespace Twitch_prime_downloader
 		public string TempDirPath { get; set; }
 		public string LastUsedDirPath { get; set; }
 		public string ChannelListFilePath { get; set; }
-		public string BrowserExeFiLePath { get; set; }
+		public string BrowserExeFilePath { get; set; }
 		public string UrlListFilePath { get; set; }
 		public int VodInfoGuiFontSize { get; set; }
 		public bool UseGmtVodDates { get; set; }
@@ -48,7 +48,7 @@ namespace Twitch_prime_downloader
 			FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
 			LastUsedDirPath = SelfDirPath;
 			UrlListFilePath = Path.Combine(SelfDirPath, fn + "_urls.txt");
-			BrowserExeFiLePath = "firefox.exe";
+			BrowserExeFilePath = "firefox.exe";
 			UseGmtVodDates = true;
 			SaveVodInfo = true;
 			SaveVodChunksInfo = false;
