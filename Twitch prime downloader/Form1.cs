@@ -34,18 +34,18 @@ namespace Twitch_prime_downloader
 
 			config.Saving += (s, json) =>
 			{
-				json["downloadingPath"] = config.DownloadingDirPath;
+				json["downloadPath"] = config.DownloadingDirPath;
 				json["tempPath"] = config.TempDirPath;
 				json["fileNameFormat"] = config.FileNameFormat;
 				json["lastUsedPath"] = config.LastUsedDirPath;
-				json["browserExe"] = config.BrowserExeFilePath;
-				json["useGmtVodDates"] = config.UseGmtVodDates;
+				json["browserExePath"] = config.BrowserExeFilePath;
+				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
 			};
 			config.Loading += (s, json) =>
 			{
-				JToken jt = json.Value<JToken>("downloadingPath");
+				JToken jt = json.Value<JToken>("downloadPath");
 				if (jt != null)
 				{
 					config.DownloadingDirPath = jt.Value<string>();
@@ -73,13 +73,13 @@ namespace Twitch_prime_downloader
 					}
 				}
 
-				jt = json.Value<JToken>("browserExe");
+				jt = json.Value<JToken>("browserExePath");
 				if (jt != null)
 				{
 					config.BrowserExeFilePath = jt.Value<string>();
 				}
 
-				jt = json.Value<JToken>("useGmtVodDates");
+				jt = json.Value<JToken>("useGmtTime");
 				config.UseGmtVodDates = jt != null ? jt.Value<bool>() : true;
 
 				jt = json.Value<JToken>("saveVodInfo");
