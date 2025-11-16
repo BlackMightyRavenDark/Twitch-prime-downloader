@@ -125,10 +125,14 @@ namespace Twitch_prime_downloader
 					}
 				}
 			}
+#if DEBUG
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 			}
+#else
+			catch { }
+#endif
 		}
 
 		private void imgScrollBar_Paint(object sender, PaintEventArgs e)
@@ -159,10 +163,14 @@ namespace Twitch_prime_downloader
 					}
 				}
 			}
+#if DEBUG
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.Message);
 			}
+#else
+			catch { }
+#endif
 		}
 
 		private void BtnClose_Click(object sender, EventArgs e)

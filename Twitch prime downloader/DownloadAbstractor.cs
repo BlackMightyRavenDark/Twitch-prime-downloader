@@ -201,7 +201,9 @@ namespace Twitch_prime_downloader
 						}
 						catch (Exception ex)
 						{
+#if DEBUG
 							System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
 							lastErrorCode = ex.HResult;
 							break;
 						}
@@ -240,7 +242,9 @@ namespace Twitch_prime_downloader
 				return lastErrorCode;
 			} catch (Exception ex)
 			{
+#if DEBUG
 				System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
 				if (_cancellationTokenSource != null)
 				{
 					_cancellationTokenSource.Dispose();
@@ -293,7 +297,9 @@ namespace Twitch_prime_downloader
 			}
 			catch (Exception ex)
 			{
+#if DEBUG
 				System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
 				return ex.HResult;
 			}
 		}
@@ -372,11 +378,15 @@ namespace Twitch_prime_downloader
 				if (File.Exists(filePath)) { File.Delete(filePath); }
 				return stream.SaveToFile(filePath);
 			}
+#if DEBUG
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.Message);
-				return false;
 			}
+#else
+			catch { }
+#endif
+			return false;
 		}
 
 		public void Stop()

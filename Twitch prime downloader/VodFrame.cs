@@ -49,11 +49,14 @@ namespace Twitch_prime_downloader
 					btnDownload.Region = region;
 				}
 			}
+#if DEBUG
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 			}
-
+#else
+			catch { }
+#endif
 			SetStreamInfo(twitchVod);
 		}
 
@@ -137,10 +140,14 @@ namespace Twitch_prime_downloader
 						}
 					}
 				}
+#if DEBUG
 				catch (Exception ex)
 				{
 					System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 				}
+#else
+				catch { }
+#endif
 			}
 		}
 
