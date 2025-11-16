@@ -56,10 +56,14 @@ namespace Twitch_prime_downloader
 						}
 					}
 				}
+#if DEBUG
 				catch (Exception ex)
 				{
 					System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 				}
+#else
+				catch { }
+#endif
 			}
 		}
 

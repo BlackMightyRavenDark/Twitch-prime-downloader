@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿#if DEBUG
+using System;
+#endif
+using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 
@@ -58,10 +61,15 @@ namespace Twitch_prime_downloader
 					JObject json = JObject.Parse(File.ReadAllText(FileName));
 					Loading?.Invoke(this, json);
 				}
-			} catch (System.Exception ex)
+			}
+#if DEBUG
+			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.Message);
 			}
+#else
+			catch { }
+#endif
 			Loaded?.Invoke(this);
 		}
 
@@ -76,10 +84,15 @@ namespace Twitch_prime_downloader
 					File.Delete(FileName);
 				}
 				File.WriteAllText(FileName, json.ToString());
-			} catch (System.Exception ex)
+			}
+#if DEBUG
+			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex.Message);
 			}
+#else
+			catch { }
+#endif
 		}
 	}
 }

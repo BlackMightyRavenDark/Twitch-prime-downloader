@@ -211,7 +211,9 @@ namespace Twitch_prime_downloader
 			}
 			catch (Exception ex)
 			{
+#if DEBUG
 				System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
 				errorText = ex.Message;
 				return null;
 			}
