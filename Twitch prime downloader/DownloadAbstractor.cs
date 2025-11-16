@@ -359,36 +359,6 @@ namespace Twitch_prime_downloader
 			return success;
 		}
 
-		private static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadProgressItem> items)
-		{
-			int count = items.Count;
-			bool valid = true;
-			for (int i = 0; i < count; ++i)
-			{
-				valid &= items.ContainsKey(i);
-				if (!valid) { return false; }
-			}
-			return valid;
-		}
-
-		private static bool SaveStreamToFile(Stream stream, string filePath)
-		{
-			try
-			{
-				if (File.Exists(filePath)) { File.Delete(filePath); }
-				return stream.SaveToFile(filePath);
-			}
-#if DEBUG
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
-#else
-			catch { }
-#endif
-			return false;
-		}
-
 		public void Stop()
 		{
 			if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
