@@ -10,6 +10,7 @@ namespace Twitch_prime_downloader
 	public sealed class Configurator
 	{
 		public string FileName { get; }
+		public string SelfExePath { get; }
 		public string SelfDirPath { get; }
 		public string DownloadingDirPath { get; set; }
 		public string FileNameFormat { get; set; }
@@ -33,16 +34,16 @@ namespace Twitch_prime_downloader
 
 		public Configurator()
 		{
-			string exePath = Application.ExecutablePath;
-			SelfDirPath = Path.GetDirectoryName(exePath);
-			string fn = Path.GetFileNameWithoutExtension(exePath);
+			SelfExePath = Application.ExecutablePath;
+			SelfDirPath = Path.GetDirectoryName(SelfExePath);
+			string fn = Path.GetFileNameWithoutExtension(SelfExePath);
 			FileName = Path.Combine(SelfDirPath, fn + "_config.json");
 			DebugMode = false;
 		}
 
 		public void LoadDefaults()
 		{
-			string fn = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
+			string fn = Path.GetFileNameWithoutExtension(SelfExePath);
 			ChannelListFilePath = Path.Combine(SelfDirPath, fn + "_channelList.txt");
 			DownloadingDirPath = SelfDirPath;
 			FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
