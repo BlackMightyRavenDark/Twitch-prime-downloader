@@ -1,7 +1,8 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using TwitchApiLib;
 
@@ -217,6 +218,36 @@ namespace Twitch_prime_downloader
 				errorText = ex.Message;
 				return null;
 			}
+		}
+
+		internal static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadProgressItem> items)
+		{
+			int count = items.Count;
+			bool valid = true;
+			for (int i = 0; i < count; ++i)
+			{
+				valid &= items.ContainsKey(i);
+				if (!valid) { return false; }
+			}
+			return valid;
+		}
+
+		public static bool SaveStreamToFile(Stream stream, string filePath)
+		{
+			try
+			{
+				if (File.Exists(filePath)) { File.Delete(filePath); }
+				return stream.SaveToFile(filePath);
+			}
+#if DEBUG
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
+#else
+			catch { }
+#endif
+			return false;
 		}
 
 		public static Image TryLoadImageFromStream(Stream stream)
