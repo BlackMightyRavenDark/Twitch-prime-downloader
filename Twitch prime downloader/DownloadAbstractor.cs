@@ -188,7 +188,7 @@ namespace Twitch_prime_downloader
 											success = SaveStreamToFile(progressItem.OutputStream, fn);
 										}
 
-										progressItem.OutputStream.Close();
+										progressItem.OutputStream.Dispose();
 									}
 
 									if (!success)
@@ -223,7 +223,7 @@ namespace Twitch_prime_downloader
 					}
 				}
 
-				outputStream?.Close();
+				outputStream?.Dispose();
 
 				_cancellationTokenSource.Dispose();
 				_cancellationTokenSource = null;
@@ -277,7 +277,7 @@ namespace Twitch_prime_downloader
 				int errorCode = fileDownloader.Download(stream, BUFFER_SIZE, _cancellationTokenSource);
 				if (errorCode != 200 && !_cancellationTokenSource.IsCancellationRequested)
 				{
-					stream.Close();
+					stream.Dispose();
 					stream = new MemoryStream();
 					chunk.NextState();
 					stateModified?.Invoke();
@@ -285,7 +285,7 @@ namespace Twitch_prime_downloader
 					errorCode = fileDownloader.Download(stream, BUFFER_SIZE, _cancellationTokenSource);
 					if (errorCode != 200 && !_cancellationTokenSource.IsCancellationRequested)
 					{
-						stream.Close();
+						stream.Dispose();
 						stream = new MemoryStream();
 						chunk.NextState();
 						stateModified?.Invoke();
