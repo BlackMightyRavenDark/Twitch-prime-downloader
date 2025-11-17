@@ -443,6 +443,11 @@ namespace Twitch_prime_downloader
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
+				case DownloadAbstractor.DOWNLOAD_ERROR_EMPTY_CHUNK:
+					MessageBox.Show($"{StreamInfo.Title}\nОдин из скачанных чанков оказался пуст!\nСкачивание прервано!",
+						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					break;
+
 				default:
 					MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
 						$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
