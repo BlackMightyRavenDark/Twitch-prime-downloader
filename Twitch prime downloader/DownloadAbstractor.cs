@@ -155,8 +155,11 @@ namespace Twitch_prime_downloader
 						{
 							Task.WhenAll(tasks).Wait();
 
-							if (chunkGroup.Length > 1 && !IsContinuousSequence(dictProgress))
+							if (downloadMode == DownloadMode.WholeFile && chunkGroup.Length > 1 && 
+								!IsContinuousSequence(dictProgress))
 							{
+								ClearGarbage(dictProgress.Values);
+								downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_SEQUENCE);
 								return DOWNLOAD_ERROR_GROUP_SEQUENCE;
 							}
 
