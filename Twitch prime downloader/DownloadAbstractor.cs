@@ -362,13 +362,7 @@ namespace Twitch_prime_downloader
 						}, func, func);
 					if (success && chunkList != null)
 					{
-						JObject jChunk = new JObject()
-						{
-							["position"] = chunkPosition,
-							["size"] = item.OutputStream.Length,
-							["fileName"] = item.VodChunk.FileName
-						};
-
+						JObject jChunk = item.VodChunk.Serialize(chunkPosition, item.ChunkSize);
 						chunkList.Add(jChunk);
 					}
 
