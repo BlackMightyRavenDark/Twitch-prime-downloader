@@ -196,6 +196,8 @@ namespace Twitch_prime_downloader
 										lastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
 										break;
 									}
+
+									groupMergingFinished?.Invoke(this, items, 200);
 								}
 							}
 						}
