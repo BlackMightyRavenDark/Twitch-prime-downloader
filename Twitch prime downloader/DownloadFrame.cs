@@ -59,7 +59,7 @@ namespace Twitch_prime_downloader
 			lblElapsedTime.Text = null;
 			imgScrollBar.Top = Height - imgScrollBar.Height;
 
-			lblOutputFilename.Text = DownloadMode == DownloadMode.WholeFile ?
+			lblOutputFilename.Text = DownloadMode == DownloadMode.SingleFile ?
 				$"Имя файла: {OutputFilePathOrig}" : $"Папка для скачивания: {OutputFilePathOrig}";
 		}
 
@@ -338,7 +338,7 @@ namespace Twitch_prime_downloader
 			DownloadStarted = DateTime.Now;
 			lblElapsedTime.Text = "Прошло времени: 0:00:00";
 			timerElapsed.Enabled = true;
-			if (DownloadMode == DownloadMode.WholeFile)
+			if (DownloadMode == DownloadMode.SingleFile)
 			{
 				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOrig);
 				lblOutputFilename.Text = "Имя файла: " + OutputFilePath;
@@ -386,7 +386,7 @@ namespace Twitch_prime_downloader
 					{
 						if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.RawData))
 						{
-							string infoFp =	DownloadMode == DownloadMode.WholeFile ?
+							string infoFp =	DownloadMode == DownloadMode.SingleFile ?
 								OutputFilePath + "_info.json" :
 								Path.Combine(OutputFilePath, "_info.json");
 							File.WriteAllText(infoFp, StreamInfo.RawData);
@@ -510,7 +510,7 @@ namespace Twitch_prime_downloader
 			_fixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
 			if (rbDownloadOneBigFile.Checked)
 			{
-				DownloadMode = DownloadMode.WholeFile;
+				DownloadMode = DownloadMode.SingleFile;
 				OutputFilePathOrig = Path.Combine(OutputDirPath,
 					 StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts");
 				lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";
@@ -668,7 +668,7 @@ namespace Twitch_prime_downloader
 
 		private void rbDownloadOneBigFile_CheckedChanged(object sender, EventArgs e)
 		{
-			DownloadMode = DownloadMode.WholeFile;
+			DownloadMode = DownloadMode.SingleFile;
 			string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts";
 			OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
 			lblOutputFilename.Text = $"Имя файла: {OutputFilePathOrig}";

@@ -18,7 +18,7 @@ namespace Twitch_prime_downloader
 		public const string FILENAME_FORMAT_DEFAULT =
 			"<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second><GMT>] <video_title>";
 
-		public enum DownloadMode { WholeFile, Chunked };
+		public enum DownloadMode { SingleFile, Chunked };
 
 		public static string ExtractVodIdFromUrl(string url)
 		{

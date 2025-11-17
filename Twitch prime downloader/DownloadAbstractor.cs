@@ -79,14 +79,14 @@ namespace Twitch_prime_downloader
 				_cancellationTokenSource = new CancellationTokenSource();
 
 				Stream outputStream = null;
-				if (downloadMode == DownloadMode.WholeFile)
+				if (downloadMode == DownloadMode.SingleFile)
 				{
 					if (File.Exists(outputFilePath)) { File.Delete(outputFilePath); }
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
 				bool saveChunksInfo = config.SaveVodChunksInfo;
-				JArray jaChunks = saveChunksInfo && downloadMode == DownloadMode.WholeFile ? new JArray() : null;
+				JArray jaChunks = saveChunksInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
 					VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
 
@@ -156,7 +156,7 @@ namespace Twitch_prime_downloader
 						{
 							Task.WhenAll(tasks).Wait();
 
-							if (downloadMode == DownloadMode.WholeFile && chunkGroup.Length > 1 && 
+							if (downloadMode == DownloadMode.SingleFile && chunkGroup.Length > 1 && 
 								!IsContinuousSequence(dictProgress))
 							{
 								ClearGarbage(dictProgress.Values);
@@ -348,7 +348,7 @@ namespace Twitch_prime_downloader
 					{
 						totalProcessed = destinationPosition - outputStreamInitialPosition;
 						chunkMergingProgressed?.Invoke(this, totalProcessed, totalSize,
-							iter, itemCount, DownloadMode.WholeFile);
+							iter, itemCount, DownloadMode.SingleFile);
 					}
 
 					long chunkPosition = outpuStream.Position;
@@ -358,7 +358,7 @@ namespace Twitch_prime_downloader
 						{
 							totalProcessed = 0L;
 							chunkMergingProgressed?.Invoke(this, totalProcessed, totalSize,
-								iter, itemCount, DownloadMode.WholeFile);
+								iter, itemCount, DownloadMode.SingleFile);
 						}, func, func);
 					if (success && chunkList != null)
 					{
