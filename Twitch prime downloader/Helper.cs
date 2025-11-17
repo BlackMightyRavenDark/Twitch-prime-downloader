@@ -100,6 +100,8 @@ namespace Twitch_prime_downloader
 			{
 				["position"] = position,
 				["size"] = fileSize,
+				["length"] = chunk.Duration,
+				["offset"] = chunk.Offset,
 				["fileName"] = chunk.FileName
 			};
 		}
