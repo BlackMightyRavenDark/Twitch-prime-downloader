@@ -438,6 +438,11 @@ namespace Twitch_prime_downloader
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
+				case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE:
+					MessageBox.Show($"{StreamInfo.Title}\nОдин из чанков скачался неудачно!\nСкачивание прервано!",
+						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+					break;
+
 				default:
 					MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
 						$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,

@@ -30,6 +30,7 @@ namespace Twitch_prime_downloader
 		public const int DOWNLOAD_ERROR_GROUP_EMPTY = int.MaxValue - 1;
 		public const int DOWNLOAD_ERROR_GROUP_SEQUENCE = int.MaxValue - 2;
 		public const int DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS = int.MaxValue - 3;
+		public const int DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE = int.MaxValue - 4;
 
 		private CancellationTokenSource _cancellationTokenSource;
 
@@ -160,6 +161,15 @@ namespace Twitch_prime_downloader
 							}
 
 							List<DownloadProgressItem> items = dictProgress.Values.ToList();
+
+							bool statusesOk = items.All(item => item.ErrorCode == 200);
+							if (!statusesOk)
+							{
+								ClearGarbage(items);
+								downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE);
+								return DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
+							}
+
 							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
 
 							groupDownloadFinished?.Invoke(this, items, lastErrorCode);
@@ -364,6 +374,14 @@ namespace Twitch_prime_downloader
 			if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
 			{
 				_cancellationTokenSource.Cancel();
+			}
+		}
+
+		private static void ClearGarbage(IEnumerable<DownloadProgressItem> items)
+		{
+			foreach (DownloadProgressItem item in items)
+			{
+				item.OutputStream?.Dispose();
 			}
 		}
 	}
