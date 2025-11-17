@@ -92,7 +92,7 @@ namespace Twitch_prime_downloader
 
 				int lastErrorCode = 400;
 				int currentChunkId = firstChunkId;
-				while (currentChunkId <= lastChunkId)
+				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
 					TwitchVodChunk[] chunkGroup = GetChunkGroup(VodPlaylist, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
 
@@ -155,6 +155,12 @@ namespace Twitch_prime_downloader
 						try
 						{
 							Task.WhenAll(tasks).Wait();
+
+							if (_cancellationTokenSource.IsCancellationRequested)
+							{
+								ClearGarbage(dictProgress.Values);
+								break;
+							}
 
 							if (downloadMode == DownloadMode.SingleFile && chunkGroup.Length > 1 && 
 								!IsContinuousSequence(dictProgress))
@@ -239,13 +245,9 @@ namespace Twitch_prime_downloader
 						lastErrorCode = DOWNLOAD_ERROR_GROUP_EMPTY;
 						break;
 					}
-
-					if (_cancellationTokenSource.IsCancellationRequested)
-					{
-						lastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED;
-						break;
-					}
 				}
+
+				if (_cancellationTokenSource.IsCancellationRequested) { lastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED; }
 
 				outputStream?.Dispose();
 
