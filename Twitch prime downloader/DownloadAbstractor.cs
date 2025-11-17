@@ -230,9 +230,7 @@ namespace Twitch_prime_downloader
 
 				if (jaChunks != null)
 				{
-					string path = Path.GetDirectoryName(outputFilePath);
-					string fn = Path.GetFileNameWithoutExtension(outputFilePath);
-					string chunksFilePath = Path.Combine(path, $"{fn}_chunks.json");
+					string chunksFilePath = outputFilePath + "_chunks.json";
 					if (File.Exists(chunksFilePath)) { File.Delete(chunksFilePath); }
 					File.WriteAllText(chunksFilePath, jaChunks.ToString());
 				}

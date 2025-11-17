@@ -386,16 +386,9 @@ namespace Twitch_prime_downloader
 					{
 						if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.RawData))
 						{
-							string infoFp;
-							if (DownloadMode == DownloadMode.WholeFile)
-							{
-								string fn = Path.GetFileNameWithoutExtension(OutputFilePath);
-								infoFp = Path.Combine(OutputDirPath, $"{fn}_info.json");
-							}
-							else
-							{
-								infoFp = Path.Combine(OutputFilePath, "_info.json");
-							}
+							string infoFp =	DownloadMode == DownloadMode.WholeFile ?
+								OutputFilePath + "_info.json" :
+								Path.Combine(OutputFilePath, "_info.json");
 							File.WriteAllText(infoFp, StreamInfo.RawData);
 						}
 
