@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 using TwitchApiLib;
 
 namespace Twitch_prime_downloader
@@ -91,6 +92,16 @@ namespace Twitch_prime_downloader
 		public static DateTime ToLocal(this DateTime dateTime)
 		{
 			return dateTime.IsGmt() ? dateTime.ToLocalTime() : dateTime;
+		}
+
+		internal static JObject Serialize(this TwitchVodChunk chunk, long position, long fileSize)
+		{
+			return new JObject()
+			{
+				["position"] = position,
+				["size"] = fileSize,
+				["fileName"] = chunk.FileName
+			};
 		}
 	}
 }
