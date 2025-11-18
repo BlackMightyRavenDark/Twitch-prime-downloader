@@ -51,6 +51,7 @@ namespace Twitch_prime_downloader
 			int firstChunkId,
 			int lastChunkId,
 			DownloadMode downloadMode,
+			string rawVodInfo,
 			GroupDownloadStartedDelegate groupDownloadStarted,
 			GroupDownloadProgressedDelegate groupDownloadProgressed,
 			GroupDownloadFinishedDelegate groupDownloadFinished,
@@ -253,6 +254,14 @@ namespace Twitch_prime_downloader
 
 				_cancellationTokenSource.Dispose();
 				_cancellationTokenSource = null;
+
+				if (config.SaveVodInfo && !string.IsNullOrEmpty(rawVodInfo))
+				{
+					string infoFilePath = downloadMode == DownloadMode.SingleFile ?
+						outputFilePath + "_info.json" :
+						Path.Combine(outputFilePath, "_info.json");
+					File.WriteAllText(infoFilePath, rawVodInfo);
+				}
 
 				if (jaChunks != null)
 				{
