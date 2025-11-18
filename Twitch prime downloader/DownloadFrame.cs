@@ -370,7 +370,7 @@ namespace Twitch_prime_downloader
 			{
 				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
-					_chunkFrom, ChunkTo, DownloadMode,
+					_chunkFrom, ChunkTo, DownloadMode, StreamInfo.RawData,
 					null, OnGroupDownloadProgressed, OnGroupDownloadFinished,
 					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
 			});
@@ -384,14 +384,6 @@ namespace Twitch_prime_downloader
 			{
 				case 200:
 					{
-						if (config.SaveVodInfo && !string.IsNullOrEmpty(StreamInfo.RawData))
-						{
-							string infoFp =	DownloadMode == DownloadMode.SingleFile ?
-								OutputFilePath + "_info.json" :
-								Path.Combine(OutputFilePath, "_info.json");
-							File.WriteAllText(infoFp, StreamInfo.RawData);
-						}
-
 						string msg = $"{StreamInfo.Title}\nСкачано успешно!";
 						MessageBox.Show(msg, msgCaption,
 							MessageBoxButtons.OK, MessageBoxIcon.Information);
