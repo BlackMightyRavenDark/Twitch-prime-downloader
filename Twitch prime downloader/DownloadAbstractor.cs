@@ -283,6 +283,8 @@ namespace Twitch_prime_downloader
 					_cancellationTokenSource.Dispose();
 					_cancellationTokenSource = null;
 				}
+
+				downloadCompleted?.Invoke(this, ex.HResult);
 				return ex.HResult;
 			}
 		}
