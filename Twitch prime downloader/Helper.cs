@@ -96,14 +96,13 @@ namespace Twitch_prime_downloader
 
 		internal static JObject Serialize(this TwitchVodChunk chunk, long position, long fileSize)
 		{
-			return new JObject()
-			{
-				["position"] = position,
-				["size"] = fileSize,
-				["length"] = chunk.Duration,
-				["offset"] = chunk.Offset,
-				["fileName"] = chunk.FileName
-			};
+			JObject j = new JObject();
+			if (position >= 0L) { j["position"] = position; }
+			j["size"] = fileSize;
+			j["length"] = chunk.Duration;
+			j["offset"] = chunk.Offset;
+			j["fileName"] = chunk.FileName;
+			return j;
 		}
 	}
 }
