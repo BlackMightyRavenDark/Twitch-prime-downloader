@@ -215,6 +215,11 @@ namespace Twitch_prime_downloader
 										{
 											string fn = Path.Combine(outputFilePath, progressItem.VodChunk.FileName);
 											success = SaveStreamToFile(progressItem.OutputStream, fn);
+											if (success)
+											{
+												JObject jChunk = progressItem.VodChunk.Serialize(-1L, progressItem.ChunkSize);
+												File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
+											}
 										}
 
 										progressItem.OutputStream.Dispose();
