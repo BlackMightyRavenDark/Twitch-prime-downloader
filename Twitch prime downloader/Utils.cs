@@ -143,6 +143,43 @@ namespace Twitch_prime_downloader
 			return bmp;
 		}
 
+		internal static IEnumerable<MultipleProgressBarItem> GetMultipleProgressBarItems(IEnumerable<DownloadProgressItem> items)
+		{
+			foreach (DownloadProgressItem item in items)
+			{
+				double percent = 100.0 / item.ChunkSize * item.DownloadedSize;
+				string percentFormatted = string.Format("{0:F2}", percent);
+
+				string itemText;
+				switch (item.State)
+				{
+					case DownloadItemState.Preparing:
+						itemText = $"{item.VodChunk.FileName}: Preparing...";
+						break;
+
+					case DownloadItemState.Connecting:
+						itemText = $"{item.VodChunk.FileName}: Connecting...";
+						break;
+
+					case DownloadItemState.Downloading:
+					case DownloadItemState.Finished:
+					case DownloadItemState.Errored:
+						itemText = $"{item.VodChunk.FileName}: " +
+							$"{FormatSize(item.DownloadedSize)} / {FormatSize(item.ChunkSize)} ({percentFormatted}%)";
+						break;
+
+					default:
+						itemText = null;
+						break;
+				}
+
+				int percentRounded = (int)Math.Round(percent, 3);
+				MultipleProgressBarItem mpi = new MultipleProgressBarItem(
+					0, 100, percentRounded, itemText, Color.Lime);
+				yield return mpi;
+			}
+		}
+
 		public static bool SetClipboardText(string text)
 		{
 			if (string.IsNullOrEmpty(text))

@@ -17,7 +17,7 @@ namespace Twitch_prime_downloader
 		public TwitchVodPlaylist VodPlaylist { get; }
 		public int MaxGroupSize { get; set; }
 
-		public delegate void GroupDownloadStartedDelegate(object sender, int groupSize);
+		public delegate void GroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
 		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
 		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkMergingProgressedDelegate(object sender,
@@ -99,9 +99,14 @@ namespace Twitch_prime_downloader
 
 					if (chunkGroup.Length > 0)
 					{
-						groupDownloadStarted?.Invoke(this, chunkGroup.Length);
-
 						ConcurrentDictionary<int, DownloadProgressItem> dictProgress = new ConcurrentDictionary<int, DownloadProgressItem>();
+						for (int i = 0; i < chunkGroup.Length; ++i)
+						{
+							dictProgress[i] = new DownloadProgressItem(i, chunkGroup[i],
+								0L, 0L, null, 0, DownloadItemState.Preparing);
+						}
+
+						groupDownloadStarted?.Invoke(this, dictProgress.Values);
 
 						void OnProgressChanged(DownloadProgressItem progressItem)
 						{
