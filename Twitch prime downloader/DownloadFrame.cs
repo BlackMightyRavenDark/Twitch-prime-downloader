@@ -214,6 +214,16 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
+		private void OnGroupDownloadStarted(object sender, IEnumerable<DownloadProgressItem> items)
+		{
+			Invoke(new MethodInvoker(() =>
+			{
+				lblGroupProgress.Text = "Подготовка...";
+				IEnumerable<MultipleProgressBarItem> progressItems = GetMultipleProgressBarItems(items);
+				multipleProgressBarGroup.SetItems(progressItems);
+			}));
+		}
+
 		private void OnGroupDownloadProgressed(object sender, IEnumerable<DownloadProgressItem> items)
 		{
 			Invoke(new MethodInvoker(() =>
@@ -229,40 +239,11 @@ namespace Twitch_prime_downloader
 				}
 				else
 				{
-					lblGroupProgress.Text = "Подключение...";
+					lblGroupProgress.Text = "Подготовка...";
 				}
 
-				LinkedList<MultipleProgressBarItem> list = new LinkedList<MultipleProgressBarItem>();
-				foreach (DownloadProgressItem item in items)
-				{
-					double percent = 100.0 / item.ChunkSize * item.DownloadedSize;
-					string percentFormatted = string.Format("{0:F2}", percent);
-
-					string itemText;
-					switch (item.State)
-					{
-						case DownloadItemState.Connecting:
-							itemText = $"{item.VodChunk.FileName}: Connecting...";
-							break;
-
-						case DownloadItemState.Downloading:
-						case DownloadItemState.Finished:
-						case DownloadItemState.Errored:
-							itemText = $"{item.VodChunk.FileName}: " +
-								$"{FormatSize(item.DownloadedSize)} / {FormatSize(item.ChunkSize)} ({percentFormatted}%)";
-							break;
-
-						default:
-							itemText = null;
-							break;
-					}
-
-					int percentRounded = (int)Math.Round(percent, 3);
-					MultipleProgressBarItem mpi = new MultipleProgressBarItem(
-						0, 100, percentRounded, itemText, Color.Lime);
-					list.AddLast(mpi);
-				}
-				multipleProgressBarGroup.SetItems(list);
+				IEnumerable<MultipleProgressBarItem> progressItems = GetMultipleProgressBarItems(items);
+				multipleProgressBarGroup.SetItems(progressItems);
 			}));
 		}
 
@@ -371,7 +352,7 @@ namespace Twitch_prime_downloader
 				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
 					_chunkFrom, ChunkTo, DownloadMode, StreamInfo.RawData,
-					null, OnGroupDownloadProgressed, OnGroupDownloadFinished,
+					OnGroupDownloadStarted, OnGroupDownloadProgressed, OnGroupDownloadFinished,
 					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
 			});
 			downloadAbstractor = null;

@@ -27,5 +27,5 @@ namespace Twitch_prime_downloader
 		}
 	}
 
-	internal enum DownloadItemState { Connecting, Downloading, Finished, Errored }
+	internal enum DownloadItemState { Preparing, Connecting, Downloading, Finished, Errored }
 }
