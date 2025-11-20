@@ -20,53 +20,22 @@ namespace Twitch_prime_downloader
 			return res;
 		}
 
-		public static void LoadFromFile(this ComboBox comboBox, string fileName)
+		public static IEnumerable<string> GetStrings(this ListBox listBox)
 		{
-			try
+			foreach (var item in listBox.Items)
 			{
-				string t = File.ReadAllText(fileName);
-				comboBox.Items.Clear();
-				string[] splitted = t.Split(new string[] { "\n", "\r\n" }, 2, StringSplitOptions.None);
-				foreach (string str in splitted)
-				{
-					if (!string.IsNullOrEmpty(str)) { comboBox.Items.Add(str);}
-				}
+				yield return item.ToString();
 			}
-#if DEBUG
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-			}
-#else
-			catch { }
-#endif
 		}
 
-		public static void SaveToFile(this ComboBox comboBox, string fileName)
+		public static string GetWholeText(this ListBox listBox)
 		{
-			try
+			string t = string.Empty;
+			foreach (var item in listBox.Items)
 			{
-				if (!string.IsNullOrEmpty(fileName))
-				{
-					if (File.Exists(fileName)) { File.Delete(fileName); }
-
-					using (StreamWriter sw = new StreamWriter(fileName))
-					{
-						for (int i = 0; i < comboBox.Items.Count; ++i)
-						{
-							sw.WriteLine(comboBox.Items[i]);
-						}
-					}
-				}
+				t += item.ToString() + Environment.NewLine;
 			}
-#if DEBUG
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-			}
-#else
-			catch { }
-#endif
+			return t;
 		}
 
 		public static void SaveToFile(this IEnumerable<string> collection, string fileName)

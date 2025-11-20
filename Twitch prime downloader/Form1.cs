@@ -103,14 +103,26 @@ namespace Twitch_prime_downloader
 				textBox_FileNameFormat.Text = config.FileNameFormat;
 				textBox_Browser.Text = config.BrowserExeFilePath;
 
-				if (File.Exists(config.ChannelListFilePath))
+				try
 				{
-					cboxChannelName.LoadFromFile(config.ChannelListFilePath);
-
-					if (cboxChannelName.Items.Count > 0)
+					if (File.Exists(config.ChannelListFilePath))
 					{
-						cboxChannelName.SelectedIndex = 0;
+						string t = File.ReadAllText(config.ChannelListFilePath);
+						string[] strings = t.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+						if (strings.Length > 0)
+						{
+							listBoxChannelList.Items.AddRange(strings);
+							if (listBoxChannelList.Items.Count > 0)
+							{
+								listBoxChannelList.SelectedIndex = 0;
+								textBoxChannelName.Text = listBoxChannelList.Items[0].ToString();
+							}
+						}
 					}
+				} catch (Exception ex)
+				{
+					MessageBox.Show(ex.Message, "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 
 				if (File.Exists(config.UrlListFilePath))
@@ -146,8 +158,6 @@ namespace Twitch_prime_downloader
 				frame.FrameDispose();
 				frame.Dispose();
 			}
-
-			cboxChannelName.SaveToFile(config.ChannelListFilePath);
 
 			if (File.Exists(config.UrlListFilePath))
 			{
@@ -362,54 +372,106 @@ namespace Twitch_prime_downloader
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-		
-		private void btnAddChannel_Click(object sender, EventArgs e)
+
+		private void btnAddChannelToList_Click(object sender, EventArgs e)
 		{
-			string channelName = cboxChannelName.Text;
-			if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
+			try
 			{
-				MessageBox.Show("Не введено название канала!", "Ошибка!",
+				string channelName = textBoxChannelName.Text.Trim();
+				if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
+				{
+					MessageBox.Show("Введите название канал", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				if (channelName.Contains(" "))
+				{
+					MessageBox.Show("Имя канала не должно содержать пробелов!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+					return;
+				}
+
+				IEnumerable<string> names = listBoxChannelList.GetStrings();
+				if (names.Any(item => string.Equals(item, channelName, StringComparison.OrdinalIgnoreCase)))
+				{
+					MessageBox.Show($"Канал \"{channelName}\" уже есть в списке!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					return;
+				}
+
+				listBoxChannelList.Items.Add(channelName);
+				listBoxChannelList.SelectedIndex = listBoxChannelList.Items.Count - 1;
+				if (File.Exists(config.ChannelListFilePath)) { File.Delete(config.ChannelListFilePath); }
+				File.WriteAllText(config.ChannelListFilePath, names.ToText());
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
 			}
-			if (channelName.Contains(" "))
-			{
-				MessageBox.Show("Название канала не может содержать пробелов!", "Ошибка!",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
-			int n = cboxChannelName.Items.IndexOf(channelName);
-			if (n >= 0)
-			{
-				MessageBox.Show("Этот канал уже есть в списке!", "Добавлятор каналов в список",
-					MessageBoxButtons.OK, MessageBoxIcon.Information);
-				return;
-			}
-			cboxChannelName.Items.Add(channelName);
-			cboxChannelName.SelectedIndex = cboxChannelName.Items.Count - 1;
 		}
 
-		private void btnRemoveChannel_Click(object sender, EventArgs e)
+		private void listBoxChannelList_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			int n = cboxChannelName.SelectedIndex;
-			if (n == -1)
+			textBoxChannelName.Text = listBoxChannelList.Items[listBoxChannelList.SelectedIndex].ToString();
+		}
+
+		private void listBoxChannelList_DoubleClick(object sender, EventArgs e)
+		{
+			if (listBoxChannelList.SelectedItem != null &&
+				MessageBox.Show($"Найти видео канала \"{listBoxChannelList.SelectedItem}\"?", "Поиск",
+					MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
 			{
-				MessageBox.Show("Список и так пуст!", "Удалятор каналов из списка",
-					MessageBoxButtons.OK, MessageBoxIcon.Information);
-				return;
+				btnSearchChannelName.PerformClick();
 			}
-			cboxChannelName.Items.RemoveAt(n);
-			cboxChannelName.SelectedIndex = n > cboxChannelName.Items.Count - 1 ? n - 1 : cboxChannelName.Items.Count - 1;
-			if (cboxChannelName.Items.Count == 0)
+		}
+
+		private void btnEditChannelList_Click(object sender, EventArgs e)
+		{
+			try
 			{
-				cboxChannelName.Text = null;
+				FormChannelListEditor editor = new FormChannelListEditor(listBoxChannelList.GetStrings());
+				if (editor.ShowDialog() == DialogResult.OK)
+				{
+					listBoxChannelList.Items.Clear();
+					if (editor.Channels.Count > 0)
+					{
+						foreach (string t in editor.Channels)
+						{
+							listBoxChannelList.Items.Add(t);
+						}
+						textBoxChannelName.Text = listBoxChannelList.Items[0].ToString();
+						listBoxChannelList.SelectedIndex = 0;
+					}
+					else
+					{
+						textBoxChannelName.Text = null;
+					}
+
+					if (listBoxChannelList.Items.Count > 0)
+					{
+						string list = listBoxChannelList.GetStrings().ToText();
+						if (File.Exists(config.ChannelListFilePath)) { File.Delete(config.ChannelListFilePath); }
+						File.WriteAllText(config.ChannelListFilePath, list);
+					}
+					else if (File.Exists(config.ChannelListFilePath))
+					{
+						File.Delete(config.ChannelListFilePath);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
 		private async void btnSearchChannelName_Click(object sender, EventArgs e)
 		{
 			btnSearchChannelName.Enabled = false;
-			string channelName = cboxChannelName.Text?.Trim();
+			string channelName = textBoxChannelName.Text?.Trim();
 			if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
 			{
 				MessageBox.Show("Не введено название канала!", "Ошибка!",
