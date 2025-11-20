@@ -93,6 +93,8 @@ namespace Twitch_prime_downloader
 
 				int lastErrorCode = 400;
 				int currentChunkId = firstChunkId;
+				bool wasFinished = false;
+				object errorCodeLocker = new object();
 				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
 					TwitchVodChunk[] chunkGroup = GetChunkGroup(VodPlaylist, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
@@ -145,7 +147,14 @@ namespace Twitch_prime_downloader
 
 							d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
 							{
-								lastErrorCode = errCode;
+								lock (errorCodeLocker)
+								{
+									if (!wasFinished)
+									{
+										lastErrorCode = errCode;
+										wasFinished = true;
+									}
+								}
 
 								DownloadProgressItem progressItem = new DownloadProgressItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
