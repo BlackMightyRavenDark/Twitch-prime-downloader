@@ -53,16 +53,17 @@ namespace Twitch_prime_downloader
 			this.textBoxUrls = new System.Windows.Forms.TextBox();
 			this.label6 = new System.Windows.Forms.Label();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.btnEditChannelList = new System.Windows.Forms.Button();
+			this.btnAddChannelToList = new System.Windows.Forms.Button();
+			this.textBoxChannelName = new System.Windows.Forms.TextBox();
+			this.listBoxChannelList = new System.Windows.Forms.ListBox();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.numericUpDownSearchLimit = new System.Windows.Forms.NumericUpDown();
 			this.rbSearchLimit = new System.Windows.Forms.RadioButton();
 			this.rbSearchAll = new System.Windows.Forms.RadioButton();
-			this.btnAddChannel = new System.Windows.Forms.Button();
-			this.btnRemoveChannel = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnSearchChannelName = new System.Windows.Forms.Button();
-			this.cboxChannelName = new System.Windows.Forms.ComboBox();
 			this.tabPageLog = new System.Windows.Forms.TabPage();
 			this.lbLog = new System.Windows.Forms.ListBox();
 			this.tabPageStreams = new System.Windows.Forms.TabPage();
@@ -75,11 +76,11 @@ namespace Twitch_prime_downloader
 			this.miCopyVideoUrl = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyImageUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyStreamInfoJsonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miSavePlaylistAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveImageAssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.miSavePlaylistAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
@@ -335,18 +336,57 @@ namespace Twitch_prime_downloader
 			// 
 			// groupBox1
 			// 
+			this.groupBox1.Controls.Add(this.btnEditChannelList);
+			this.groupBox1.Controls.Add(this.btnAddChannelToList);
+			this.groupBox1.Controls.Add(this.textBoxChannelName);
+			this.groupBox1.Controls.Add(this.listBoxChannelList);
 			this.groupBox1.Controls.Add(this.groupBox3);
-			this.groupBox1.Controls.Add(this.btnAddChannel);
-			this.groupBox1.Controls.Add(this.btnRemoveChannel);
 			this.groupBox1.Controls.Add(this.label1);
 			this.groupBox1.Controls.Add(this.btnSearchChannelName);
-			this.groupBox1.Controls.Add(this.cboxChannelName);
 			this.groupBox1.Location = new System.Drawing.Point(6, 16);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(311, 162);
+			this.groupBox1.Size = new System.Drawing.Size(311, 308);
 			this.groupBox1.TabIndex = 0;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Поиск по названию канала";
+			// 
+			// btnEditChannelList
+			// 
+			this.btnEditChannelList.Location = new System.Drawing.Point(0, 198);
+			this.btnEditChannelList.Name = "btnEditChannelList";
+			this.btnEditChannelList.Size = new System.Drawing.Size(105, 23);
+			this.btnEditChannelList.TabIndex = 9;
+			this.btnEditChannelList.Text = "Редактировать";
+			this.btnEditChannelList.UseVisualStyleBackColor = true;
+			this.btnEditChannelList.Click += new System.EventHandler(this.btnEditChannelList_Click);
+			// 
+			// btnAddChannelToList
+			// 
+			this.btnAddChannelToList.Location = new System.Drawing.Point(216, 17);
+			this.btnAddChannelToList.Name = "btnAddChannelToList";
+			this.btnAddChannelToList.Size = new System.Drawing.Size(75, 23);
+			this.btnAddChannelToList.TabIndex = 8;
+			this.btnAddChannelToList.Text = "< Добавить";
+			this.toolTip1.SetToolTip(this.btnAddChannelToList, "Добавить канал в список");
+			this.btnAddChannelToList.UseVisualStyleBackColor = true;
+			this.btnAddChannelToList.Click += new System.EventHandler(this.btnAddChannelToList_Click);
+			// 
+			// textBoxChannelName
+			// 
+			this.textBoxChannelName.Location = new System.Drawing.Point(110, 19);
+			this.textBoxChannelName.Name = "textBoxChannelName";
+			this.textBoxChannelName.Size = new System.Drawing.Size(100, 20);
+			this.textBoxChannelName.TabIndex = 7;
+			// 
+			// listBoxChannelList
+			// 
+			this.listBoxChannelList.FormattingEnabled = true;
+			this.listBoxChannelList.Location = new System.Drawing.Point(2, 45);
+			this.listBoxChannelList.Name = "listBoxChannelList";
+			this.listBoxChannelList.Size = new System.Drawing.Size(303, 147);
+			this.listBoxChannelList.TabIndex = 6;
+			this.listBoxChannelList.SelectedIndexChanged += new System.EventHandler(this.listBoxChannelList_SelectedIndexChanged);
+			this.listBoxChannelList.DoubleClick += new System.EventHandler(this.listBoxChannelList_DoubleClick);
 			// 
 			// groupBox3
 			// 
@@ -354,9 +394,9 @@ namespace Twitch_prime_downloader
 			this.groupBox3.Controls.Add(this.numericUpDownSearchLimit);
 			this.groupBox3.Controls.Add(this.rbSearchLimit);
 			this.groupBox3.Controls.Add(this.rbSearchAll);
-			this.groupBox3.Location = new System.Drawing.Point(12, 44);
+			this.groupBox3.Location = new System.Drawing.Point(6, 227);
 			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(291, 83);
+			this.groupBox3.Size = new System.Drawing.Size(299, 75);
 			this.groupBox3.TabIndex = 5;
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "Диапазон поиска";
@@ -415,28 +455,6 @@ namespace Twitch_prime_downloader
 			this.toolTip1.SetToolTip(this.rbSearchAll, "Может быть очень долго!");
 			this.rbSearchAll.UseVisualStyleBackColor = true;
 			// 
-			// btnAddChannel
-			// 
-			this.btnAddChannel.Location = new System.Drawing.Point(236, 19);
-			this.btnAddChannel.Name = "btnAddChannel";
-			this.btnAddChannel.Size = new System.Drawing.Size(30, 21);
-			this.btnAddChannel.TabIndex = 4;
-			this.btnAddChannel.Text = "+";
-			this.toolTip1.SetToolTip(this.btnAddChannel, "Добавить канал");
-			this.btnAddChannel.UseVisualStyleBackColor = true;
-			this.btnAddChannel.Click += new System.EventHandler(this.btnAddChannel_Click);
-			// 
-			// btnRemoveChannel
-			// 
-			this.btnRemoveChannel.Location = new System.Drawing.Point(273, 19);
-			this.btnRemoveChannel.Name = "btnRemoveChannel";
-			this.btnRemoveChannel.Size = new System.Drawing.Size(30, 21);
-			this.btnRemoveChannel.TabIndex = 3;
-			this.btnRemoveChannel.Text = "-";
-			this.toolTip1.SetToolTip(this.btnRemoveChannel, "Удалить канал");
-			this.btnRemoveChannel.UseVisualStyleBackColor = true;
-			this.btnRemoveChannel.Click += new System.EventHandler(this.btnRemoveChannel_Click);
-			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
@@ -448,21 +466,13 @@ namespace Twitch_prime_downloader
 			// 
 			// btnSearchChannelName
 			// 
-			this.btnSearchChannelName.Location = new System.Drawing.Point(228, 133);
+			this.btnSearchChannelName.Location = new System.Drawing.Point(230, 198);
 			this.btnSearchChannelName.Name = "btnSearchChannelName";
 			this.btnSearchChannelName.Size = new System.Drawing.Size(75, 23);
 			this.btnSearchChannelName.TabIndex = 1;
 			this.btnSearchChannelName.Text = "Искать";
 			this.btnSearchChannelName.UseVisualStyleBackColor = true;
 			this.btnSearchChannelName.Click += new System.EventHandler(this.btnSearchChannelName_Click);
-			// 
-			// cboxChannelName
-			// 
-			this.cboxChannelName.FormattingEnabled = true;
-			this.cboxChannelName.Location = new System.Drawing.Point(111, 19);
-			this.cboxChannelName.Name = "cboxChannelName";
-			this.cboxChannelName.Size = new System.Drawing.Size(122, 21);
-			this.cboxChannelName.TabIndex = 0;
 			// 
 			// tabPageLog
 			// 
@@ -571,7 +581,7 @@ namespace Twitch_prime_downloader
 			this.toolStripMenuItem1,
 			this.openVideoInBrowserToolStripMenuItem});
 			this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-			this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 164);
+			this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 142);
 			// 
 			// miCopyVideoUrl
 			// 
@@ -594,6 +604,13 @@ namespace Twitch_prime_downloader
 			this.copyStreamInfoJsonToolStripMenuItem.Text = "Скопировать информацию о стриме";
 			this.copyStreamInfoJsonToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamInfoJsonToolStripMenuItem_Click);
 			// 
+			// miSavePlaylistAsToolStripMenuItem
+			// 
+			this.miSavePlaylistAsToolStripMenuItem.Name = "miSavePlaylistAsToolStripMenuItem";
+			this.miSavePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miSavePlaylistAsToolStripMenuItem.Text = "Сохранить плейлист как...";
+			this.miSavePlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.miSavePlaylistAsToolStripMenuItem_Click);
+			// 
 			// saveImageAssToolStripMenuItem
 			// 
 			this.saveImageAssToolStripMenuItem.Name = "saveImageAssToolStripMenuItem";
@@ -612,13 +629,6 @@ namespace Twitch_prime_downloader
 			this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
 			this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
 			this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
-			// 
-			// miSavePlaylistAsToolStripMenuItem
-			// 
-			this.miSavePlaylistAsToolStripMenuItem.Name = "miSavePlaylistAsToolStripMenuItem";
-			this.miSavePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.miSavePlaylistAsToolStripMenuItem.Text = "Сохранить плейлист как...";
-			this.miSavePlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.miSavePlaylistAsToolStripMenuItem_Click);
 			// 
 			// Form1
 			// 
@@ -674,11 +684,8 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btnSearchChannelName;
-		private System.Windows.Forms.ComboBox cboxChannelName;
 		private System.Windows.Forms.TabPage tabPageDownloading;
 		private System.Windows.Forms.Panel panelDownloads;
-		private System.Windows.Forms.Button btnAddChannel;
-		private System.Windows.Forms.Button btnRemoveChannel;
 		private System.Windows.Forms.VScrollBar scrollBarDownloads;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.GroupBox groupBox3;
@@ -703,5 +710,9 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.CheckBox chkSaveVodInfo;
 		private System.Windows.Forms.CheckBox chkSaveVodChunksInfo;
 		private System.Windows.Forms.ToolStripMenuItem miSavePlaylistAsToolStripMenuItem;
+		private System.Windows.Forms.Button btnAddChannelToList;
+		private System.Windows.Forms.TextBox textBoxChannelName;
+		private System.Windows.Forms.ListBox listBoxChannelList;
+		private System.Windows.Forms.Button btnEditChannelList;
 	}
 }
