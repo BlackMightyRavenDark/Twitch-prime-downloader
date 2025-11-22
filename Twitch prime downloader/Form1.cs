@@ -810,6 +810,7 @@ namespace Twitch_prime_downloader
 				config.DownloadingDirPath : config.SelfDirPath;
 			if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
 			{
+				config.LastUsedDirPath =
 				config.DownloadingDirPath = folderBrowserDialog.SelectedPath;
 
 				textBox_DownloadingPath.Text = config.DownloadingDirPath;
@@ -831,7 +832,7 @@ namespace Twitch_prime_downloader
 			sfd.FileName = fn + "_preview";
 			if (sfd.ShowDialog() != DialogResult.Cancel)
 			{
-				config.LastUsedDirPath = sfd.FileName;
+				config.LastUsedDirPath = Path.GetDirectoryName(sfd.FileName);
 				activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
 			}
 			sfd.Dispose();
@@ -849,6 +850,7 @@ namespace Twitch_prime_downloader
 			{
 				config.BrowserExeFilePath = ofd.FileName;
 				textBox_Browser.Text = ofd.FileName;
+				config.LastUsedDirPath = Path.GetDirectoryName(ofd.FileName);
 			}
 			ofd.Dispose();
 		}
