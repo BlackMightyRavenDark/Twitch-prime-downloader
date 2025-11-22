@@ -24,6 +24,10 @@ namespace Twitch_prime_downloader
 		public bool SaveVodInfo { get; set; }
 		public bool SaveVodChunksInfo { get; set; }
 		public bool DebugMode { get; set; }
+		public string ApiApplicationTitle { get; set; }
+		public string ApiApplicationDescription { get; set; }
+		public string ApiApplicationClientId { get; set; }
+		public string ApiApplicationClientSecretKey { get; set; }
 
 		public delegate void SavingDelegate(object sender, JObject json);
 		public delegate void LoadingDelegate(object sender, JObject json);

@@ -17,6 +17,11 @@ namespace Twitch_prime_downloader
 
 		public const string FILENAME_FORMAT_DEFAULT =
 			"<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second><GMT>] <video_title>";
+		internal static readonly TwitchApplication defaultApplication = new TwitchApplication(
+			"Test application", "No description",
+			"gs7pui3law5lsi69yzi9qzyaqvlcsy", // Client ID
+			"srr2yi260t15ir6w0wq5blir22i9pq"  // Client secret key
+		);
 
 		public enum DownloadMode { SingleFile, Chunked };
 
