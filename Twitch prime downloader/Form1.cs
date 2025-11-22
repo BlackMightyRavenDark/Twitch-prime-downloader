@@ -23,12 +23,28 @@ namespace Twitch_prime_downloader
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
-			TwitchApi.SetApplication(new TwitchApplication(
-				"Test application", "No description",
-				"gs7pui3law5lsi69yzi9qzyaqvlcsy",
-				"srr2yi260t15ir6w0wq5blir22i9pq"
-				)
-			);
+			TwitchApiLib.Utils.TwitchHelixOauthToken.TokenUpdating += (s) =>
+				Invoke(new MethodInvoker(() => textBoxHelixApiToken.Text = lblHelixApiTokenExpirationDate.Text = "Обновляется..."));
+			TwitchApiLib.Utils.TwitchHelixOauthToken.TokenUpdated += (s, errorCode, errorMessage) =>
+			{
+				Invoke(new MethodInvoker(() =>
+				{
+					if (errorCode != 200)
+					{
+						textBoxHelixApiToken.Text = "<NULL>";
+						lblHelixApiTokenExpirationDate.Text = "<Неизвестно>";
+
+						string msg = "Не удалось обновить Helix API token!";
+						if (!string.IsNullOrEmpty(errorMessage)) { msg += Environment.NewLine + errorMessage; }
+						MessageBox.Show(msg, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return;
+					}
+
+					textBoxHelixApiToken.Text = TwitchApiLib.Utils.TwitchHelixOauthToken.AccessToken;
+					lblHelixApiTokenExpirationDate.Text = TwitchApiLib.Utils.FormatDateTime(TwitchApiLib.Utils.TwitchHelixOauthToken.ExpirationDate);
+					lbLog.Items.Add("Twitch Helix API token успешно обновлён!");
+				}));
+			};
 
 			MultiThreadedDownloaderLib.Utils.ConnectionLimit = 100;
 
@@ -42,6 +58,10 @@ namespace Twitch_prime_downloader
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
+				json["apiApplicationTitle"] = config.ApiApplicationTitle;
+				json["apiApplicationDescription"] = config.ApiApplicationDescription;
+				json["apiApplicationClientId"] = config.ApiApplicationClientId;
+				json["apiApplicationClientSecretKey"] = config.ApiApplicationClientSecretKey;
 			};
 			config.Loading += (s, json) =>
 			{
@@ -93,6 +113,16 @@ namespace Twitch_prime_downloader
 				{
 					config.SaveVodChunksInfo = jt.Value<bool>();
 				}
+
+				config.ApiApplicationTitle = json.Value<string>("apiApplicationTitle");
+				config.ApiApplicationDescription = json.Value<string>("apiApplicationDescription");
+				config.ApiApplicationClientId = json.Value<string>("apiApplicationClientId");
+				config.ApiApplicationClientSecretKey = json.Value<string>("apiApplicationClientSecretKey");
+
+				if (string.IsNullOrEmpty(config.ApiApplicationClientId) && string.IsNullOrEmpty(config.ApiApplicationClientSecretKey))
+				{
+					SetDefaultTwitchApplication();
+				}
 			};
 			config.Loaded += (s) =>
 			{
@@ -102,6 +132,13 @@ namespace Twitch_prime_downloader
 				textBox_DownloadingPath.Text = config.DownloadingDirPath;
 				textBox_FileNameFormat.Text = config.FileNameFormat;
 				textBox_Browser.Text = config.BrowserExeFilePath;
+				textBoxApiApplicationTitle.Text = config.ApiApplicationTitle;
+				textBoxApiApplicationDescription.Text = config.ApiApplicationDescription;
+				textBoxHelixApiClientId.Text = config.ApiApplicationClientId;
+				textBoxHelixApiClentSecretKey.Text = config.ApiApplicationClientSecretKey;
+
+				TwitchApplication application = MakeTwitchApplication();
+				TwitchApi.SetApplication(application);
 
 				try
 				{
@@ -180,6 +217,72 @@ namespace Twitch_prime_downloader
 			else if (tabControlMain.SelectedTab == tabPageDownloading)
 			{
 				StackDownloadFrames();
+			}
+		}
+
+		private void btnSetDefaultApiApplication_Click(object sender, EventArgs e)
+		{
+			const string msg = "Внимание! Значения по-умолчанию в данный момент могут быть устаревшими и больше не работать!\n" +
+				"Восстановить значения по-умолчанию?";
+			if (MessageBox.Show(msg, Text,
+				MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+			{
+				SetDefaultTwitchApplication();
+			}
+		}
+
+		private async void btnApplyApiApplication_Click(object sender, EventArgs e)
+		{
+			btnUpdateHelixApiToken.Enabled =
+			btnResetHelixApiToken.Enabled =
+			btnApplyApiApplication.Enabled =
+			btnSetDefaultApiApplication.Enabled = false;
+
+			config.ApiApplicationTitle = textBoxApiApplicationTitle.Text;
+			config.ApiApplicationDescription = textBoxApiApplicationDescription.Text;
+			config.ApiApplicationClientId = textBoxHelixApiClientId.Text;
+			config.ApiApplicationClientSecretKey = textBoxHelixApiClentSecretKey.Text;
+
+			TwitchApplication application = MakeTwitchApplication();
+			TwitchApi.SetApplication(application);
+
+			await Task.Delay(500);
+
+			btnSetDefaultApiApplication.Enabled =
+			btnApplyApiApplication.Enabled =
+			btnResetHelixApiToken.Enabled =
+			btnUpdateHelixApiToken.Enabled = true;
+		}
+
+		private async void btnUpdateHelixApiToken_Click(object sender, EventArgs e)
+		{
+			btnUpdateHelixApiToken.Enabled =
+			btnResetHelixApiToken.Enabled =
+			btnApplyApiApplication.Enabled =
+			btnSetDefaultApiApplication.Enabled = false;
+
+			if (IsTwitchApplicationValid())
+			{
+				await Task.Run(() =>
+				{
+					TwitchApplication application = TwitchApi.GetApplication();
+					TwitchApiLib.Utils.TwitchHelixOauthToken.Update(application, out _);
+				});
+			}
+
+			btnSetDefaultApiApplication.Enabled =
+			btnApplyApiApplication.Enabled =
+			btnResetHelixApiToken.Enabled =
+			btnUpdateHelixApiToken.Enabled = true;
+		}
+
+		private void btnResetHelixApiToken_Click(object sender, EventArgs e)
+		{
+			lock (TwitchApiLib.Utils.TwitchHelixOauthToken)
+			{
+				TwitchApiLib.Utils.TwitchHelixOauthToken.Reset();
+				textBoxHelixApiToken.Text = "<NULL>";
+				lblHelixApiTokenExpirationDate.Text = "<Неизвестно>";
 			}
 		}
 
@@ -471,6 +574,12 @@ namespace Twitch_prime_downloader
 		private async void btnSearchChannelName_Click(object sender, EventArgs e)
 		{
 			btnSearchChannelName.Enabled = false;
+			if (!IsTwitchApplicationValid())
+			{
+				btnSearchChannelName.Enabled = true;
+				return;
+			}
+
 			string channelName = textBoxChannelName.Text?.Trim();
 			if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
 			{
@@ -552,6 +661,11 @@ namespace Twitch_prime_downloader
 		private async void btnSearchByUrls_Click(object sender, EventArgs e)
 		{
 			btnSearchByUrls.Enabled = false;
+			if (!IsTwitchApplicationValid())
+			{
+				btnSearchByUrls.Enabled = true;
+				return;
+			}
 
 			string[] urls = textBoxUrls.Lines;
 			if (urls.Length == 0)
@@ -818,6 +932,42 @@ namespace Twitch_prime_downloader
 		private void chkSaveVodChunksInfo_CheckedChanged(object sender, EventArgs e)
 		{
 			config.SaveVodChunksInfo = chkSaveVodChunksInfo.Checked;
+		}
+
+		private static TwitchApplication MakeTwitchApplication()
+		{
+			return new TwitchApplication(
+				config.ApiApplicationTitle,
+				config.ApiApplicationDescription,
+				config.ApiApplicationClientId,
+				config.ApiApplicationClientSecretKey);
+		}
+
+		private void SetDefaultTwitchApplication()
+		{
+			textBoxApiApplicationTitle.Text = config.ApiApplicationTitle = defaultApplication.Name;
+			textBoxApiApplicationDescription.Text = config.ApiApplicationDescription = defaultApplication.Description;
+			textBoxHelixApiClientId.Text = config.ApiApplicationClientId = defaultApplication.ClientId;
+			textBoxHelixApiClentSecretKey.Text = config.ApiApplicationClientSecretKey = defaultApplication.ClientSecretKey;
+			TwitchApi.SetApplication(defaultApplication);
+		}
+
+		private static bool IsTwitchApplicationValid()
+		{
+			if (string.IsNullOrEmpty(config.ApiApplicationClientId) || string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
+			{
+				MessageBox.Show("Не указан ID приложения Twitch!", "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return false;
+			}
+			if (string.IsNullOrEmpty(config.ApiApplicationClientSecretKey) || string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
+			{
+				MessageBox.Show("Не указан секретный ключ приложения Twitch!", "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return false;
+			}
+
+			return true;
 		}
 	}
 }
