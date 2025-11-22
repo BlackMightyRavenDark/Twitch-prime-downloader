@@ -829,7 +829,7 @@ namespace Twitch_prime_downloader
 			sfd.DefaultExt = ".jpg";
 			sfd.InitialDirectory = config.LastUsedDirPath;
 			string fn = FixFileName(FormatFileName(config.FileNameFormat, activeFrameStream.StreamInfo));
-			sfd.FileName = fn + "_preview";
+			sfd.FileName = fn + "_thumbnail";
 			if (sfd.ShowDialog() != DialogResult.Cancel)
 			{
 				config.LastUsedDirPath = Path.GetDirectoryName(sfd.FileName);
