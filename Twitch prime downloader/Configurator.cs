@@ -9,17 +9,17 @@ namespace Twitch_prime_downloader
 {
 	public sealed class Configurator
 	{
-		public string FileName { get; }
-		public string SelfExePath { get; }
-		public string SelfDirPath { get; }
-		public string DownloadingDirPath { get; set; }
-		public string FileNameFormat { get; set; }
-		public string TempDirPath { get; set; }
-		public string LastUsedDirPath { get; set; }
+		public string ConfigurationFilePath { get; }
+		public string SelfExeFilePath { get; }
+		public string SelfDirectory { get; }
+		public string DownloadDirectory { get; set; }
+		public string OutputFileNameFormat { get; set; }
+		public string TempDirectory { get; set; }
+		public string LastUsedDirectory { get; set; }
 		public string ChannelListFilePath { get; set; }
 		public string BrowserExeFilePath { get; set; }
 		public string UrlListFilePath { get; set; }
-		public int VodInfoGuiFontSize { get; set; }
+		public int VodInfoHudFontSize { get; set; }
 		public bool UseGmtVodDates { get; set; }
 		public bool SaveVodInfo { get; set; }
 		public bool SaveVodChunksInfo { get; set; }
@@ -38,21 +38,21 @@ namespace Twitch_prime_downloader
 
 		public Configurator()
 		{
-			SelfExePath = Application.ExecutablePath;
-			SelfDirPath = Path.GetDirectoryName(SelfExePath);
-			string fn = Path.GetFileNameWithoutExtension(SelfExePath);
-			FileName = Path.Combine(SelfDirPath, fn + "_config.json");
+			SelfExeFilePath = Application.ExecutablePath;
+			SelfDirectory = Path.GetDirectoryName(SelfExeFilePath);
+			string fn = Path.GetFileNameWithoutExtension(SelfExeFilePath);
+			ConfigurationFilePath = Path.Combine(SelfDirectory, fn + "_config.json");
 			DebugMode = false;
 		}
 
 		public void LoadDefaults()
 		{
-			string fn = Path.GetFileNameWithoutExtension(SelfExePath);
-			ChannelListFilePath = Path.Combine(SelfDirPath, fn + "_channelList.txt");
-			DownloadingDirPath = SelfDirPath;
-			FileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
-			LastUsedDirPath = SelfDirPath;
-			UrlListFilePath = Path.Combine(SelfDirPath, fn + "_urls.txt");
+			string fn = Path.GetFileNameWithoutExtension(SelfExeFilePath);
+			ChannelListFilePath = Path.Combine(SelfDirectory, fn + "_channelList.txt");
+			DownloadDirectory = SelfDirectory;
+			OutputFileNameFormat = Utils.FILENAME_FORMAT_DEFAULT;
+			LastUsedDirectory = SelfDirectory;
+			UrlListFilePath = Path.Combine(SelfDirectory, fn + "_urls.txt");
 			BrowserExeFilePath = "firefox.exe";
 			UseGmtVodDates = true;
 			SaveVodInfo = true;
@@ -64,9 +64,9 @@ namespace Twitch_prime_downloader
 			LoadDefaults();
 			try
 			{
-				if (File.Exists(FileName))
+				if (File.Exists(ConfigurationFilePath))
 				{
-					JObject json = JObject.Parse(File.ReadAllText(FileName));
+					JObject json = JObject.Parse(File.ReadAllText(ConfigurationFilePath));
 					Loading?.Invoke(this, json);
 				}
 			}
@@ -87,11 +87,11 @@ namespace Twitch_prime_downloader
 			{
 				JObject json = new JObject();
 				Saving?.Invoke(this, json);
-				if (File.Exists(FileName))
+				if (File.Exists(ConfigurationFilePath))
 				{
-					File.Delete(FileName);
+					File.Delete(ConfigurationFilePath);
 				}
-				File.WriteAllText(FileName, json.ToString());
+				File.WriteAllText(ConfigurationFilePath, json.ToString());
 			}
 #if DEBUG
 			catch (Exception ex)

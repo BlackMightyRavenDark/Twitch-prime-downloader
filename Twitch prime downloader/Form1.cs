@@ -50,10 +50,10 @@ namespace Twitch_prime_downloader
 
 			config.Saving += (s, json) =>
 			{
-				json["downloadPath"] = config.DownloadingDirPath;
-				json["tempPath"] = config.TempDirPath;
-				json["fileNameFormat"] = config.FileNameFormat;
-				json["lastUsedPath"] = config.LastUsedDirPath;
+				json["downloadPath"] = config.DownloadDirectory;
+				json["tempPath"] = config.TempDirectory;
+				json["fileNameFormat"] = config.OutputFileNameFormat;
+				json["lastUsedPath"] = config.LastUsedDirectory;
 				json["browserExePath"] = config.BrowserExeFilePath;
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
@@ -68,28 +68,28 @@ namespace Twitch_prime_downloader
 				JToken jt = json.Value<JToken>("downloadPath");
 				if (jt != null)
 				{
-					config.DownloadingDirPath = jt.Value<string>();
+					config.DownloadDirectory = jt.Value<string>();
 				}
 
 				jt = json.Value<JToken>("tempPath");
 				if (jt != null)
 				{
-					config.TempDirPath = jt.Value<string>();
+					config.TempDirectory = jt.Value<string>();
 				}
 
 				jt = json.Value<JToken>("lastUsedPath");
 				if (jt != null)
 				{
-					config.LastUsedDirPath = jt.Value<string>();
+					config.LastUsedDirectory = jt.Value<string>();
 				}
 
 				jt = json.Value<JToken>("fileNameFormat");
 				if (jt != null)
 				{
-					config.FileNameFormat = jt.Value<string>();
-					if (string.IsNullOrEmpty(config.FileNameFormat))
+					config.OutputFileNameFormat = jt.Value<string>();
+					if (string.IsNullOrEmpty(config.OutputFileNameFormat))
 					{
-						config.FileNameFormat = FILENAME_FORMAT_DEFAULT;
+						config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
 					}
 				}
 
@@ -129,8 +129,8 @@ namespace Twitch_prime_downloader
 				checkBoxUseGmtTime.Checked = config.UseGmtVodDates;
 				checkBoxSaveVodInfo.Checked = config.SaveVodInfo;
 				checkBoxSaveVodChunkInfo.Checked = config.SaveVodChunksInfo;
-				textBoxDownloadDirectory.Text = config.DownloadingDirPath;
-				textBoxOutputFileNameFormat.Text = config.FileNameFormat;
+				textBoxDownloadDirectory.Text = config.DownloadDirectory;
+				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
 				textBoxBrowserExePath.Text = config.BrowserExeFilePath;
 				textBoxApiApplicationTitle.Text = config.ApiApplicationTitle;
 				textBoxApiApplicationDescription.Text = config.ApiApplicationDescription;
@@ -389,21 +389,21 @@ namespace Twitch_prime_downloader
 			FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
 			folderBrowserDialog.Description = "Выберите папку для скачивания";
 			folderBrowserDialog.SelectedPath =
-				(!string.IsNullOrEmpty(config.DownloadingDirPath) && Directory.Exists(config.DownloadingDirPath)) ?
-				config.DownloadingDirPath : config.SelfDirPath;
+				(!string.IsNullOrEmpty(config.DownloadDirectory) && Directory.Exists(config.DownloadDirectory)) ?
+				config.DownloadDirectory : config.SelfDirectory;
 			if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
 			{
-				config.LastUsedDirPath =
-				config.DownloadingDirPath = folderBrowserDialog.SelectedPath;
+				config.LastUsedDirectory =
+				config.DownloadDirectory = folderBrowserDialog.SelectedPath;
 
-				textBoxDownloadDirectory.Text = config.DownloadingDirPath;
+				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 			}
 		}
 
 		private void btnRestoreDefaultOutputFileNameFormat_Click(object sender, EventArgs e)
 		{
 			textBoxOutputFileNameFormat.Text = FILENAME_FORMAT_DEFAULT;
-			config.FileNameFormat = FILENAME_FORMAT_DEFAULT;
+			config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
 		}
 
 		private void btnSelectBrowser_Click(object sender, EventArgs e)
@@ -412,13 +412,13 @@ namespace Twitch_prime_downloader
 			ofd.Title = "Выберите браузер";
 			ofd.Filter = "exe|*.exe";
 			string dir = string.IsNullOrEmpty(config.BrowserExeFilePath) ?
-				config.SelfDirPath : Path.GetFullPath(config.BrowserExeFilePath);
+				config.SelfDirectory : Path.GetFullPath(config.BrowserExeFilePath);
 			ofd.InitialDirectory = dir;
 			if (ofd.ShowDialog() != DialogResult.Cancel)
 			{
 				config.BrowserExeFilePath = ofd.FileName;
 				textBoxBrowserExePath.Text = ofd.FileName;
-				config.LastUsedDirPath = Path.GetDirectoryName(ofd.FileName);
+				config.LastUsedDirectory = Path.GetDirectoryName(ofd.FileName);
 			}
 			ofd.Dispose();
 		}
@@ -608,12 +608,12 @@ namespace Twitch_prime_downloader
 			SaveFileDialog sfd = new SaveFileDialog();
 			sfd.Filter = "jpg|*.jpg";
 			sfd.DefaultExt = ".jpg";
-			sfd.InitialDirectory = config.LastUsedDirPath;
-			string fn = FixFileName(FormatFileName(config.FileNameFormat, activeFrameStream.StreamInfo));
+			sfd.InitialDirectory = config.LastUsedDirectory;
+			string fn = FixFileName(FormatFileName(config.OutputFileNameFormat, activeFrameStream.StreamInfo));
 			sfd.FileName = fn + "_thumbnail";
 			if (sfd.ShowDialog() != DialogResult.Cancel)
 			{
-				config.LastUsedDirPath = Path.GetDirectoryName(sfd.FileName);
+				config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
 				activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
 			}
 			sfd.Dispose();
@@ -688,8 +688,8 @@ namespace Twitch_prime_downloader
 						sfd.Title = "Куда будем сохранять?";
 						sfd.Filter = "*.m3u8|*.M3U8-files";
 						sfd.DefaultExt = ".m3u8";
-						sfd.InitialDirectory = config.DownloadingDirPath;
-						sfd.FileName = FixFileName(FormatFileName(config.FileNameFormat, activeFrameStream.StreamInfo)) + "_playlist.m3u8";
+						sfd.InitialDirectory = config.DownloadDirectory;
+						sfd.FileName = FixFileName(FormatFileName(config.OutputFileNameFormat, activeFrameStream.StreamInfo)) + "_playlist.m3u8";
 						if (sfd.ShowDialog() == DialogResult.OK)
 						{
 							if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
@@ -734,12 +734,12 @@ namespace Twitch_prime_downloader
 
 		private void textBoxDownloadDirectory_Leave(object sender, EventArgs e)
 		{
-			config.DownloadingDirPath = textBoxDownloadDirectory.Text;
+			config.DownloadDirectory = textBoxDownloadDirectory.Text;
 		}
 
 		private void textBoxOutputFileNameFormat_Leave(object sender, EventArgs e)
 		{
-			config.FileNameFormat = (sender as TextBox).Text;
+			config.OutputFileNameFormat = (sender as TextBox).Text;
 		}
 
 		private void AddStreamItem(TwitchVod vod)
@@ -795,7 +795,7 @@ namespace Twitch_prime_downloader
 
 		private async void OnVodFrame_DownloadButtonClick(object sender)
 		{
-			if (string.IsNullOrEmpty(config.DownloadingDirPath))
+			if (string.IsNullOrEmpty(config.DownloadDirectory))
 			{
 				MessageBox.Show("Не указана папка для скачивания!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
