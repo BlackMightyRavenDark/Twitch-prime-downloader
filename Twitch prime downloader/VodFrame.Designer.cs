@@ -29,35 +29,35 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this.lblStreamTitle = new System.Windows.Forms.Label();
+			this.lblVodTitle = new System.Windows.Forms.Label();
 			this.lblChannelName = new System.Windows.Forms.Label();
 			this.lblGameName = new System.Windows.Forms.Label();
 			this.btnDownload = new System.Windows.Forms.Button();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.copyStreamTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.copyStreamDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.copyStreamTitlePlusDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.contextMenuVodThumbnail = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.miCopyVodTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miCopyVodCreationDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.lblMutedChunks = new System.Windows.Forms.Label();
-			this.lblPrime = new System.Windows.Forms.Label();
-			this.imageGame = new System.Windows.Forms.PictureBox();
-			this.imageStream = new System.Windows.Forms.PictureBox();
+			this.lblIsPrime = new System.Windows.Forms.Label();
+			this.pictureBoxThumbnailImageGame = new System.Windows.Forms.PictureBox();
+			this.pictureBoxThumbnailImageVod = new System.Windows.Forms.PictureBox();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.lblBroadcastType = new System.Windows.Forms.Label();
-			this.contextMenuStrip1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.imageGame)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.imageStream)).BeginInit();
+			this.contextMenuVodThumbnail.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageGame)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageVod)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// lblStreamTitle
+			// lblVodTitle
 			// 
-			this.lblStreamTitle.BackColor = System.Drawing.Color.Black;
-			this.lblStreamTitle.ForeColor = System.Drawing.Color.White;
-			this.lblStreamTitle.Location = new System.Drawing.Point(72, 196);
-			this.lblStreamTitle.Name = "lblStreamTitle";
-			this.lblStreamTitle.Size = new System.Drawing.Size(295, 40);
-			this.lblStreamTitle.TabIndex = 0;
-			this.lblStreamTitle.Text = "lblStreamTitle";
-			this.lblStreamTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblStreamTitle_MouseDown);
+			this.lblVodTitle.BackColor = System.Drawing.Color.Black;
+			this.lblVodTitle.ForeColor = System.Drawing.Color.White;
+			this.lblVodTitle.Location = new System.Drawing.Point(72, 196);
+			this.lblVodTitle.Name = "lblVodTitle";
+			this.lblVodTitle.Size = new System.Drawing.Size(295, 40);
+			this.lblVodTitle.TabIndex = 0;
+			this.lblVodTitle.Text = "lblStreamTitle";
+			this.lblVodTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblVodTitle_MouseDown);
 			// 
 			// lblChannelName
 			// 
@@ -68,7 +68,7 @@
 			this.lblChannelName.Size = new System.Drawing.Size(84, 13);
 			this.lblChannelName.TabIndex = 3;
 			this.lblChannelName.Text = "lblChannelName";
-			this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.lblChannelName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
 			// lblGameName
 			// 
@@ -79,7 +79,7 @@
 			this.lblGameName.Size = new System.Drawing.Size(73, 13);
 			this.lblGameName.TabIndex = 4;
 			this.lblGameName.Text = "lblGameName";
-			this.lblGameName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.lblGameName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
 			// btnDownload
 			// 
@@ -93,37 +93,37 @@
 			this.btnDownload.UseVisualStyleBackColor = false;
 			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
 			this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.btnDownload_Paint);
-			this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
-			// contextMenuStrip1
+			// contextMenuVodThumbnail
 			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this.copyStreamTitleToolStripMenuItem,
-			this.copyStreamDateToolStripMenuItem,
-			this.copyStreamTitlePlusDateToolStripMenuItem});
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(236, 70);
+			this.contextMenuVodThumbnail.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.miCopyVodTitleToolStripMenuItem,
+			this.miCopyVodCreationDateToolStripMenuItem,
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem});
+			this.contextMenuVodThumbnail.Name = "contextMenuStrip1";
+			this.contextMenuVodThumbnail.Size = new System.Drawing.Size(236, 70);
 			// 
-			// copyStreamTitleToolStripMenuItem
+			// miCopyVodTitleToolStripMenuItem
 			// 
-			this.copyStreamTitleToolStripMenuItem.Name = "copyStreamTitleToolStripMenuItem";
-			this.copyStreamTitleToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-			this.copyStreamTitleToolStripMenuItem.Text = "Скопировать название";
-			this.copyStreamTitleToolStripMenuItem.Click += new System.EventHandler(this.copyStreamTitleToolStripMenuItem_Click);
+			this.miCopyVodTitleToolStripMenuItem.Name = "miCopyVodTitleToolStripMenuItem";
+			this.miCopyVodTitleToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+			this.miCopyVodTitleToolStripMenuItem.Text = "Скопировать название";
+			this.miCopyVodTitleToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodTitleToolStripMenuItem_Click);
 			// 
-			// copyStreamDateToolStripMenuItem
+			// miCopyVodCreationDateToolStripMenuItem
 			// 
-			this.copyStreamDateToolStripMenuItem.Name = "copyStreamDateToolStripMenuItem";
-			this.copyStreamDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-			this.copyStreamDateToolStripMenuItem.Text = "Скопировать дату";
-			this.copyStreamDateToolStripMenuItem.Click += new System.EventHandler(this.copyStreamDateToolStripMenuItem_Click);
+			this.miCopyVodCreationDateToolStripMenuItem.Name = "miCopyVodCreationDateToolStripMenuItem";
+			this.miCopyVodCreationDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+			this.miCopyVodCreationDateToolStripMenuItem.Text = "Скопировать дату";
+			this.miCopyVodCreationDateToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodCreationDateToolStripMenuItem_Click);
 			// 
-			// copyStreamTitlePlusDateToolStripMenuItem
+			// miCopyVodTitlePlusCreationDateToolStripMenuItem
 			// 
-			this.copyStreamTitlePlusDateToolStripMenuItem.Name = "copyStreamTitlePlusDateToolStripMenuItem";
-			this.copyStreamTitlePlusDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-			this.copyStreamTitlePlusDateToolStripMenuItem.Text = "Скопировать дату и название";
-			this.copyStreamTitlePlusDateToolStripMenuItem.Click += new System.EventHandler(this.copyStreamTitlePlusDateToolStripMenuItem_Click);
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem.Name = "miCopyVodTitlePlusCreationDateToolStripMenuItem";
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem.Text = "Скопировать дату и название";
+			this.miCopyVodTitlePlusCreationDateToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodTitlePlusCreationDateToolStripMenuItem_Click);
 			// 
 			// lblMutedChunks
 			// 
@@ -138,42 +138,42 @@
 			this.lblMutedChunks.Text = "lblMutedChunks";
 			this.lblMutedChunks.Visible = false;
 			this.lblMutedChunks.DoubleClick += new System.EventHandler(this.lblMutedChunks_DoubleClick);
-			this.lblMutedChunks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.lblMutedChunks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
-			// lblPrime
+			// lblIsPrime
 			// 
-			this.lblPrime.AutoSize = true;
-			this.lblPrime.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.lblPrime.ForeColor = System.Drawing.Color.Lime;
-			this.lblPrime.Location = new System.Drawing.Point(352, 6);
-			this.lblPrime.Name = "lblPrime";
-			this.lblPrime.Size = new System.Drawing.Size(24, 26);
-			this.lblPrime.TabIndex = 7;
-			this.lblPrime.Text = "$";
-			this.toolTip1.SetToolTip(this.lblPrime, "Очень платное видео");
-			this.lblPrime.Visible = false;
-			this.lblPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.lblIsPrime.AutoSize = true;
+			this.lblIsPrime.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			this.lblIsPrime.ForeColor = System.Drawing.Color.Lime;
+			this.lblIsPrime.Location = new System.Drawing.Point(352, 6);
+			this.lblIsPrime.Name = "lblIsPrime";
+			this.lblIsPrime.Size = new System.Drawing.Size(24, 26);
+			this.lblIsPrime.TabIndex = 7;
+			this.lblIsPrime.Text = "$";
+			this.toolTip1.SetToolTip(this.lblIsPrime, "Очень платное видео");
+			this.lblIsPrime.Visible = false;
+			this.lblIsPrime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
-			// imageGame
+			// pictureBoxThumbnailImageGame
 			// 
-			this.imageGame.Location = new System.Drawing.Point(10, 196);
-			this.imageGame.Name = "imageGame";
-			this.imageGame.Size = new System.Drawing.Size(52, 72);
-			this.imageGame.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.imageGame.TabIndex = 2;
-			this.imageGame.TabStop = false;
-			this.imageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.pictureBoxThumbnailImageGame.Location = new System.Drawing.Point(10, 196);
+			this.pictureBoxThumbnailImageGame.Name = "pictureBoxThumbnailImageGame";
+			this.pictureBoxThumbnailImageGame.Size = new System.Drawing.Size(52, 72);
+			this.pictureBoxThumbnailImageGame.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.pictureBoxThumbnailImageGame.TabIndex = 2;
+			this.pictureBoxThumbnailImageGame.TabStop = false;
+			this.pictureBoxThumbnailImageGame.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
-			// imageStream
+			// pictureBoxThumbnailImageVod
 			// 
-			this.imageStream.Location = new System.Drawing.Point(27, 10);
-			this.imageStream.Name = "imageStream";
-			this.imageStream.Size = new System.Drawing.Size(320, 180);
-			this.imageStream.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.imageStream.TabIndex = 1;
-			this.imageStream.TabStop = false;
-			this.imageStream.Paint += new System.Windows.Forms.PaintEventHandler(this.imageStream_Paint);
-			this.imageStream.MouseDown += new System.Windows.Forms.MouseEventHandler(this.imageStream_MouseDown);
+			this.pictureBoxThumbnailImageVod.Location = new System.Drawing.Point(27, 10);
+			this.pictureBoxThumbnailImageVod.Name = "pictureBoxThumbnailImageVod";
+			this.pictureBoxThumbnailImageVod.Size = new System.Drawing.Size(320, 180);
+			this.pictureBoxThumbnailImageVod.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.pictureBoxThumbnailImageVod.TabIndex = 1;
+			this.pictureBoxThumbnailImageVod.TabStop = false;
+			this.pictureBoxThumbnailImageVod.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxThumbnailImageVod_Paint);
+			this.pictureBoxThumbnailImageVod.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxThumbnailImageVod_MouseDown);
 			// 
 			// lblBroadcastType
 			// 
@@ -184,7 +184,7 @@
 			this.lblBroadcastType.Size = new System.Drawing.Size(89, 13);
 			this.lblBroadcastType.TabIndex = 8;
 			this.lblBroadcastType.Text = "lblBroadcastType";
-			this.lblBroadcastType.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
+			this.lblBroadcastType.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
 			// VodFrame
 			// 
@@ -192,20 +192,20 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
 			this.Controls.Add(this.lblBroadcastType);
-			this.Controls.Add(this.lblPrime);
+			this.Controls.Add(this.lblIsPrime);
 			this.Controls.Add(this.lblMutedChunks);
 			this.Controls.Add(this.btnDownload);
 			this.Controls.Add(this.lblGameName);
 			this.Controls.Add(this.lblChannelName);
-			this.Controls.Add(this.imageGame);
-			this.Controls.Add(this.imageStream);
-			this.Controls.Add(this.lblStreamTitle);
+			this.Controls.Add(this.pictureBoxThumbnailImageGame);
+			this.Controls.Add(this.pictureBoxThumbnailImageVod);
+			this.Controls.Add(this.lblVodTitle);
 			this.Name = "VodFrame";
 			this.Size = new System.Drawing.Size(380, 296);
-			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.VodFrame_MouseDown);
-			this.contextMenuStrip1.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.imageGame)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.imageStream)).EndInit();
+			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
+			this.contextMenuVodThumbnail.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageGame)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageVod)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -213,18 +213,18 @@
 
 		#endregion
 
-		public System.Windows.Forms.Label lblStreamTitle;
-		public System.Windows.Forms.PictureBox imageStream;
-		public System.Windows.Forms.PictureBox imageGame;
+		public System.Windows.Forms.Label lblVodTitle;
+		public System.Windows.Forms.PictureBox pictureBoxThumbnailImageVod;
+		public System.Windows.Forms.PictureBox pictureBoxThumbnailImageGame;
 		public System.Windows.Forms.Label lblChannelName;
 		public System.Windows.Forms.Label lblGameName;
 		public System.Windows.Forms.Button btnDownload;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-		private System.Windows.Forms.ToolStripMenuItem copyStreamTitleToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem copyStreamDateToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem copyStreamTitlePlusDateToolStripMenuItem;
+		private System.Windows.Forms.ContextMenuStrip contextMenuVodThumbnail;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodTitleToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodCreationDateToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodTitlePlusCreationDateToolStripMenuItem;
 		private System.Windows.Forms.Label lblMutedChunks;
-		private System.Windows.Forms.Label lblPrime;
+		private System.Windows.Forms.Label lblIsPrime;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Label lblBroadcastType;
 	}

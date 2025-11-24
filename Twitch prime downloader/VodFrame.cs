@@ -63,11 +63,11 @@ namespace Twitch_prime_downloader
 		private async void SetStreamInfo(TwitchVod vod)
 		{
 			StreamInfo = vod;
-			lblStreamTitle.Text = StreamInfo.Title;
+			lblVodTitle.Text = StreamInfo.Title;
 			lblChannelName.Text = StreamInfo.User.DisplayName;
 			lblGameName.Text = StreamInfo.Game.Title;
 			lblBroadcastType.Text = StreamInfo.VodType.ToString();
-			lblPrime.Visible = StreamInfo.IsSubscribersOnly;
+			lblIsPrime.Visible = StreamInfo.IsSubscribersOnly;
 
 			MutedSegments = await Task.Run(() =>
 			{
@@ -100,11 +100,11 @@ namespace Twitch_prime_downloader
 			await Task.WhenAll(tasks);
 
 			Image imagePreview = TryLoadImageFromStream(StreamInfo.ThumbnailImageData) ?? GenerateErrorImage();
-			imageStream.Image = imagePreview;
-			imageGame.Image = TryLoadImageFromStream(StreamInfo.Game?.ThumbnailImageData);
+			pictureBoxThumbnailImageVod.Image = imagePreview;
+			pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game?.ThumbnailImageData);
 		}
 
-		private void imageStream_Paint(object sender, PaintEventArgs e)
+		private void pictureBoxThumbnailImageVod_Paint(object sender, PaintEventArgs e)
 		{
 			if (ShowStreamInfoHud)
 			{
@@ -151,23 +151,23 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private void imageStream_MouseDown(object sender, MouseEventArgs e)
+		private void pictureBoxThumbnailImageVod_MouseDown(object sender, MouseEventArgs e)
 		{
 			Activated?.Invoke(this);
 			ImageMouseDown?.Invoke(this, e);
 		}
 
-		private void VodFrame_MouseDown(object sender, MouseEventArgs e)
+		private void vodFrame_MouseDown(object sender, MouseEventArgs e)
 		{
 			Activated?.Invoke(this);
 		}
 
-		private void lblStreamTitle_MouseDown(object sender, MouseEventArgs e)
+		private void lblVodTitle_MouseDown(object sender, MouseEventArgs e)
 		{
 			Activated?.Invoke(this);
 			if (e.Button == MouseButtons.Right)
 			{
-				contextMenuStrip1.Show(Cursor.Position);
+				contextMenuVodThumbnail.Show(Cursor.Position);
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace Twitch_prime_downloader
 				_hudInfoFontSize = newFontSize;
 				if (ShowStreamInfoHud)
 				{
-					imageStream.Refresh();
+					pictureBoxThumbnailImageVod.Refresh();
 				}
 			}
 		}
@@ -212,21 +212,21 @@ namespace Twitch_prime_downloader
 			if (_showStreamInfoHud != flag)
 			{
 				_showStreamInfoHud = flag;
-				imageStream.Refresh();
+				pictureBoxThumbnailImageVod.Refresh();
 			}
 		}
 
-		private void copyStreamTitleToolStripMenuItem_Click(object sender, EventArgs e)
+		private void miCopyVodTitleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			SetClipboardText(StreamInfo.Title);
 		}
 
-		private void copyStreamDateToolStripMenuItem_Click(object sender, EventArgs e)
+		private void miCopyVodCreationDateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			SetClipboardText(StreamInfo.CreationDate.ToString("[yyyy-MM-dd]"));
 		}
 
-		private void copyStreamTitlePlusDateToolStripMenuItem_Click(object sender, EventArgs e)
+		private void miCopyVodTitlePlusCreationDateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			SetClipboardText($"[{StreamInfo.CreationDate:yyyy-MM-dd}] {StreamInfo.Title}");
 		}
