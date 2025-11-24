@@ -50,14 +50,14 @@ namespace Twitch_prime_downloader
 
 			config.Saving += (s, json) =>
 			{
-				json["downloadPath"] = config.DownloadDirectory;
-				json["tempPath"] = config.TempDirectory;
-				json["fileNameFormat"] = config.OutputFileNameFormat;
-				json["lastUsedPath"] = config.LastUsedDirectory;
-				json["browserExePath"] = config.BrowserExeFilePath;
+				json["downloadDirectory"] = config.DownloadDirectory;
+				json["tempDirectory"] = config.TempDirectory;
+				json["outputFileNameFormat"] = config.OutputFileNameFormat;
+				json["lastUsedDirectory"] = config.LastUsedDirectory;
+				json["webBrowserExeFilePath"] = config.BrowserExeFilePath;
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
-				json["saveVodChunksInfo"] = config.SaveVodChunksInfo;
+				json["saveVodChunkInfo"] = config.SaveVodChunksInfo;
 				json["apiApplicationTitle"] = config.ApiApplicationTitle;
 				json["apiApplicationDescription"] = config.ApiApplicationDescription;
 				json["apiApplicationClientId"] = config.ApiApplicationClientId;
@@ -65,25 +65,25 @@ namespace Twitch_prime_downloader
 			};
 			config.Loading += (s, json) =>
 			{
-				JToken jt = json.Value<JToken>("downloadPath");
+				JToken jt = json.Value<JToken>("downloadDirectory");
 				if (jt != null)
 				{
 					config.DownloadDirectory = jt.Value<string>();
 				}
 
-				jt = json.Value<JToken>("tempPath");
+				jt = json.Value<JToken>("tempDirectory");
 				if (jt != null)
 				{
 					config.TempDirectory = jt.Value<string>();
 				}
 
-				jt = json.Value<JToken>("lastUsedPath");
+				jt = json.Value<JToken>("lastUsedDirectory");
 				if (jt != null)
 				{
 					config.LastUsedDirectory = jt.Value<string>();
 				}
 
-				jt = json.Value<JToken>("fileNameFormat");
+				jt = json.Value<JToken>("outputFileNameFormat");
 				if (jt != null)
 				{
 					config.OutputFileNameFormat = jt.Value<string>();
@@ -93,7 +93,7 @@ namespace Twitch_prime_downloader
 					}
 				}
 
-				jt = json.Value<JToken>("browserExePath");
+				jt = json.Value<JToken>("webBrowserExeFilePath");
 				if (jt != null)
 				{
 					config.BrowserExeFilePath = jt.Value<string>();
@@ -108,7 +108,7 @@ namespace Twitch_prime_downloader
 					config.SaveVodInfo = jt.Value<bool>();
 				}
 
-				jt = json.Value<JToken>("saveVodChunksInfo");
+				jt = json.Value<JToken>("saveVodChunkInfo");
 				if (jt != null)
 				{
 					config.SaveVodChunksInfo = jt.Value<bool>();
