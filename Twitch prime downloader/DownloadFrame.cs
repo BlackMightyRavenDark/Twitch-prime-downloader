@@ -47,7 +47,7 @@ namespace Twitch_prime_downloader
 			InitializeComponent();
 
 			Playlist = vodPlaylist;
-			OutputDirPath = config.DownloadingDirPath;
+			OutputDirPath = config.DownloadDirectory;
 			SetStreamInfo(streamInfo);
 
 			OnFrameCreate();
@@ -604,7 +604,7 @@ namespace Twitch_prime_downloader
 		{
 			StreamInfo = vod;
 			lblVodTitle.Text = $"Стрим: {StreamInfo.Title}";
-			_fixedFileName = FixFileName(FormatFileName(config.FileNameFormat, StreamInfo));
+			_fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, StreamInfo));
 			if (radioButtonDownloadSingleBigVideoFile.Checked)
 			{
 				DownloadMode = DownloadMode.SingleFile;
