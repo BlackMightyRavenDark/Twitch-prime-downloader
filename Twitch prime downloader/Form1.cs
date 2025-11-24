@@ -64,47 +64,36 @@ namespace Twitch_prime_downloader
 			};
 			config.Loading += (s, json) =>
 			{
-				JToken jt = json.Value<JToken>("downloadDirectory");
-				if (jt != null)
-				{
-					config.DownloadDirectory = jt.Value<string>();
-				}
+				config.DownloadDirectory = json.Value<string>("downloadDirectory");
+				config.LastUsedDirectory = json.Value<string>("lastUsedDirectory");
+				config.BrowserExeFilePath = json.Value<string>("webBrowserExeFilePath");
 
-				jt = json.Value<JToken>("lastUsedDirectory");
-				if (jt != null)
 				{
-					config.LastUsedDirectory = jt.Value<string>();
-				}
-
-				jt = json.Value<JToken>("outputFileNameFormat");
-				if (jt != null)
-				{
-					config.OutputFileNameFormat = jt.Value<string>();
-					if (string.IsNullOrEmpty(config.OutputFileNameFormat))
+					JToken jt = json.Value<JToken>("outputFileNameFormat");
+					if (jt != null)
+					{
+						config.OutputFileNameFormat = jt.Value<string>();
+						if (string.IsNullOrEmpty(config.OutputFileNameFormat))
+						{
+							config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
+						}
+					}
+					else
 					{
 						config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
 					}
 				}
-
-				jt = json.Value<JToken>("webBrowserExeFilePath");
-				if (jt != null)
 				{
-					config.BrowserExeFilePath = jt.Value<string>();
+					JToken jt = json.Value<JToken>("useGmtTime");
+					config.UseGmtVodDates = jt == null || jt.Value<bool>();
 				}
-
-				jt = json.Value<JToken>("useGmtTime");
-				config.UseGmtVodDates = jt != null ? jt.Value<bool>() : true;
-
-				jt = json.Value<JToken>("saveVodInfo");
-				if (jt != null)
 				{
-					config.SaveVodInfo = jt.Value<bool>();
+					JToken jt = json.Value<JToken>("saveVodInfo");
+					config.SaveVodInfo = jt == null | jt.Value<bool>();
 				}
-
-				jt = json.Value<JToken>("saveVodChunkInfo");
-				if (jt != null)
 				{
-					config.SaveVodChunksInfo = jt.Value<bool>();
+					JToken jt = json.Value<JToken>("saveVodChunkInfo");
+					config.SaveVodChunksInfo = jt == null || jt.Value<bool>();
 				}
 
 				config.ApiApplicationTitle = json.Value<string>("apiApplicationTitle");
