@@ -51,7 +51,6 @@ namespace Twitch_prime_downloader
 			config.Saving += (s, json) =>
 			{
 				json["downloadDirectory"] = config.DownloadDirectory;
-				json["tempDirectory"] = config.TempDirectory;
 				json["outputFileNameFormat"] = config.OutputFileNameFormat;
 				json["lastUsedDirectory"] = config.LastUsedDirectory;
 				json["webBrowserExeFilePath"] = config.BrowserExeFilePath;
@@ -69,12 +68,6 @@ namespace Twitch_prime_downloader
 				if (jt != null)
 				{
 					config.DownloadDirectory = jt.Value<string>();
-				}
-
-				jt = json.Value<JToken>("tempDirectory");
-				if (jt != null)
-				{
-					config.TempDirectory = jt.Value<string>();
 				}
 
 				jt = json.Value<JToken>("lastUsedDirectory");

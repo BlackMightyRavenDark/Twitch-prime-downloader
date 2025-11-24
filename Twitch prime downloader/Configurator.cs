@@ -14,7 +14,6 @@ namespace Twitch_prime_downloader
 		public string SelfDirectory { get; }
 		public string DownloadDirectory { get; set; }
 		public string OutputFileNameFormat { get; set; }
-		public string TempDirectory { get; set; }
 		public string LastUsedDirectory { get; set; }
 		public string ChannelListFilePath { get; set; }
 		public string BrowserExeFilePath { get; set; }
