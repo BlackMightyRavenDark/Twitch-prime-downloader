@@ -29,74 +29,74 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this.btnClose = new System.Windows.Forms.Button();
-			this.lblStreamTitle = new System.Windows.Forms.Label();
-			this.lblOutputFilename = new System.Windows.Forms.Label();
+			this.btnCloseFrame = new System.Windows.Forms.Button();
+			this.lblVodTitle = new System.Windows.Forms.Label();
+			this.lblOutputFileName = new System.Windows.Forms.Label();
 			this.lblProgressOverall = new System.Windows.Forms.Label();
 			this.btnStartDownload = new System.Windows.Forms.Button();
 			this.btnStopDownload = new System.Windows.Forms.Button();
-			this.grpDownloadRange = new System.Windows.Forms.GroupBox();
+			this.groupBoxDownloadVodChunkRange = new System.Windows.Forms.GroupBox();
 			this.btnSetMaxChunkTo = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
-			this.editTo = new System.Windows.Forms.TextBox();
-			this.editFrom = new System.Windows.Forms.TextBox();
-			this.contextMenuStreamTitle = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.copyStreamTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.lbFileList = new System.Windows.Forms.ListBox();
-			this.lblFilelist = new System.Windows.Forms.Label();
-			this.lblGroupProgress = new System.Windows.Forms.Label();
-			this.grpDownloadOptions = new System.Windows.Forms.GroupBox();
-			this.rbDownloadChunksSeparately = new System.Windows.Forms.RadioButton();
-			this.rbDownloadOneBigFile = new System.Windows.Forms.RadioButton();
-			this.timerElapsed = new System.Windows.Forms.Timer(this.components);
+			this.textBoxChunkTo = new System.Windows.Forms.TextBox();
+			this.textBoxChunkFrom = new System.Windows.Forms.TextBox();
+			this.contextMenuVodTitle = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.miCopyVodTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.listBoxChunkFileList = new System.Windows.Forms.ListBox();
+			this.lblChunkFileList = new System.Windows.Forms.Label();
+			this.lblProgressChunkGroup = new System.Windows.Forms.Label();
+			this.groupBoxDownloadMode = new System.Windows.Forms.GroupBox();
+			this.radioButtonDownloadChunksSeparately = new System.Windows.Forms.RadioButton();
+			this.radioButtonDownloadSingleBigVideoFile = new System.Windows.Forms.RadioButton();
+			this.timerElapsedTime = new System.Windows.Forms.Timer(this.components);
 			this.lblElapsedTime = new System.Windows.Forms.Label();
-			this.timerFcst = new System.Windows.Forms.Timer(this.components);
+			this.timerAnimation = new System.Windows.Forms.Timer(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.imgFcst = new System.Windows.Forms.PictureBox();
-			this.imgScrollBar = new System.Windows.Forms.PictureBox();
-			this.pictureBoxStreamImage = new System.Windows.Forms.PictureBox();
-			this.btnCopyUrlList = new System.Windows.Forms.Button();
+			this.pictureBoxAnimation = new System.Windows.Forms.PictureBox();
+			this.pictureBoxScrollBar = new System.Windows.Forms.PictureBox();
+			this.pictureBoxVodThumbnailImage = new System.Windows.Forms.PictureBox();
+			this.btnCopyVodChunkUrlList = new System.Windows.Forms.Button();
 			this.multipleProgressBarOverall = new Twitch_prime_downloader.MultipleProgressBar();
-			this.multipleProgressBarGroup = new Twitch_prime_downloader.MultipleProgressBar();
-			this.contextMenuProgressBarGroup = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.miIncreaseGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.miDecreaseGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.grpDownloadRange.SuspendLayout();
-			this.contextMenuStreamTitle.SuspendLayout();
-			this.grpDownloadOptions.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.imgFcst)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.imgScrollBar)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBoxStreamImage)).BeginInit();
-			this.contextMenuProgressBarGroup.SuspendLayout();
+			this.multipleProgressBarChunkGroup = new Twitch_prime_downloader.MultipleProgressBar();
+			this.contextMenuProgressBarChunkGroup = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.miIncreaseChunkGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miDecreaseChunkGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.groupBoxDownloadVodChunkRange.SuspendLayout();
+			this.contextMenuVodTitle.SuspendLayout();
+			this.groupBoxDownloadMode.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxAnimation)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxVodThumbnailImage)).BeginInit();
+			this.contextMenuProgressBarChunkGroup.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// btnClose
+			// btnCloseFrame
 			// 
-			this.btnClose.Location = new System.Drawing.Point(592, 3);
-			this.btnClose.Name = "btnClose";
-			this.btnClose.Size = new System.Drawing.Size(75, 23);
-			this.btnClose.TabIndex = 0;
-			this.btnClose.Text = "Закрыть";
-			this.btnClose.UseVisualStyleBackColor = true;
-			this.btnClose.Click += new System.EventHandler(this.BtnClose_Click);
+			this.btnCloseFrame.Location = new System.Drawing.Point(592, 3);
+			this.btnCloseFrame.Name = "btnCloseFrame";
+			this.btnCloseFrame.Size = new System.Drawing.Size(75, 23);
+			this.btnCloseFrame.TabIndex = 0;
+			this.btnCloseFrame.Text = "Закрыть";
+			this.btnCloseFrame.UseVisualStyleBackColor = true;
+			this.btnCloseFrame.Click += new System.EventHandler(this.btnCloseFrame_Click);
 			// 
-			// lblStreamTitle
+			// lblVodTitle
 			// 
-			this.lblStreamTitle.Location = new System.Drawing.Point(3, 3);
-			this.lblStreamTitle.Name = "lblStreamTitle";
-			this.lblStreamTitle.Size = new System.Drawing.Size(516, 50);
-			this.lblStreamTitle.TabIndex = 1;
-			this.lblStreamTitle.Text = "lblStreamTitle";
-			this.lblStreamTitle.MouseUp += new System.Windows.Forms.MouseEventHandler(this.LblStreamTitle_MouseUp);
+			this.lblVodTitle.Location = new System.Drawing.Point(3, 3);
+			this.lblVodTitle.Name = "lblVodTitle";
+			this.lblVodTitle.Size = new System.Drawing.Size(516, 50);
+			this.lblVodTitle.TabIndex = 1;
+			this.lblVodTitle.Text = "lblVodTitle";
+			this.lblVodTitle.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lblVodTitle_MouseUp);
 			// 
-			// lblOutputFilename
+			// lblOutputFileName
 			// 
-			this.lblOutputFilename.Location = new System.Drawing.Point(3, 57);
-			this.lblOutputFilename.Name = "lblOutputFilename";
-			this.lblOutputFilename.Size = new System.Drawing.Size(516, 57);
-			this.lblOutputFilename.TabIndex = 3;
-			this.lblOutputFilename.Text = "lblOutputFilename";
+			this.lblOutputFileName.Location = new System.Drawing.Point(3, 57);
+			this.lblOutputFileName.Name = "lblOutputFileName";
+			this.lblOutputFileName.Size = new System.Drawing.Size(516, 57);
+			this.lblOutputFileName.TabIndex = 3;
+			this.lblOutputFileName.Text = "lblOutputFileName";
 			// 
 			// lblProgressOverall
 			// 
@@ -116,7 +116,7 @@
 			this.btnStartDownload.TabIndex = 9;
 			this.btnStartDownload.Text = "Запустиська";
 			this.btnStartDownload.UseVisualStyleBackColor = true;
-			this.btnStartDownload.Click += new System.EventHandler(this.BtnStartDownload_Click);
+			this.btnStartDownload.Click += new System.EventHandler(this.btnStartDownload_Click);
 			// 
 			// btnStopDownload
 			// 
@@ -127,21 +127,21 @@
 			this.btnStopDownload.TabIndex = 10;
 			this.btnStopDownload.Text = "Остановиська";
 			this.btnStopDownload.UseVisualStyleBackColor = true;
-			this.btnStopDownload.Click += new System.EventHandler(this.BtnStopDownload_Click);
+			this.btnStopDownload.Click += new System.EventHandler(this.btnStopDownload_Click);
 			// 
-			// grpDownloadRange
+			// groupBoxDownloadVodChunkRange
 			// 
-			this.grpDownloadRange.Controls.Add(this.btnSetMaxChunkTo);
-			this.grpDownloadRange.Controls.Add(this.label2);
-			this.grpDownloadRange.Controls.Add(this.label1);
-			this.grpDownloadRange.Controls.Add(this.editTo);
-			this.grpDownloadRange.Controls.Add(this.editFrom);
-			this.grpDownloadRange.Location = new System.Drawing.Point(673, 65);
-			this.grpDownloadRange.Name = "grpDownloadRange";
-			this.grpDownloadRange.Size = new System.Drawing.Size(219, 83);
-			this.grpDownloadRange.TabIndex = 11;
-			this.grpDownloadRange.TabStop = false;
-			this.grpDownloadRange.Text = "Диапазон скачивания";
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.btnSetMaxChunkTo);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.label2);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.label1);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkTo);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkFrom);
+			this.groupBoxDownloadVodChunkRange.Location = new System.Drawing.Point(673, 65);
+			this.groupBoxDownloadVodChunkRange.Name = "groupBoxDownloadVodChunkRange";
+			this.groupBoxDownloadVodChunkRange.Size = new System.Drawing.Size(219, 83);
+			this.groupBoxDownloadVodChunkRange.TabIndex = 11;
+			this.groupBoxDownloadVodChunkRange.TabStop = false;
+			this.groupBoxDownloadVodChunkRange.Text = "Диапазон скачивания";
 			// 
 			// btnSetMaxChunkTo
 			// 
@@ -151,7 +151,7 @@
 			this.btnSetMaxChunkTo.TabIndex = 4;
 			this.btnSetMaxChunkTo.Text = "max";
 			this.btnSetMaxChunkTo.UseVisualStyleBackColor = true;
-			this.btnSetMaxChunkTo.Click += new System.EventHandler(this.BtnSetMaxChunkTo_Click);
+			this.btnSetMaxChunkTo.Click += new System.EventHandler(this.btnSetMaxChunkTo_Click);
 			// 
 			// label2
 			// 
@@ -171,106 +171,106 @@
 			this.label1.TabIndex = 2;
 			this.label1.Text = "Первый чанк:";
 			// 
-			// editTo
+			// textBoxChunkTo
 			// 
-			this.editTo.Location = new System.Drawing.Point(112, 55);
-			this.editTo.Name = "editTo";
-			this.editTo.Size = new System.Drawing.Size(44, 20);
-			this.editTo.TabIndex = 1;
-			this.editTo.Text = "10";
-			this.editTo.Leave += new System.EventHandler(this.EditTo_Leave);
+			this.textBoxChunkTo.Location = new System.Drawing.Point(112, 55);
+			this.textBoxChunkTo.Name = "textBoxChunkTo";
+			this.textBoxChunkTo.Size = new System.Drawing.Size(44, 20);
+			this.textBoxChunkTo.TabIndex = 1;
+			this.textBoxChunkTo.Text = "10";
+			this.textBoxChunkTo.Leave += new System.EventHandler(this.textBoxChunkTo_Leave);
 			// 
-			// editFrom
+			// textBoxChunkFrom
 			// 
-			this.editFrom.Location = new System.Drawing.Point(112, 23);
-			this.editFrom.Name = "editFrom";
-			this.editFrom.Size = new System.Drawing.Size(44, 20);
-			this.editFrom.TabIndex = 0;
-			this.editFrom.Text = "1";
-			this.editFrom.Leave += new System.EventHandler(this.EditFrom_Leave);
+			this.textBoxChunkFrom.Location = new System.Drawing.Point(112, 23);
+			this.textBoxChunkFrom.Name = "textBoxChunkFrom";
+			this.textBoxChunkFrom.Size = new System.Drawing.Size(44, 20);
+			this.textBoxChunkFrom.TabIndex = 0;
+			this.textBoxChunkFrom.Text = "1";
+			this.textBoxChunkFrom.Leave += new System.EventHandler(this.textBoxChunkFrom_Leave);
 			// 
-			// contextMenuStreamTitle
+			// contextMenuVodTitle
 			// 
-			this.contextMenuStreamTitle.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this.copyStreamTitleToolStripMenuItem});
-			this.contextMenuStreamTitle.Name = "contextMenuStreamTitle";
-			this.contextMenuStreamTitle.Size = new System.Drawing.Size(200, 26);
+			this.contextMenuVodTitle.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.miCopyVodTitleToolStripMenuItem});
+			this.contextMenuVodTitle.Name = "contextMenuStreamTitle";
+			this.contextMenuVodTitle.Size = new System.Drawing.Size(200, 26);
 			// 
-			// copyStreamTitleToolStripMenuItem
+			// miCopyVodTitleToolStripMenuItem
 			// 
-			this.copyStreamTitleToolStripMenuItem.Name = "copyStreamTitleToolStripMenuItem";
-			this.copyStreamTitleToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-			this.copyStreamTitleToolStripMenuItem.Text = "Скопировать название";
-			this.copyStreamTitleToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamTitleToolStripMenuItem_Click);
+			this.miCopyVodTitleToolStripMenuItem.Name = "miCopyVodTitleToolStripMenuItem";
+			this.miCopyVodTitleToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+			this.miCopyVodTitleToolStripMenuItem.Text = "Скопировать название";
+			this.miCopyVodTitleToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodTitleToolStripMenuItem_Click);
 			// 
-			// lbFileList
+			// listBoxChunkFileList
 			// 
-			this.lbFileList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-			this.lbFileList.FormattingEnabled = true;
-			this.lbFileList.Location = new System.Drawing.Point(898, 19);
-			this.lbFileList.Name = "lbFileList";
-			this.lbFileList.Size = new System.Drawing.Size(174, 212);
-			this.lbFileList.TabIndex = 13;
-			this.lbFileList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbFileList_DrawItem);
+			this.listBoxChunkFileList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+			this.listBoxChunkFileList.FormattingEnabled = true;
+			this.listBoxChunkFileList.Location = new System.Drawing.Point(898, 19);
+			this.listBoxChunkFileList.Name = "listBoxChunkFileList";
+			this.listBoxChunkFileList.Size = new System.Drawing.Size(174, 212);
+			this.listBoxChunkFileList.TabIndex = 13;
+			this.listBoxChunkFileList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.listBoxChunkFileList_DrawItem);
 			// 
-			// lblFilelist
+			// lblChunkFileList
 			// 
-			this.lblFilelist.AutoSize = true;
-			this.lblFilelist.Location = new System.Drawing.Point(895, 3);
-			this.lblFilelist.Name = "lblFilelist";
-			this.lblFilelist.Size = new System.Drawing.Size(130, 13);
-			this.lblFilelist.TabIndex = 14;
-			this.lblFilelist.Text = "Файлы для скачивания:";
+			this.lblChunkFileList.AutoSize = true;
+			this.lblChunkFileList.Location = new System.Drawing.Point(895, 3);
+			this.lblChunkFileList.Name = "lblChunkFileList";
+			this.lblChunkFileList.Size = new System.Drawing.Size(130, 13);
+			this.lblChunkFileList.TabIndex = 14;
+			this.lblChunkFileList.Text = "Файлы для скачивания:";
 			// 
-			// lblGroupProgress
+			// lblProgressChunkGroup
 			// 
-			this.lblGroupProgress.AutoSize = true;
-			this.lblGroupProgress.Location = new System.Drawing.Point(3, 114);
-			this.lblGroupProgress.Name = "lblGroupProgress";
-			this.lblGroupProgress.Size = new System.Drawing.Size(110, 13);
-			this.lblGroupProgress.TabIndex = 15;
-			this.lblGroupProgress.Text = "lblCurrentChunkName";
+			this.lblProgressChunkGroup.AutoSize = true;
+			this.lblProgressChunkGroup.Location = new System.Drawing.Point(3, 114);
+			this.lblProgressChunkGroup.Name = "lblProgressChunkGroup";
+			this.lblProgressChunkGroup.Size = new System.Drawing.Size(118, 13);
+			this.lblProgressChunkGroup.TabIndex = 15;
+			this.lblProgressChunkGroup.Text = "lblProgressChunkGroup";
 			// 
-			// grpDownloadOptions
+			// groupBoxDownloadMode
 			// 
-			this.grpDownloadOptions.Controls.Add(this.rbDownloadChunksSeparately);
-			this.grpDownloadOptions.Controls.Add(this.rbDownloadOneBigFile);
-			this.grpDownloadOptions.Location = new System.Drawing.Point(673, 3);
-			this.grpDownloadOptions.Name = "grpDownloadOptions";
-			this.grpDownloadOptions.Size = new System.Drawing.Size(218, 56);
-			this.grpDownloadOptions.TabIndex = 16;
-			this.grpDownloadOptions.TabStop = false;
-			this.grpDownloadOptions.Text = "Режим скачивания";
+			this.groupBoxDownloadMode.Controls.Add(this.radioButtonDownloadChunksSeparately);
+			this.groupBoxDownloadMode.Controls.Add(this.radioButtonDownloadSingleBigVideoFile);
+			this.groupBoxDownloadMode.Location = new System.Drawing.Point(673, 3);
+			this.groupBoxDownloadMode.Name = "groupBoxDownloadMode";
+			this.groupBoxDownloadMode.Size = new System.Drawing.Size(218, 56);
+			this.groupBoxDownloadMode.TabIndex = 16;
+			this.groupBoxDownloadMode.TabStop = false;
+			this.groupBoxDownloadMode.Text = "Режим скачивания";
 			// 
-			// rbDownloadChunksSeparately
+			// radioButtonDownloadChunksSeparately
 			// 
-			this.rbDownloadChunksSeparately.AutoSize = true;
-			this.rbDownloadChunksSeparately.Location = new System.Drawing.Point(17, 33);
-			this.rbDownloadChunksSeparately.Name = "rbDownloadChunksSeparately";
-			this.rbDownloadChunksSeparately.Size = new System.Drawing.Size(188, 17);
-			this.rbDownloadChunksSeparately.TabIndex = 1;
-			this.rbDownloadChunksSeparately.TabStop = true;
-			this.rbDownloadChunksSeparately.Text = "Каждый чанк в отдельный файл";
-			this.rbDownloadChunksSeparately.UseVisualStyleBackColor = true;
-			this.rbDownloadChunksSeparately.CheckedChanged += new System.EventHandler(this.rbDownloadChunksSeparately_CheckedChanged);
+			this.radioButtonDownloadChunksSeparately.AutoSize = true;
+			this.radioButtonDownloadChunksSeparately.Location = new System.Drawing.Point(17, 33);
+			this.radioButtonDownloadChunksSeparately.Name = "radioButtonDownloadChunksSeparately";
+			this.radioButtonDownloadChunksSeparately.Size = new System.Drawing.Size(188, 17);
+			this.radioButtonDownloadChunksSeparately.TabIndex = 1;
+			this.radioButtonDownloadChunksSeparately.TabStop = true;
+			this.radioButtonDownloadChunksSeparately.Text = "Каждый чанк в отдельный файл";
+			this.radioButtonDownloadChunksSeparately.UseVisualStyleBackColor = true;
+			this.radioButtonDownloadChunksSeparately.CheckedChanged += new System.EventHandler(this.radioButtonDownloadChunksSeparately_CheckedChanged);
 			// 
-			// rbDownloadOneBigFile
+			// radioButtonDownloadSingleBigVideoFile
 			// 
-			this.rbDownloadOneBigFile.AutoSize = true;
-			this.rbDownloadOneBigFile.Checked = true;
-			this.rbDownloadOneBigFile.Location = new System.Drawing.Point(17, 16);
-			this.rbDownloadOneBigFile.Name = "rbDownloadOneBigFile";
-			this.rbDownloadOneBigFile.Size = new System.Drawing.Size(127, 17);
-			this.rbDownloadOneBigFile.TabIndex = 0;
-			this.rbDownloadOneBigFile.TabStop = true;
-			this.rbDownloadOneBigFile.Text = "Один большой файл";
-			this.rbDownloadOneBigFile.UseVisualStyleBackColor = true;
-			this.rbDownloadOneBigFile.CheckedChanged += new System.EventHandler(this.rbDownloadOneBigFile_CheckedChanged);
+			this.radioButtonDownloadSingleBigVideoFile.AutoSize = true;
+			this.radioButtonDownloadSingleBigVideoFile.Checked = true;
+			this.radioButtonDownloadSingleBigVideoFile.Location = new System.Drawing.Point(17, 16);
+			this.radioButtonDownloadSingleBigVideoFile.Name = "radioButtonDownloadSingleBigVideoFile";
+			this.radioButtonDownloadSingleBigVideoFile.Size = new System.Drawing.Size(127, 17);
+			this.radioButtonDownloadSingleBigVideoFile.TabIndex = 0;
+			this.radioButtonDownloadSingleBigVideoFile.TabStop = true;
+			this.radioButtonDownloadSingleBigVideoFile.Text = "Один большой файл";
+			this.radioButtonDownloadSingleBigVideoFile.UseVisualStyleBackColor = true;
+			this.radioButtonDownloadSingleBigVideoFile.CheckedChanged += new System.EventHandler(this.radioButtonDownloadSingleBigVideoFile_CheckedChanged);
 			// 
-			// timerElapsed
+			// timerElapsedTime
 			// 
-			this.timerElapsed.Interval = 1000;
-			this.timerElapsed.Tick += new System.EventHandler(this.timerElapsed_Tick);
+			this.timerElapsedTime.Interval = 1000;
+			this.timerElapsedTime.Tick += new System.EventHandler(this.timerElapsedTime_Tick);
 			// 
 			// lblElapsedTime
 			// 
@@ -282,50 +282,50 @@
 			this.lblElapsedTime.TabIndex = 17;
 			this.lblElapsedTime.Text = "lblElapsedTime";
 			// 
-			// timerFcst
+			// timerAnimation
 			// 
-			this.timerFcst.Tick += new System.EventHandler(this.timerFcst_Tick);
+			this.timerAnimation.Tick += new System.EventHandler(this.timerAnimation_Tick);
 			// 
-			// imgFcst
+			// pictureBoxAnimation
 			// 
-			this.imgFcst.Image = global::Twitch_prime_downloader.Properties.Resources.fcst_istra_01;
-			this.imgFcst.Location = new System.Drawing.Point(6, 198);
-			this.imgFcst.Name = "imgFcst";
-			this.imgFcst.Size = new System.Drawing.Size(70, 70);
-			this.imgFcst.TabIndex = 18;
-			this.imgFcst.TabStop = false;
-			this.toolTip1.SetToolTip(this.imgFcst, "Фцыст идёт по Истре за Ягермейстером");
-			this.imgFcst.Visible = false;
+			this.pictureBoxAnimation.Image = global::Twitch_prime_downloader.Properties.Resources.fcst_istra_01;
+			this.pictureBoxAnimation.Location = new System.Drawing.Point(6, 198);
+			this.pictureBoxAnimation.Name = "pictureBoxAnimation";
+			this.pictureBoxAnimation.Size = new System.Drawing.Size(70, 70);
+			this.pictureBoxAnimation.TabIndex = 18;
+			this.pictureBoxAnimation.TabStop = false;
+			this.toolTip1.SetToolTip(this.pictureBoxAnimation, "Фцыст идёт по Истре за Ягермейстером");
+			this.pictureBoxAnimation.Visible = false;
 			// 
-			// imgScrollBar
+			// pictureBoxScrollBar
 			// 
-			this.imgScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.imgScrollBar.Location = new System.Drawing.Point(0, 302);
-			this.imgScrollBar.Name = "imgScrollBar";
-			this.imgScrollBar.Size = new System.Drawing.Size(667, 15);
-			this.imgScrollBar.TabIndex = 19;
-			this.imgScrollBar.TabStop = false;
-			this.imgScrollBar.Paint += new System.Windows.Forms.PaintEventHandler(this.imgScrollBar_Paint);
+			this.pictureBoxScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.pictureBoxScrollBar.Location = new System.Drawing.Point(0, 302);
+			this.pictureBoxScrollBar.Name = "pictureBoxScrollBar";
+			this.pictureBoxScrollBar.Size = new System.Drawing.Size(667, 15);
+			this.pictureBoxScrollBar.TabIndex = 19;
+			this.pictureBoxScrollBar.TabStop = false;
+			this.pictureBoxScrollBar.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxScrollBar_Paint);
 			// 
-			// pictureBoxStreamImage
+			// pictureBoxVodThumbnailImage
 			// 
-			this.pictureBoxStreamImage.Location = new System.Drawing.Point(525, 32);
-			this.pictureBoxStreamImage.Name = "pictureBoxStreamImage";
-			this.pictureBoxStreamImage.Size = new System.Drawing.Size(142, 86);
-			this.pictureBoxStreamImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.pictureBoxStreamImage.TabIndex = 2;
-			this.pictureBoxStreamImage.TabStop = false;
-			this.pictureBoxStreamImage.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBoxStreamImage_Paint);
+			this.pictureBoxVodThumbnailImage.Location = new System.Drawing.Point(525, 32);
+			this.pictureBoxVodThumbnailImage.Name = "pictureBoxVodThumbnailImage";
+			this.pictureBoxVodThumbnailImage.Size = new System.Drawing.Size(142, 86);
+			this.pictureBoxVodThumbnailImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.pictureBoxVodThumbnailImage.TabIndex = 2;
+			this.pictureBoxVodThumbnailImage.TabStop = false;
+			this.pictureBoxVodThumbnailImage.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxVodThumbnailImage_Paint);
 			// 
-			// btnCopyUrlList
+			// btnCopyVodChunkUrlList
 			// 
-			this.btnCopyUrlList.Location = new System.Drawing.Point(898, 237);
-			this.btnCopyUrlList.Name = "btnCopyUrlList";
-			this.btnCopyUrlList.Size = new System.Drawing.Size(174, 23);
-			this.btnCopyUrlList.TabIndex = 20;
-			this.btnCopyUrlList.Text = "Скопировать ссылки";
-			this.btnCopyUrlList.UseVisualStyleBackColor = true;
-			this.btnCopyUrlList.Click += new System.EventHandler(this.btnCopyUrlList_Click);
+			this.btnCopyVodChunkUrlList.Location = new System.Drawing.Point(898, 237);
+			this.btnCopyVodChunkUrlList.Name = "btnCopyVodChunkUrlList";
+			this.btnCopyVodChunkUrlList.Size = new System.Drawing.Size(174, 23);
+			this.btnCopyVodChunkUrlList.TabIndex = 20;
+			this.btnCopyVodChunkUrlList.Text = "Скопировать ссылки";
+			this.btnCopyVodChunkUrlList.UseVisualStyleBackColor = true;
+			this.btnCopyVodChunkUrlList.Click += new System.EventHandler(this.btnCopyVodChunkUrlList_Click);
 			// 
 			// multipleProgressBarOverall
 			// 
@@ -336,38 +336,38 @@
 			this.multipleProgressBarOverall.TabIndex = 22;
 			this.multipleProgressBarOverall.Text = "multipleProgressBar2";
 			// 
-			// multipleProgressBarGroup
+			// multipleProgressBarChunkGroup
 			// 
-			this.multipleProgressBarGroup.BackColor = System.Drawing.SystemColors.Control;
-			this.multipleProgressBarGroup.ForeColor = System.Drawing.Color.Black;
-			this.multipleProgressBarGroup.Location = new System.Drawing.Point(6, 130);
-			this.multipleProgressBarGroup.Name = "multipleProgressBarGroup";
-			this.multipleProgressBarGroup.Size = new System.Drawing.Size(661, 23);
-			this.multipleProgressBarGroup.TabIndex = 21;
-			this.multipleProgressBarGroup.Text = "multipleProgressBar1";
-			this.multipleProgressBarGroup.MouseDown += new System.Windows.Forms.MouseEventHandler(this.multipleProgressBarGroup_MouseDown);
+			this.multipleProgressBarChunkGroup.BackColor = System.Drawing.SystemColors.Control;
+			this.multipleProgressBarChunkGroup.ForeColor = System.Drawing.Color.Black;
+			this.multipleProgressBarChunkGroup.Location = new System.Drawing.Point(6, 130);
+			this.multipleProgressBarChunkGroup.Name = "multipleProgressBarChunkGroup";
+			this.multipleProgressBarChunkGroup.Size = new System.Drawing.Size(661, 23);
+			this.multipleProgressBarChunkGroup.TabIndex = 21;
+			this.multipleProgressBarChunkGroup.Text = "multipleProgressBar1";
+			this.multipleProgressBarChunkGroup.MouseDown += new System.Windows.Forms.MouseEventHandler(this.multipleProgressBarChunkGroup_MouseDown);
 			// 
-			// contextMenuProgressBarGroup
+			// contextMenuProgressBarChunkGroup
 			// 
-			this.contextMenuProgressBarGroup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this.miIncreaseGroupSizeToolStripMenuItem,
-			this.miDecreaseGroupSizeToolStripMenuItem});
-			this.contextMenuProgressBarGroup.Name = "contextMenuProgressBarGroup";
-			this.contextMenuProgressBarGroup.Size = new System.Drawing.Size(226, 48);
+			this.contextMenuProgressBarChunkGroup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.miIncreaseChunkGroupSizeToolStripMenuItem,
+			this.miDecreaseChunkGroupSizeToolStripMenuItem});
+			this.contextMenuProgressBarChunkGroup.Name = "contextMenuProgressBarGroup";
+			this.contextMenuProgressBarChunkGroup.Size = new System.Drawing.Size(226, 48);
 			// 
-			// miIncreaseGroupSizeToolStripMenuItem
+			// miIncreaseChunkGroupSizeToolStripMenuItem
 			// 
-			this.miIncreaseGroupSizeToolStripMenuItem.Name = "miIncreaseGroupSizeToolStripMenuItem";
-			this.miIncreaseGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
-			this.miIncreaseGroupSizeToolStripMenuItem.Text = "Увеличить размер группы";
-			this.miIncreaseGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miIncreaseGroupSizeToolStripMenuItem_Click);
+			this.miIncreaseChunkGroupSizeToolStripMenuItem.Name = "miIncreaseChunkGroupSizeToolStripMenuItem";
+			this.miIncreaseChunkGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
+			this.miIncreaseChunkGroupSizeToolStripMenuItem.Text = "Увеличить размер группы";
+			this.miIncreaseChunkGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miIncreaseChunkGroupSizeToolStripMenuItem_Click);
 			// 
-			// miDecreaseGroupSizeToolStripMenuItem
+			// miDecreaseChunkGroupSizeToolStripMenuItem
 			// 
-			this.miDecreaseGroupSizeToolStripMenuItem.Name = "miDecreaseGroupSizeToolStripMenuItem";
-			this.miDecreaseGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
-			this.miDecreaseGroupSizeToolStripMenuItem.Text = "Уменьшить размер группы";
-			this.miDecreaseGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miDecreaseGroupSizeToolStripMenuItem_Click);
+			this.miDecreaseChunkGroupSizeToolStripMenuItem.Name = "miDecreaseChunkGroupSizeToolStripMenuItem";
+			this.miDecreaseChunkGroupSizeToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
+			this.miDecreaseChunkGroupSizeToolStripMenuItem.Text = "Уменьшить размер группы";
+			this.miDecreaseChunkGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miDecreaseChunkGroupSizeToolStripMenuItem_Click);
 			// 
 			// DownloadFrame
 			// 
@@ -376,38 +376,38 @@
 			this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this.multipleProgressBarOverall);
-			this.Controls.Add(this.multipleProgressBarGroup);
-			this.Controls.Add(this.btnCopyUrlList);
-			this.Controls.Add(this.btnClose);
-			this.Controls.Add(this.imgScrollBar);
-			this.Controls.Add(this.imgFcst);
+			this.Controls.Add(this.multipleProgressBarChunkGroup);
+			this.Controls.Add(this.btnCopyVodChunkUrlList);
+			this.Controls.Add(this.btnCloseFrame);
+			this.Controls.Add(this.pictureBoxScrollBar);
+			this.Controls.Add(this.pictureBoxAnimation);
 			this.Controls.Add(this.lblElapsedTime);
-			this.Controls.Add(this.grpDownloadOptions);
-			this.Controls.Add(this.lblGroupProgress);
-			this.Controls.Add(this.lblFilelist);
-			this.Controls.Add(this.lbFileList);
-			this.Controls.Add(this.grpDownloadRange);
+			this.Controls.Add(this.groupBoxDownloadMode);
+			this.Controls.Add(this.lblProgressChunkGroup);
+			this.Controls.Add(this.lblChunkFileList);
+			this.Controls.Add(this.listBoxChunkFileList);
+			this.Controls.Add(this.groupBoxDownloadVodChunkRange);
 			this.Controls.Add(this.btnStopDownload);
 			this.Controls.Add(this.btnStartDownload);
 			this.Controls.Add(this.lblProgressOverall);
-			this.Controls.Add(this.lblOutputFilename);
-			this.Controls.Add(this.pictureBoxStreamImage);
-			this.Controls.Add(this.lblStreamTitle);
+			this.Controls.Add(this.lblOutputFileName);
+			this.Controls.Add(this.pictureBoxVodThumbnailImage);
+			this.Controls.Add(this.lblVodTitle);
 			this.Name = "DownloadFrame";
 			this.Size = new System.Drawing.Size(1141, 320);
-			this.Paint += new System.Windows.Forms.PaintEventHandler(this.DownloadFrame_Paint);
-			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DownloadFrame_MouseDown);
-			this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DownloadFrame_MouseMove);
-			this.Resize += new System.EventHandler(this.DownloadFrame_Resize);
-			this.grpDownloadRange.ResumeLayout(false);
-			this.grpDownloadRange.PerformLayout();
-			this.contextMenuStreamTitle.ResumeLayout(false);
-			this.grpDownloadOptions.ResumeLayout(false);
-			this.grpDownloadOptions.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.imgFcst)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.imgScrollBar)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBoxStreamImage)).EndInit();
-			this.contextMenuProgressBarGroup.ResumeLayout(false);
+			this.Paint += new System.Windows.Forms.PaintEventHandler(this.downloadFrame_Paint);
+			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.downloadFrame_MouseDown);
+			this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.downloadFrame_MouseMove);
+			this.Resize += new System.EventHandler(this.downloadFrame_Resize);
+			this.groupBoxDownloadVodChunkRange.ResumeLayout(false);
+			this.groupBoxDownloadVodChunkRange.PerformLayout();
+			this.contextMenuVodTitle.ResumeLayout(false);
+			this.groupBoxDownloadMode.ResumeLayout(false);
+			this.groupBoxDownloadMode.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxAnimation)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxVodThumbnailImage)).EndInit();
+			this.contextMenuProgressBarChunkGroup.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -415,38 +415,38 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button btnClose;
-		public System.Windows.Forms.Label lblStreamTitle;
-		public System.Windows.Forms.PictureBox pictureBoxStreamImage;
-		public System.Windows.Forms.Label lblOutputFilename;
+		private System.Windows.Forms.Button btnCloseFrame;
+		public System.Windows.Forms.Label lblVodTitle;
+		public System.Windows.Forms.PictureBox pictureBoxVodThumbnailImage;
+		public System.Windows.Forms.Label lblOutputFileName;
 		public System.Windows.Forms.Label lblProgressOverall;
 		public System.Windows.Forms.Button btnStartDownload;
 		public System.Windows.Forms.Button btnStopDownload;
-		private System.Windows.Forms.GroupBox grpDownloadRange;
-		private System.Windows.Forms.TextBox editTo;
-		private System.Windows.Forms.TextBox editFrom;
+		private System.Windows.Forms.GroupBox groupBoxDownloadVodChunkRange;
+		private System.Windows.Forms.TextBox textBoxChunkTo;
+		private System.Windows.Forms.TextBox textBoxChunkFrom;
 		private System.Windows.Forms.Button btnSetMaxChunkTo;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStreamTitle;
-		private System.Windows.Forms.ToolStripMenuItem copyStreamTitleToolStripMenuItem;
-		public System.Windows.Forms.ListBox lbFileList;
-		private System.Windows.Forms.Label lblFilelist;
-		private System.Windows.Forms.Label lblGroupProgress;
-		private System.Windows.Forms.GroupBox grpDownloadOptions;
-		private System.Windows.Forms.RadioButton rbDownloadChunksSeparately;
-		private System.Windows.Forms.RadioButton rbDownloadOneBigFile;
-		private System.Windows.Forms.Timer timerElapsed;
+		private System.Windows.Forms.ContextMenuStrip contextMenuVodTitle;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodTitleToolStripMenuItem;
+		public System.Windows.Forms.ListBox listBoxChunkFileList;
+		private System.Windows.Forms.Label lblChunkFileList;
+		private System.Windows.Forms.Label lblProgressChunkGroup;
+		private System.Windows.Forms.GroupBox groupBoxDownloadMode;
+		private System.Windows.Forms.RadioButton radioButtonDownloadChunksSeparately;
+		private System.Windows.Forms.RadioButton radioButtonDownloadSingleBigVideoFile;
+		private System.Windows.Forms.Timer timerElapsedTime;
 		private System.Windows.Forms.Label lblElapsedTime;
-		private System.Windows.Forms.PictureBox imgFcst;
-		private System.Windows.Forms.Timer timerFcst;
+		private System.Windows.Forms.PictureBox pictureBoxAnimation;
+		private System.Windows.Forms.Timer timerAnimation;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private System.Windows.Forms.PictureBox imgScrollBar;
-		private System.Windows.Forms.Button btnCopyUrlList;
-		private MultipleProgressBar multipleProgressBarGroup;
+		private System.Windows.Forms.PictureBox pictureBoxScrollBar;
+		private System.Windows.Forms.Button btnCopyVodChunkUrlList;
+		private MultipleProgressBar multipleProgressBarChunkGroup;
 		private MultipleProgressBar multipleProgressBarOverall;
-		private System.Windows.Forms.ContextMenuStrip contextMenuProgressBarGroup;
-		private System.Windows.Forms.ToolStripMenuItem miIncreaseGroupSizeToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem miDecreaseGroupSizeToolStripMenuItem;
+		private System.Windows.Forms.ContextMenuStrip contextMenuProgressBarChunkGroup;
+		private System.Windows.Forms.ToolStripMenuItem miIncreaseChunkGroupSizeToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem miDecreaseChunkGroupSizeToolStripMenuItem;
 	}
 }

@@ -33,13 +33,13 @@ namespace Twitch_prime_downloader
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			this.tabControlMain = new System.Windows.Forms.TabControl();
 			this.tabPageDebug = new System.Windows.Forms.TabPage();
-			this.memoDebug = new System.Windows.Forms.RichTextBox();
+			this.richTextBoxDebugLog = new System.Windows.Forms.RichTextBox();
 			this.tabPageSettings = new System.Windows.Forms.TabPage();
 			this.groupBoxApiSettings = new System.Windows.Forms.GroupBox();
-			this.groupBoxTwitchApplication = new System.Windows.Forms.GroupBox();
+			this.groupBoxTwitchApplicationSettings = new System.Windows.Forms.GroupBox();
 			this.btnApplyApiApplication = new System.Windows.Forms.Button();
-			this.btnSetDefaultApiApplication = new System.Windows.Forms.Button();
-			this.textBoxHelixApiClentSecretKey = new System.Windows.Forms.TextBox();
+			this.btnRestoreDefaultApiApplication = new System.Windows.Forms.Button();
+			this.textBoxHelixApiClientSecretKey = new System.Windows.Forms.TextBox();
 			this.textBoxHelixApiClientId = new System.Windows.Forms.TextBox();
 			this.textBoxApiApplicationDescription = new System.Windows.Forms.TextBox();
 			this.textBoxApiApplicationTitle = new System.Windows.Forms.TextBox();
@@ -55,70 +55,70 @@ namespace Twitch_prime_downloader
 			this.lblHelixApiTokenExpirationDate = new System.Windows.Forms.Label();
 			this.label8 = new System.Windows.Forms.Label();
 			this.groupBoxVideoInformationSettings = new System.Windows.Forms.GroupBox();
-			this.chkSaveVodChunksInfo = new System.Windows.Forms.CheckBox();
-			this.chkUseGmtTime = new System.Windows.Forms.CheckBox();
-			this.chkSaveVodInfo = new System.Windows.Forms.CheckBox();
+			this.checkBoxSaveVodChunkInfo = new System.Windows.Forms.CheckBox();
+			this.checkBoxUseGmtTime = new System.Windows.Forms.CheckBox();
+			this.checkBoxSaveVodInfo = new System.Windows.Forms.CheckBox();
 			this.groupBoxFilesAndFoldersSettings = new System.Windows.Forms.GroupBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
-			this.textBox_Browser = new System.Windows.Forms.TextBox();
-			this.textBox_DownloadingPath = new System.Windows.Forms.TextBox();
-			this.btnRestoreDefaultFilenameFormat = new System.Windows.Forms.Button();
-			this.btnSelectDownloadingPath = new System.Windows.Forms.Button();
-			this.textBox_FileNameFormat = new System.Windows.Forms.TextBox();
+			this.textBoxBrowserExePath = new System.Windows.Forms.TextBox();
+			this.textBoxDownloadDirectory = new System.Windows.Forms.TextBox();
+			this.btnRestoreDefaultOutputFileNameFormat = new System.Windows.Forms.Button();
+			this.btnSelectDownloadDirectory = new System.Windows.Forms.Button();
+			this.textBoxOutputFileNameFormat = new System.Windows.Forms.TextBox();
 			this.btnSelectBrowser = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.tabPageSearch = new System.Windows.Forms.TabPage();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.groupBoxSearchByUrls = new System.Windows.Forms.GroupBox();
 			this.btnSearchByUrls = new System.Windows.Forms.Button();
-			this.textBoxUrls = new System.Windows.Forms.TextBox();
+			this.textBoxVideoUrls = new System.Windows.Forms.TextBox();
 			this.label6 = new System.Windows.Forms.Label();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.groupBoxSearchByChannelName = new System.Windows.Forms.GroupBox();
 			this.btnEditChannelList = new System.Windows.Forms.Button();
 			this.btnAddChannelToList = new System.Windows.Forms.Button();
 			this.textBoxChannelName = new System.Windows.Forms.TextBox();
 			this.listBoxChannelList = new System.Windows.Forms.ListBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.groupBoxSearchResultCount = new System.Windows.Forms.GroupBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.numericUpDownSearchLimit = new System.Windows.Forms.NumericUpDown();
-			this.rbSearchLimit = new System.Windows.Forms.RadioButton();
-			this.rbSearchAll = new System.Windows.Forms.RadioButton();
+			this.radioButtonSearchLimited = new System.Windows.Forms.RadioButton();
+			this.radioButtonSearchAll = new System.Windows.Forms.RadioButton();
 			this.label1 = new System.Windows.Forms.Label();
-			this.btnSearchChannelName = new System.Windows.Forms.Button();
-			this.tabPageLog = new System.Windows.Forms.TabPage();
-			this.lbLog = new System.Windows.Forms.ListBox();
+			this.btnSearchByChannelName = new System.Windows.Forms.Button();
+			this.tabPageEventLog = new System.Windows.Forms.TabPage();
+			this.listBoxEventLog = new System.Windows.Forms.ListBox();
 			this.tabPageStreams = new System.Windows.Forms.TabPage();
 			this.panelStreams = new System.Windows.Forms.Panel();
 			this.scrollBarStreams = new System.Windows.Forms.VScrollBar();
-			this.tabPageDownloading = new System.Windows.Forms.TabPage();
+			this.tabPageDownloads = new System.Windows.Forms.TabPage();
 			this.scrollBarDownloads = new System.Windows.Forms.VScrollBar();
 			this.panelDownloads = new System.Windows.Forms.Panel();
-			this.contextMenuStreamImage = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.contextMenuVodThumbnailImage = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.miCopyVideoUrl = new System.Windows.Forms.ToolStripMenuItem();
-			this.copyImageUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.copyStreamInfoJsonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.miSavePlaylistAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.saveImageAssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miCopyVodInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miSaveVodPlaylistAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miSaveVodThumbnailImageAssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
-			this.openVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.miOpenVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
 			this.groupBoxApiSettings.SuspendLayout();
-			this.groupBoxTwitchApplication.SuspendLayout();
+			this.groupBoxTwitchApplicationSettings.SuspendLayout();
 			this.groupBoxHelixApiToken.SuspendLayout();
 			this.groupBoxVideoInformationSettings.SuspendLayout();
 			this.groupBoxFilesAndFoldersSettings.SuspendLayout();
 			this.tabPageSearch.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.groupBox1.SuspendLayout();
-			this.groupBox3.SuspendLayout();
+			this.groupBoxSearchByUrls.SuspendLayout();
+			this.groupBoxSearchByChannelName.SuspendLayout();
+			this.groupBoxSearchResultCount.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchLimit)).BeginInit();
-			this.tabPageLog.SuspendLayout();
+			this.tabPageEventLog.SuspendLayout();
 			this.tabPageStreams.SuspendLayout();
-			this.tabPageDownloading.SuspendLayout();
-			this.contextMenuStreamImage.SuspendLayout();
+			this.tabPageDownloads.SuspendLayout();
+			this.contextMenuVodThumbnailImage.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControlMain
@@ -129,9 +129,9 @@ namespace Twitch_prime_downloader
 			this.tabControlMain.Controls.Add(this.tabPageDebug);
 			this.tabControlMain.Controls.Add(this.tabPageSettings);
 			this.tabControlMain.Controls.Add(this.tabPageSearch);
-			this.tabControlMain.Controls.Add(this.tabPageLog);
+			this.tabControlMain.Controls.Add(this.tabPageEventLog);
 			this.tabControlMain.Controls.Add(this.tabPageStreams);
-			this.tabControlMain.Controls.Add(this.tabPageDownloading);
+			this.tabControlMain.Controls.Add(this.tabPageDownloads);
 			this.tabControlMain.Location = new System.Drawing.Point(0, 0);
 			this.tabControlMain.Name = "tabControlMain";
 			this.tabControlMain.SelectedIndex = 0;
@@ -142,7 +142,7 @@ namespace Twitch_prime_downloader
 			// tabPageDebug
 			// 
 			this.tabPageDebug.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPageDebug.Controls.Add(this.memoDebug);
+			this.tabPageDebug.Controls.Add(this.richTextBoxDebugLog);
 			this.tabPageDebug.Location = new System.Drawing.Point(4, 22);
 			this.tabPageDebug.Name = "tabPageDebug";
 			this.tabPageDebug.Padding = new System.Windows.Forms.Padding(3);
@@ -150,19 +150,19 @@ namespace Twitch_prime_downloader
 			this.tabPageDebug.TabIndex = 2;
 			this.tabPageDebug.Text = "Debug";
 			// 
-			// memoDebug
+			// richTextBoxDebugLog
 			// 
-			this.memoDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.richTextBoxDebugLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 			| System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.memoDebug.BackColor = System.Drawing.Color.Black;
-			this.memoDebug.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.memoDebug.ForeColor = System.Drawing.Color.Lime;
-			this.memoDebug.Location = new System.Drawing.Point(6, 3);
-			this.memoDebug.Name = "memoDebug";
-			this.memoDebug.Size = new System.Drawing.Size(806, 466);
-			this.memoDebug.TabIndex = 0;
-			this.memoDebug.Text = "";
+			this.richTextBoxDebugLog.BackColor = System.Drawing.Color.Black;
+			this.richTextBoxDebugLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			this.richTextBoxDebugLog.ForeColor = System.Drawing.Color.Lime;
+			this.richTextBoxDebugLog.Location = new System.Drawing.Point(6, 3);
+			this.richTextBoxDebugLog.Name = "richTextBoxDebugLog";
+			this.richTextBoxDebugLog.Size = new System.Drawing.Size(806, 466);
+			this.richTextBoxDebugLog.TabIndex = 0;
+			this.richTextBoxDebugLog.Text = "";
 			// 
 			// tabPageSettings
 			// 
@@ -181,7 +181,7 @@ namespace Twitch_prime_downloader
 			// 
 			this.groupBoxApiSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.groupBoxApiSettings.Controls.Add(this.groupBoxTwitchApplication);
+			this.groupBoxApiSettings.Controls.Add(this.groupBoxTwitchApplicationSettings);
 			this.groupBoxApiSettings.Controls.Add(this.groupBoxHelixApiToken);
 			this.groupBoxApiSettings.Location = new System.Drawing.Point(8, 205);
 			this.groupBoxApiSettings.Name = "groupBoxApiSettings";
@@ -190,26 +190,26 @@ namespace Twitch_prime_downloader
 			this.groupBoxApiSettings.TabStop = false;
 			this.groupBoxApiSettings.Text = "API";
 			// 
-			// groupBoxTwitchApplication
+			// groupBoxTwitchApplicationSettings
 			// 
-			this.groupBoxTwitchApplication.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.groupBoxTwitchApplicationSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.groupBoxTwitchApplication.Controls.Add(this.btnApplyApiApplication);
-			this.groupBoxTwitchApplication.Controls.Add(this.btnSetDefaultApiApplication);
-			this.groupBoxTwitchApplication.Controls.Add(this.textBoxHelixApiClentSecretKey);
-			this.groupBoxTwitchApplication.Controls.Add(this.textBoxHelixApiClientId);
-			this.groupBoxTwitchApplication.Controls.Add(this.textBoxApiApplicationDescription);
-			this.groupBoxTwitchApplication.Controls.Add(this.textBoxApiApplicationTitle);
-			this.groupBoxTwitchApplication.Controls.Add(this.label12);
-			this.groupBoxTwitchApplication.Controls.Add(this.label11);
-			this.groupBoxTwitchApplication.Controls.Add(this.label10);
-			this.groupBoxTwitchApplication.Controls.Add(this.label9);
-			this.groupBoxTwitchApplication.Location = new System.Drawing.Point(7, 19);
-			this.groupBoxTwitchApplication.Name = "groupBoxTwitchApplication";
-			this.groupBoxTwitchApplication.Size = new System.Drawing.Size(785, 154);
-			this.groupBoxTwitchApplication.TabIndex = 6;
-			this.groupBoxTwitchApplication.TabStop = false;
-			this.groupBoxTwitchApplication.Text = "Twitch application";
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.btnApplyApiApplication);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.btnRestoreDefaultApiApplication);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.textBoxHelixApiClientSecretKey);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.textBoxHelixApiClientId);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.textBoxApiApplicationDescription);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.textBoxApiApplicationTitle);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.label12);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.label11);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.label10);
+			this.groupBoxTwitchApplicationSettings.Controls.Add(this.label9);
+			this.groupBoxTwitchApplicationSettings.Location = new System.Drawing.Point(7, 19);
+			this.groupBoxTwitchApplicationSettings.Name = "groupBoxTwitchApplicationSettings";
+			this.groupBoxTwitchApplicationSettings.Size = new System.Drawing.Size(785, 154);
+			this.groupBoxTwitchApplicationSettings.TabIndex = 6;
+			this.groupBoxTwitchApplicationSettings.TabStop = false;
+			this.groupBoxTwitchApplicationSettings.Text = "Twitch application";
 			// 
 			// btnApplyApiApplication
 			// 
@@ -222,25 +222,25 @@ namespace Twitch_prime_downloader
 			this.btnApplyApiApplication.UseVisualStyleBackColor = true;
 			this.btnApplyApiApplication.Click += new System.EventHandler(this.btnApplyApiApplication_Click);
 			// 
-			// btnSetDefaultApiApplication
+			// btnRestoreDefaultApiApplication
 			// 
-			this.btnSetDefaultApiApplication.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSetDefaultApiApplication.Location = new System.Drawing.Point(682, 126);
-			this.btnSetDefaultApiApplication.Name = "btnSetDefaultApiApplication";
-			this.btnSetDefaultApiApplication.Size = new System.Drawing.Size(97, 23);
-			this.btnSetDefaultApiApplication.TabIndex = 8;
-			this.btnSetDefaultApiApplication.Text = "По-умолчанию";
-			this.btnSetDefaultApiApplication.UseVisualStyleBackColor = true;
-			this.btnSetDefaultApiApplication.Click += new System.EventHandler(this.btnSetDefaultApiApplication_Click);
+			this.btnRestoreDefaultApiApplication.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnRestoreDefaultApiApplication.Location = new System.Drawing.Point(682, 126);
+			this.btnRestoreDefaultApiApplication.Name = "btnRestoreDefaultApiApplication";
+			this.btnRestoreDefaultApiApplication.Size = new System.Drawing.Size(97, 23);
+			this.btnRestoreDefaultApiApplication.TabIndex = 8;
+			this.btnRestoreDefaultApiApplication.Text = "По-умолчанию";
+			this.btnRestoreDefaultApiApplication.UseVisualStyleBackColor = true;
+			this.btnRestoreDefaultApiApplication.Click += new System.EventHandler(this.btnRestoreDefaultApiApplication_Click);
 			// 
-			// textBoxHelixApiClentSecretKey
+			// textBoxHelixApiClientSecretKey
 			// 
-			this.textBoxHelixApiClentSecretKey.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.textBoxHelixApiClientSecretKey.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBoxHelixApiClentSecretKey.Location = new System.Drawing.Point(100, 97);
-			this.textBoxHelixApiClentSecretKey.Name = "textBoxHelixApiClentSecretKey";
-			this.textBoxHelixApiClentSecretKey.Size = new System.Drawing.Size(685, 20);
-			this.textBoxHelixApiClentSecretKey.TabIndex = 7;
+			this.textBoxHelixApiClientSecretKey.Location = new System.Drawing.Point(100, 97);
+			this.textBoxHelixApiClientSecretKey.Name = "textBoxHelixApiClientSecretKey";
+			this.textBoxHelixApiClientSecretKey.Size = new System.Drawing.Size(685, 20);
+			this.textBoxHelixApiClientSecretKey.TabIndex = 7;
 			// 
 			// textBoxHelixApiClientId
 			// 
@@ -386,9 +386,9 @@ namespace Twitch_prime_downloader
 			// 
 			this.groupBoxVideoInformationSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.groupBoxVideoInformationSettings.Controls.Add(this.chkSaveVodChunksInfo);
-			this.groupBoxVideoInformationSettings.Controls.Add(this.chkUseGmtTime);
-			this.groupBoxVideoInformationSettings.Controls.Add(this.chkSaveVodInfo);
+			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodChunkInfo);
+			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxUseGmtTime);
+			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodInfo);
 			this.groupBoxVideoInformationSettings.Location = new System.Drawing.Point(8, 152);
 			this.groupBoxVideoInformationSettings.Name = "groupBoxVideoInformationSettings";
 			this.groupBoxVideoInformationSettings.Size = new System.Drawing.Size(804, 47);
@@ -396,38 +396,38 @@ namespace Twitch_prime_downloader
 			this.groupBoxVideoInformationSettings.TabStop = false;
 			this.groupBoxVideoInformationSettings.Text = "Информация о видео";
 			// 
-			// chkSaveVodChunksInfo
+			// checkBoxSaveVodChunkInfo
 			// 
-			this.chkSaveVodChunksInfo.AutoSize = true;
-			this.chkSaveVodChunksInfo.Location = new System.Drawing.Point(202, 19);
-			this.chkSaveVodChunksInfo.Name = "chkSaveVodChunksInfo";
-			this.chkSaveVodChunksInfo.Size = new System.Drawing.Size(194, 17);
-			this.chkSaveVodChunksInfo.TabIndex = 18;
-			this.chkSaveVodChunksInfo.Text = "Сохранять информацию о чанках";
-			this.chkSaveVodChunksInfo.UseVisualStyleBackColor = true;
-			this.chkSaveVodChunksInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodChunksInfo_CheckedChanged);
+			this.checkBoxSaveVodChunkInfo.AutoSize = true;
+			this.checkBoxSaveVodChunkInfo.Location = new System.Drawing.Point(202, 19);
+			this.checkBoxSaveVodChunkInfo.Name = "checkBoxSaveVodChunkInfo";
+			this.checkBoxSaveVodChunkInfo.Size = new System.Drawing.Size(194, 17);
+			this.checkBoxSaveVodChunkInfo.TabIndex = 18;
+			this.checkBoxSaveVodChunkInfo.Text = "Сохранять информацию о чанках";
+			this.checkBoxSaveVodChunkInfo.UseVisualStyleBackColor = true;
+			this.checkBoxSaveVodChunkInfo.CheckedChanged += new System.EventHandler(this.checkBoxSaveVodChunkInfo_CheckedChanged);
 			// 
-			// chkUseGmtTime
+			// checkBoxUseGmtTime
 			// 
-			this.chkUseGmtTime.AutoSize = true;
-			this.chkUseGmtTime.Location = new System.Drawing.Point(402, 19);
-			this.chkUseGmtTime.Name = "chkUseGmtTime";
-			this.chkUseGmtTime.Size = new System.Drawing.Size(176, 17);
-			this.chkUseGmtTime.TabIndex = 16;
-			this.chkUseGmtTime.Text = "Использовать время по GMT";
-			this.chkUseGmtTime.UseVisualStyleBackColor = true;
-			this.chkUseGmtTime.CheckedChanged += new System.EventHandler(this.chkUseGmtTime_CheckedChanged);
+			this.checkBoxUseGmtTime.AutoSize = true;
+			this.checkBoxUseGmtTime.Location = new System.Drawing.Point(402, 19);
+			this.checkBoxUseGmtTime.Name = "checkBoxUseGmtTime";
+			this.checkBoxUseGmtTime.Size = new System.Drawing.Size(176, 17);
+			this.checkBoxUseGmtTime.TabIndex = 16;
+			this.checkBoxUseGmtTime.Text = "Использовать время по GMT";
+			this.checkBoxUseGmtTime.UseVisualStyleBackColor = true;
+			this.checkBoxUseGmtTime.CheckedChanged += new System.EventHandler(this.checkBoxUseGmtTime_CheckedChanged);
 			// 
-			// chkSaveVodInfo
+			// checkBoxSaveVodInfo
 			// 
-			this.chkSaveVodInfo.AutoSize = true;
-			this.chkSaveVodInfo.Location = new System.Drawing.Point(6, 19);
-			this.chkSaveVodInfo.Name = "chkSaveVodInfo";
-			this.chkSaveVodInfo.Size = new System.Drawing.Size(190, 17);
-			this.chkSaveVodInfo.TabIndex = 17;
-			this.chkSaveVodInfo.Text = "Сохранять информацию о видео";
-			this.chkSaveVodInfo.UseVisualStyleBackColor = true;
-			this.chkSaveVodInfo.CheckedChanged += new System.EventHandler(this.chkSaveVodInfo_CheckedChanged);
+			this.checkBoxSaveVodInfo.AutoSize = true;
+			this.checkBoxSaveVodInfo.Location = new System.Drawing.Point(6, 19);
+			this.checkBoxSaveVodInfo.Name = "checkBoxSaveVodInfo";
+			this.checkBoxSaveVodInfo.Size = new System.Drawing.Size(190, 17);
+			this.checkBoxSaveVodInfo.TabIndex = 17;
+			this.checkBoxSaveVodInfo.Text = "Сохранять информацию о видео";
+			this.checkBoxSaveVodInfo.UseVisualStyleBackColor = true;
+			this.checkBoxSaveVodInfo.CheckedChanged += new System.EventHandler(this.checkBoxSaveVodInfo_CheckedChanged);
 			// 
 			// groupBoxFilesAndFoldersSettings
 			// 
@@ -435,11 +435,11 @@ namespace Twitch_prime_downloader
 			| System.Windows.Forms.AnchorStyles.Right)));
 			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.label4);
 			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.label5);
-			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBox_Browser);
-			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBox_DownloadingPath);
-			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.btnRestoreDefaultFilenameFormat);
-			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.btnSelectDownloadingPath);
-			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBox_FileNameFormat);
+			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBoxBrowserExePath);
+			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBoxDownloadDirectory);
+			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.btnRestoreDefaultOutputFileNameFormat);
+			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.btnSelectDownloadDirectory);
+			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.textBoxOutputFileNameFormat);
 			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.btnSelectBrowser);
 			this.groupBoxFilesAndFoldersSettings.Controls.Add(this.label2);
 			this.groupBoxFilesAndFoldersSettings.Location = new System.Drawing.Point(8, 6);
@@ -467,56 +467,56 @@ namespace Twitch_prime_downloader
 			this.label5.TabIndex = 6;
 			this.label5.Text = "Веб-браузер:";
 			// 
-			// textBox_Browser
+			// textBoxBrowserExePath
 			// 
-			this.textBox_Browser.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.textBoxBrowserExePath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox_Browser.Location = new System.Drawing.Point(7, 110);
-			this.textBox_Browser.Name = "textBox_Browser";
-			this.textBox_Browser.Size = new System.Drawing.Size(743, 20);
-			this.textBox_Browser.TabIndex = 7;
+			this.textBoxBrowserExePath.Location = new System.Drawing.Point(7, 110);
+			this.textBoxBrowserExePath.Name = "textBoxBrowserExePath";
+			this.textBoxBrowserExePath.Size = new System.Drawing.Size(743, 20);
+			this.textBoxBrowserExePath.TabIndex = 7;
 			// 
-			// textBox_DownloadingPath
+			// textBoxDownloadDirectory
 			// 
-			this.textBox_DownloadingPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.textBoxDownloadDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox_DownloadingPath.Location = new System.Drawing.Point(7, 32);
-			this.textBox_DownloadingPath.Name = "textBox_DownloadingPath";
-			this.textBox_DownloadingPath.Size = new System.Drawing.Size(743, 20);
-			this.textBox_DownloadingPath.TabIndex = 8;
-			this.textBox_DownloadingPath.Leave += new System.EventHandler(this.TextBox_DownloadingPath_Leave);
+			this.textBoxDownloadDirectory.Location = new System.Drawing.Point(7, 32);
+			this.textBoxDownloadDirectory.Name = "textBoxDownloadDirectory";
+			this.textBoxDownloadDirectory.Size = new System.Drawing.Size(743, 20);
+			this.textBoxDownloadDirectory.TabIndex = 8;
+			this.textBoxDownloadDirectory.Leave += new System.EventHandler(this.textBoxDownloadDirectory_Leave);
 			// 
-			// btnRestoreDefaultFilenameFormat
+			// btnRestoreDefaultOutputFileNameFormat
 			// 
-			this.btnRestoreDefaultFilenameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnRestoreDefaultFilenameFormat.Location = new System.Drawing.Point(689, 71);
-			this.btnRestoreDefaultFilenameFormat.Name = "btnRestoreDefaultFilenameFormat";
-			this.btnRestoreDefaultFilenameFormat.Size = new System.Drawing.Size(109, 23);
-			this.btnRestoreDefaultFilenameFormat.TabIndex = 15;
-			this.btnRestoreDefaultFilenameFormat.Text = "Вернуть как было";
-			this.btnRestoreDefaultFilenameFormat.UseVisualStyleBackColor = true;
-			this.btnRestoreDefaultFilenameFormat.Click += new System.EventHandler(this.btnRestoreDefaultFilenameFormat_Click);
+			this.btnRestoreDefaultOutputFileNameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnRestoreDefaultOutputFileNameFormat.Location = new System.Drawing.Point(689, 71);
+			this.btnRestoreDefaultOutputFileNameFormat.Name = "btnRestoreDefaultOutputFileNameFormat";
+			this.btnRestoreDefaultOutputFileNameFormat.Size = new System.Drawing.Size(109, 23);
+			this.btnRestoreDefaultOutputFileNameFormat.TabIndex = 15;
+			this.btnRestoreDefaultOutputFileNameFormat.Text = "Вернуть как было";
+			this.btnRestoreDefaultOutputFileNameFormat.UseVisualStyleBackColor = true;
+			this.btnRestoreDefaultOutputFileNameFormat.Click += new System.EventHandler(this.btnRestoreDefaultOutputFileNameFormat_Click);
 			// 
-			// btnSelectDownloadingPath
+			// btnSelectDownloadDirectory
 			// 
-			this.btnSelectDownloadingPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSelectDownloadingPath.Location = new System.Drawing.Point(756, 32);
-			this.btnSelectDownloadingPath.Name = "btnSelectDownloadingPath";
-			this.btnSelectDownloadingPath.Size = new System.Drawing.Size(42, 22);
-			this.btnSelectDownloadingPath.TabIndex = 9;
-			this.btnSelectDownloadingPath.Text = "...";
-			this.btnSelectDownloadingPath.UseVisualStyleBackColor = true;
-			this.btnSelectDownloadingPath.Click += new System.EventHandler(this.btnSelectDownloadingPath_Click);
+			this.btnSelectDownloadDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnSelectDownloadDirectory.Location = new System.Drawing.Point(756, 32);
+			this.btnSelectDownloadDirectory.Name = "btnSelectDownloadDirectory";
+			this.btnSelectDownloadDirectory.Size = new System.Drawing.Size(42, 22);
+			this.btnSelectDownloadDirectory.TabIndex = 9;
+			this.btnSelectDownloadDirectory.Text = "...";
+			this.btnSelectDownloadDirectory.UseVisualStyleBackColor = true;
+			this.btnSelectDownloadDirectory.Click += new System.EventHandler(this.btnSelectDownloadDirectory_Click);
 			// 
-			// textBox_FileNameFormat
+			// textBoxOutputFileNameFormat
 			// 
-			this.textBox_FileNameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.textBoxOutputFileNameFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox_FileNameFormat.Location = new System.Drawing.Point(9, 71);
-			this.textBox_FileNameFormat.Name = "textBox_FileNameFormat";
-			this.textBox_FileNameFormat.Size = new System.Drawing.Size(674, 20);
-			this.textBox_FileNameFormat.TabIndex = 14;
-			this.textBox_FileNameFormat.Leave += new System.EventHandler(this.textBox_FileNameFormat_Leave);
+			this.textBoxOutputFileNameFormat.Location = new System.Drawing.Point(9, 71);
+			this.textBoxOutputFileNameFormat.Name = "textBoxOutputFileNameFormat";
+			this.textBoxOutputFileNameFormat.Size = new System.Drawing.Size(674, 20);
+			this.textBoxOutputFileNameFormat.TabIndex = 14;
+			this.textBoxOutputFileNameFormat.Leave += new System.EventHandler(this.textBoxOutputFileNameFormat_Leave);
 			// 
 			// btnSelectBrowser
 			// 
@@ -541,8 +541,8 @@ namespace Twitch_prime_downloader
 			// tabPageSearch
 			// 
 			this.tabPageSearch.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPageSearch.Controls.Add(this.groupBox2);
-			this.tabPageSearch.Controls.Add(this.groupBox1);
+			this.tabPageSearch.Controls.Add(this.groupBoxSearchByUrls);
+			this.tabPageSearch.Controls.Add(this.groupBoxSearchByChannelName);
 			this.tabPageSearch.Location = new System.Drawing.Point(4, 22);
 			this.tabPageSearch.Name = "tabPageSearch";
 			this.tabPageSearch.Padding = new System.Windows.Forms.Padding(3);
@@ -550,17 +550,17 @@ namespace Twitch_prime_downloader
 			this.tabPageSearch.TabIndex = 5;
 			this.tabPageSearch.Text = "Поиск видео";
 			// 
-			// groupBox2
+			// groupBoxSearchByUrls
 			// 
-			this.groupBox2.Controls.Add(this.btnSearchByUrls);
-			this.groupBox2.Controls.Add(this.textBoxUrls);
-			this.groupBox2.Controls.Add(this.label6);
-			this.groupBox2.Location = new System.Drawing.Point(323, 16);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(352, 162);
-			this.groupBox2.TabIndex = 1;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Поиск видео по ссылкам";
+			this.groupBoxSearchByUrls.Controls.Add(this.btnSearchByUrls);
+			this.groupBoxSearchByUrls.Controls.Add(this.textBoxVideoUrls);
+			this.groupBoxSearchByUrls.Controls.Add(this.label6);
+			this.groupBoxSearchByUrls.Location = new System.Drawing.Point(323, 16);
+			this.groupBoxSearchByUrls.Name = "groupBoxSearchByUrls";
+			this.groupBoxSearchByUrls.Size = new System.Drawing.Size(352, 162);
+			this.groupBoxSearchByUrls.TabIndex = 1;
+			this.groupBoxSearchByUrls.TabStop = false;
+			this.groupBoxSearchByUrls.Text = "Поиск видео по ссылкам";
 			// 
 			// btnSearchByUrls
 			// 
@@ -572,14 +572,14 @@ namespace Twitch_prime_downloader
 			this.btnSearchByUrls.UseVisualStyleBackColor = true;
 			this.btnSearchByUrls.Click += new System.EventHandler(this.btnSearchByUrls_Click);
 			// 
-			// textBoxUrls
+			// textBoxVideoUrls
 			// 
-			this.textBoxUrls.Location = new System.Drawing.Point(18, 38);
-			this.textBoxUrls.Multiline = true;
-			this.textBoxUrls.Name = "textBoxUrls";
-			this.textBoxUrls.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.textBoxUrls.Size = new System.Drawing.Size(328, 89);
-			this.textBoxUrls.TabIndex = 1;
+			this.textBoxVideoUrls.Location = new System.Drawing.Point(18, 38);
+			this.textBoxVideoUrls.Multiline = true;
+			this.textBoxVideoUrls.Name = "textBoxVideoUrls";
+			this.textBoxVideoUrls.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+			this.textBoxVideoUrls.Size = new System.Drawing.Size(328, 89);
+			this.textBoxVideoUrls.TabIndex = 1;
 			// 
 			// label6
 			// 
@@ -590,21 +590,21 @@ namespace Twitch_prime_downloader
 			this.label6.TabIndex = 0;
 			this.label6.Text = "Введите ссылки на видео с твича:";
 			// 
-			// groupBox1
+			// groupBoxSearchByChannelName
 			// 
-			this.groupBox1.Controls.Add(this.btnEditChannelList);
-			this.groupBox1.Controls.Add(this.btnAddChannelToList);
-			this.groupBox1.Controls.Add(this.textBoxChannelName);
-			this.groupBox1.Controls.Add(this.listBoxChannelList);
-			this.groupBox1.Controls.Add(this.groupBox3);
-			this.groupBox1.Controls.Add(this.label1);
-			this.groupBox1.Controls.Add(this.btnSearchChannelName);
-			this.groupBox1.Location = new System.Drawing.Point(6, 16);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(311, 308);
-			this.groupBox1.TabIndex = 0;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Поиск по названию канала";
+			this.groupBoxSearchByChannelName.Controls.Add(this.btnEditChannelList);
+			this.groupBoxSearchByChannelName.Controls.Add(this.btnAddChannelToList);
+			this.groupBoxSearchByChannelName.Controls.Add(this.textBoxChannelName);
+			this.groupBoxSearchByChannelName.Controls.Add(this.listBoxChannelList);
+			this.groupBoxSearchByChannelName.Controls.Add(this.groupBoxSearchResultCount);
+			this.groupBoxSearchByChannelName.Controls.Add(this.label1);
+			this.groupBoxSearchByChannelName.Controls.Add(this.btnSearchByChannelName);
+			this.groupBoxSearchByChannelName.Location = new System.Drawing.Point(6, 16);
+			this.groupBoxSearchByChannelName.Name = "groupBoxSearchByChannelName";
+			this.groupBoxSearchByChannelName.Size = new System.Drawing.Size(311, 308);
+			this.groupBoxSearchByChannelName.TabIndex = 0;
+			this.groupBoxSearchByChannelName.TabStop = false;
+			this.groupBoxSearchByChannelName.Text = "Поиск по названию канала";
 			// 
 			// btnEditChannelList
 			// 
@@ -644,18 +644,18 @@ namespace Twitch_prime_downloader
 			this.listBoxChannelList.SelectedIndexChanged += new System.EventHandler(this.listBoxChannelList_SelectedIndexChanged);
 			this.listBoxChannelList.DoubleClick += new System.EventHandler(this.listBoxChannelList_DoubleClick);
 			// 
-			// groupBox3
+			// groupBoxSearchResultCount
 			// 
-			this.groupBox3.Controls.Add(this.label3);
-			this.groupBox3.Controls.Add(this.numericUpDownSearchLimit);
-			this.groupBox3.Controls.Add(this.rbSearchLimit);
-			this.groupBox3.Controls.Add(this.rbSearchAll);
-			this.groupBox3.Location = new System.Drawing.Point(6, 227);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(299, 75);
-			this.groupBox3.TabIndex = 5;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Диапазон поиска";
+			this.groupBoxSearchResultCount.Controls.Add(this.label3);
+			this.groupBoxSearchResultCount.Controls.Add(this.numericUpDownSearchLimit);
+			this.groupBoxSearchResultCount.Controls.Add(this.radioButtonSearchLimited);
+			this.groupBoxSearchResultCount.Controls.Add(this.radioButtonSearchAll);
+			this.groupBoxSearchResultCount.Location = new System.Drawing.Point(6, 227);
+			this.groupBoxSearchResultCount.Name = "groupBoxSearchResultCount";
+			this.groupBoxSearchResultCount.Size = new System.Drawing.Size(299, 75);
+			this.groupBoxSearchResultCount.TabIndex = 5;
+			this.groupBoxSearchResultCount.TabStop = false;
+			this.groupBoxSearchResultCount.Text = "Диапазон поиска";
 			// 
 			// label3
 			// 
@@ -688,28 +688,28 @@ namespace Twitch_prime_downloader
 			0,
 			0});
 			// 
-			// rbSearchLimit
+			// radioButtonSearchLimited
 			// 
-			this.rbSearchLimit.AutoSize = true;
-			this.rbSearchLimit.Checked = true;
-			this.rbSearchLimit.Location = new System.Drawing.Point(8, 45);
-			this.rbSearchLimit.Name = "rbSearchLimit";
-			this.rbSearchLimit.Size = new System.Drawing.Size(62, 17);
-			this.rbSearchLimit.TabIndex = 1;
-			this.rbSearchLimit.TabStop = true;
-			this.rbSearchLimit.Text = "Только";
-			this.rbSearchLimit.UseVisualStyleBackColor = true;
+			this.radioButtonSearchLimited.AutoSize = true;
+			this.radioButtonSearchLimited.Checked = true;
+			this.radioButtonSearchLimited.Location = new System.Drawing.Point(8, 45);
+			this.radioButtonSearchLimited.Name = "radioButtonSearchLimited";
+			this.radioButtonSearchLimited.Size = new System.Drawing.Size(62, 17);
+			this.radioButtonSearchLimited.TabIndex = 1;
+			this.radioButtonSearchLimited.TabStop = true;
+			this.radioButtonSearchLimited.Text = "Только";
+			this.radioButtonSearchLimited.UseVisualStyleBackColor = true;
 			// 
-			// rbSearchAll
+			// radioButtonSearchAll
 			// 
-			this.rbSearchAll.AutoSize = true;
-			this.rbSearchAll.Location = new System.Drawing.Point(8, 18);
-			this.rbSearchAll.Name = "rbSearchAll";
-			this.rbSearchAll.Size = new System.Drawing.Size(196, 17);
-			this.rbSearchAll.TabIndex = 0;
-			this.rbSearchAll.Text = "Все видео канала (кроме клипов)";
-			this.toolTip1.SetToolTip(this.rbSearchAll, "Может быть очень долго!");
-			this.rbSearchAll.UseVisualStyleBackColor = true;
+			this.radioButtonSearchAll.AutoSize = true;
+			this.radioButtonSearchAll.Location = new System.Drawing.Point(8, 18);
+			this.radioButtonSearchAll.Name = "radioButtonSearchAll";
+			this.radioButtonSearchAll.Size = new System.Drawing.Size(196, 17);
+			this.radioButtonSearchAll.TabIndex = 0;
+			this.radioButtonSearchAll.Text = "Все видео канала (кроме клипов)";
+			this.toolTip1.SetToolTip(this.radioButtonSearchAll, "Может быть очень долго!");
+			this.radioButtonSearchAll.UseVisualStyleBackColor = true;
 			// 
 			// label1
 			// 
@@ -720,42 +720,42 @@ namespace Twitch_prime_downloader
 			this.label1.TabIndex = 2;
 			this.label1.Text = "Название канала:";
 			// 
-			// btnSearchChannelName
+			// btnSearchByChannelName
 			// 
-			this.btnSearchChannelName.Location = new System.Drawing.Point(230, 198);
-			this.btnSearchChannelName.Name = "btnSearchChannelName";
-			this.btnSearchChannelName.Size = new System.Drawing.Size(75, 23);
-			this.btnSearchChannelName.TabIndex = 1;
-			this.btnSearchChannelName.Text = "Искать";
-			this.btnSearchChannelName.UseVisualStyleBackColor = true;
-			this.btnSearchChannelName.Click += new System.EventHandler(this.btnSearchChannelName_Click);
+			this.btnSearchByChannelName.Location = new System.Drawing.Point(230, 198);
+			this.btnSearchByChannelName.Name = "btnSearchByChannelName";
+			this.btnSearchByChannelName.Size = new System.Drawing.Size(75, 23);
+			this.btnSearchByChannelName.TabIndex = 1;
+			this.btnSearchByChannelName.Text = "Искать";
+			this.btnSearchByChannelName.UseVisualStyleBackColor = true;
+			this.btnSearchByChannelName.Click += new System.EventHandler(this.btnSearchByChannelName_Click);
 			// 
-			// tabPageLog
+			// tabPageEventLog
 			// 
-			this.tabPageLog.BackColor = System.Drawing.Color.Black;
-			this.tabPageLog.Controls.Add(this.lbLog);
-			this.tabPageLog.Location = new System.Drawing.Point(4, 22);
-			this.tabPageLog.Name = "tabPageLog";
-			this.tabPageLog.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageLog.Size = new System.Drawing.Size(818, 472);
-			this.tabPageLog.TabIndex = 3;
-			this.tabPageLog.Text = "Лог событий";
+			this.tabPageEventLog.BackColor = System.Drawing.Color.Black;
+			this.tabPageEventLog.Controls.Add(this.listBoxEventLog);
+			this.tabPageEventLog.Location = new System.Drawing.Point(4, 22);
+			this.tabPageEventLog.Name = "tabPageEventLog";
+			this.tabPageEventLog.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPageEventLog.Size = new System.Drawing.Size(818, 472);
+			this.tabPageEventLog.TabIndex = 3;
+			this.tabPageEventLog.Text = "Лог событий";
 			// 
-			// lbLog
+			// listBoxEventLog
 			// 
-			this.lbLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.listBoxEventLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 			| System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this.lbLog.BackColor = System.Drawing.Color.Black;
-			this.lbLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.lbLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.lbLog.ForeColor = System.Drawing.Color.Lime;
-			this.lbLog.FormattingEnabled = true;
-			this.lbLog.ItemHeight = 24;
-			this.lbLog.Location = new System.Drawing.Point(0, 0);
-			this.lbLog.Name = "lbLog";
-			this.lbLog.Size = new System.Drawing.Size(812, 432);
-			this.lbLog.TabIndex = 0;
+			this.listBoxEventLog.BackColor = System.Drawing.Color.Black;
+			this.listBoxEventLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listBoxEventLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			this.listBoxEventLog.ForeColor = System.Drawing.Color.Lime;
+			this.listBoxEventLog.FormattingEnabled = true;
+			this.listBoxEventLog.ItemHeight = 24;
+			this.listBoxEventLog.Location = new System.Drawing.Point(0, 0);
+			this.listBoxEventLog.Name = "listBoxEventLog";
+			this.listBoxEventLog.Size = new System.Drawing.Size(812, 456);
+			this.listBoxEventLog.TabIndex = 0;
 			// 
 			// tabPageStreams
 			// 
@@ -791,17 +791,17 @@ namespace Twitch_prime_downloader
 			this.scrollBarStreams.TabIndex = 1;
 			this.scrollBarStreams.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrollBarStreams_Scroll);
 			// 
-			// tabPageDownloading
+			// tabPageDownloads
 			// 
-			this.tabPageDownloading.BackColor = System.Drawing.Color.DimGray;
-			this.tabPageDownloading.Controls.Add(this.scrollBarDownloads);
-			this.tabPageDownloading.Controls.Add(this.panelDownloads);
-			this.tabPageDownloading.Location = new System.Drawing.Point(4, 22);
-			this.tabPageDownloading.Name = "tabPageDownloading";
-			this.tabPageDownloading.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageDownloading.Size = new System.Drawing.Size(818, 472);
-			this.tabPageDownloading.TabIndex = 6;
-			this.tabPageDownloading.Text = "Скачивание";
+			this.tabPageDownloads.BackColor = System.Drawing.Color.DimGray;
+			this.tabPageDownloads.Controls.Add(this.scrollBarDownloads);
+			this.tabPageDownloads.Controls.Add(this.panelDownloads);
+			this.tabPageDownloads.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDownloads.Name = "tabPageDownloads";
+			this.tabPageDownloads.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPageDownloads.Size = new System.Drawing.Size(818, 472);
+			this.tabPageDownloads.TabIndex = 6;
+			this.tabPageDownloads.Text = "Скачивание";
 			// 
 			// scrollBarDownloads
 			// 
@@ -826,18 +826,18 @@ namespace Twitch_prime_downloader
 			this.panelDownloads.Size = new System.Drawing.Size(801, 472);
 			this.panelDownloads.TabIndex = 0;
 			// 
-			// contextMenuStreamImage
+			// contextMenuVodThumbnailImage
 			// 
-			this.contextMenuStreamImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.contextMenuVodThumbnailImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 			this.miCopyVideoUrl,
-			this.copyImageUrlToolStripMenuItem,
-			this.copyStreamInfoJsonToolStripMenuItem,
-			this.miSavePlaylistAsToolStripMenuItem,
-			this.saveImageAssToolStripMenuItem,
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem,
+			this.miCopyVodInfoToolStripMenuItem,
+			this.miSaveVodPlaylistAsToolStripMenuItem,
+			this.miSaveVodThumbnailImageAssToolStripMenuItem,
 			this.toolStripMenuItem1,
-			this.openVideoInBrowserToolStripMenuItem});
-			this.contextMenuStreamImage.Name = "contextMenuStreamImage";
-			this.contextMenuStreamImage.Size = new System.Drawing.Size(283, 142);
+			this.miOpenVideoInBrowserToolStripMenuItem});
+			this.contextMenuVodThumbnailImage.Name = "contextMenuStreamImage";
+			this.contextMenuVodThumbnailImage.Size = new System.Drawing.Size(283, 142);
 			// 
 			// miCopyVideoUrl
 			// 
@@ -846,45 +846,45 @@ namespace Twitch_prime_downloader
 			this.miCopyVideoUrl.Text = "Скопировать ссылку на видео";
 			this.miCopyVideoUrl.Click += new System.EventHandler(this.miCopyVideoUrl_Click);
 			// 
-			// copyImageUrlToolStripMenuItem
+			// miCopyVodThumbnailImageUrlToolStripMenuItem
 			// 
-			this.copyImageUrlToolStripMenuItem.Name = "copyImageUrlToolStripMenuItem";
-			this.copyImageUrlToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.copyImageUrlToolStripMenuItem.Text = "Скопировать ссылку на изображение";
-			this.copyImageUrlToolStripMenuItem.Click += new System.EventHandler(this.CopyImageUrlToolStripMenuItem_Click);
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem.Name = "miCopyVodThumbnailImageUrlToolStripMenuItem";
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem.Text = "Скопировать ссылку на изображение";
+			this.miCopyVodThumbnailImageUrlToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodThumbnailImageUrlToolStripMenuItem_Click);
 			// 
-			// copyStreamInfoJsonToolStripMenuItem
+			// miCopyVodInfoToolStripMenuItem
 			// 
-			this.copyStreamInfoJsonToolStripMenuItem.Name = "copyStreamInfoJsonToolStripMenuItem";
-			this.copyStreamInfoJsonToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.copyStreamInfoJsonToolStripMenuItem.Text = "Скопировать информацию о стриме";
-			this.copyStreamInfoJsonToolStripMenuItem.Click += new System.EventHandler(this.CopyStreamInfoJsonToolStripMenuItem_Click);
+			this.miCopyVodInfoToolStripMenuItem.Name = "miCopyVodInfoToolStripMenuItem";
+			this.miCopyVodInfoToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miCopyVodInfoToolStripMenuItem.Text = "Скопировать информацию о стриме";
+			this.miCopyVodInfoToolStripMenuItem.Click += new System.EventHandler(this.miCopyVodInfoToolStripMenuItem_Click);
 			// 
-			// miSavePlaylistAsToolStripMenuItem
+			// miSaveVodPlaylistAsToolStripMenuItem
 			// 
-			this.miSavePlaylistAsToolStripMenuItem.Name = "miSavePlaylistAsToolStripMenuItem";
-			this.miSavePlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.miSavePlaylistAsToolStripMenuItem.Text = "Сохранить плейлист как...";
-			this.miSavePlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.miSavePlaylistAsToolStripMenuItem_Click);
+			this.miSaveVodPlaylistAsToolStripMenuItem.Name = "miSaveVodPlaylistAsToolStripMenuItem";
+			this.miSaveVodPlaylistAsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miSaveVodPlaylistAsToolStripMenuItem.Text = "Сохранить плейлист как...";
+			this.miSaveVodPlaylistAsToolStripMenuItem.Click += new System.EventHandler(this.miSaveVodPlaylistAsToolStripMenuItem_Click);
 			// 
-			// saveImageAssToolStripMenuItem
+			// miSaveVodThumbnailImageAssToolStripMenuItem
 			// 
-			this.saveImageAssToolStripMenuItem.Name = "saveImageAssToolStripMenuItem";
-			this.saveImageAssToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.saveImageAssToolStripMenuItem.Text = "Сохранить изображение как...";
-			this.saveImageAssToolStripMenuItem.Click += new System.EventHandler(this.saveImageAssToolStripMenuItem_Click);
+			this.miSaveVodThumbnailImageAssToolStripMenuItem.Name = "miSaveVodThumbnailImageAssToolStripMenuItem";
+			this.miSaveVodThumbnailImageAssToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miSaveVodThumbnailImageAssToolStripMenuItem.Text = "Сохранить изображение как...";
+			this.miSaveVodThumbnailImageAssToolStripMenuItem.Click += new System.EventHandler(this.miSaveVodThumbnailImageAssToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
 			this.toolStripMenuItem1.Size = new System.Drawing.Size(279, 6);
 			// 
-			// openVideoInBrowserToolStripMenuItem
+			// miOpenVideoInBrowserToolStripMenuItem
 			// 
-			this.openVideoInBrowserToolStripMenuItem.Name = "openVideoInBrowserToolStripMenuItem";
-			this.openVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
-			this.openVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
-			this.openVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.openVideoInBrowserToolStripMenuItem_Click);
+			this.miOpenVideoInBrowserToolStripMenuItem.Name = "miOpenVideoInBrowserToolStripMenuItem";
+			this.miOpenVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+			this.miOpenVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
+			this.miOpenVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.miOpenVideoInBrowserToolStripMenuItem_Click);
 			// 
 			// Form1
 			// 
@@ -895,15 +895,15 @@ namespace Twitch_prime_downloader
 			this.MinimumSize = new System.Drawing.Size(844, 540);
 			this.Name = "Form1";
 			this.Text = "Twitch prime downloader";
-			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-			this.Load += new System.EventHandler(this.Form1_Load);
-			this.Resize += new System.EventHandler(this.Form1_Resize);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.form1_FormClosed);
+			this.Load += new System.EventHandler(this.form1_Load);
+			this.Resize += new System.EventHandler(this.form1_Resize);
 			this.tabControlMain.ResumeLayout(false);
 			this.tabPageDebug.ResumeLayout(false);
 			this.tabPageSettings.ResumeLayout(false);
 			this.groupBoxApiSettings.ResumeLayout(false);
-			this.groupBoxTwitchApplication.ResumeLayout(false);
-			this.groupBoxTwitchApplication.PerformLayout();
+			this.groupBoxTwitchApplicationSettings.ResumeLayout(false);
+			this.groupBoxTwitchApplicationSettings.PerformLayout();
 			this.groupBoxHelixApiToken.ResumeLayout(false);
 			this.groupBoxHelixApiToken.PerformLayout();
 			this.groupBoxVideoInformationSettings.ResumeLayout(false);
@@ -911,17 +911,17 @@ namespace Twitch_prime_downloader
 			this.groupBoxFilesAndFoldersSettings.ResumeLayout(false);
 			this.groupBoxFilesAndFoldersSettings.PerformLayout();
 			this.tabPageSearch.ResumeLayout(false);
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox1.PerformLayout();
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
+			this.groupBoxSearchByUrls.ResumeLayout(false);
+			this.groupBoxSearchByUrls.PerformLayout();
+			this.groupBoxSearchByChannelName.ResumeLayout(false);
+			this.groupBoxSearchByChannelName.PerformLayout();
+			this.groupBoxSearchResultCount.ResumeLayout(false);
+			this.groupBoxSearchResultCount.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchLimit)).EndInit();
-			this.tabPageLog.ResumeLayout(false);
+			this.tabPageEventLog.ResumeLayout(false);
 			this.tabPageStreams.ResumeLayout(false);
-			this.tabPageDownloading.ResumeLayout(false);
-			this.contextMenuStreamImage.ResumeLayout(false);
+			this.tabPageDownloads.ResumeLayout(false);
+			this.contextMenuVodThumbnailImage.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -931,49 +931,49 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.TabControl tabControlMain;
 		private System.Windows.Forms.TabPage tabPageSettings;
 		private System.Windows.Forms.Button btnSelectBrowser;
-		private System.Windows.Forms.Button btnSelectDownloadingPath;
-		private System.Windows.Forms.TextBox textBox_DownloadingPath;
-		private System.Windows.Forms.TextBox textBox_Browser;
+		private System.Windows.Forms.Button btnSelectDownloadDirectory;
+		private System.Windows.Forms.TextBox textBoxDownloadDirectory;
+		private System.Windows.Forms.TextBox textBoxBrowserExePath;
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStreamImage;
-		private System.Windows.Forms.ToolStripMenuItem copyImageUrlToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem copyStreamInfoJsonToolStripMenuItem;
+		private System.Windows.Forms.ContextMenuStrip contextMenuVodThumbnailImage;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodThumbnailImageUrlToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem miCopyVodInfoToolStripMenuItem;
 		private System.Windows.Forms.TabPage tabPageDebug;
-		private System.Windows.Forms.RichTextBox memoDebug;
-		private System.Windows.Forms.TabPage tabPageLog;
-		private System.Windows.Forms.ListBox lbLog;
+		private System.Windows.Forms.RichTextBox richTextBoxDebugLog;
+		private System.Windows.Forms.TabPage tabPageEventLog;
+		private System.Windows.Forms.ListBox listBoxEventLog;
 		private System.Windows.Forms.TabPage tabPageStreams;
 		private System.Windows.Forms.TabPage tabPageSearch;
-		private System.Windows.Forms.GroupBox groupBox1;
+		private System.Windows.Forms.GroupBox groupBoxSearchByChannelName;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Button btnSearchChannelName;
-		private System.Windows.Forms.TabPage tabPageDownloading;
+		private System.Windows.Forms.Button btnSearchByChannelName;
+		private System.Windows.Forms.TabPage tabPageDownloads;
 		private System.Windows.Forms.Panel panelDownloads;
 		private System.Windows.Forms.VScrollBar scrollBarDownloads;
 		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.GroupBox groupBoxSearchResultCount;
 		private System.Windows.Forms.NumericUpDown numericUpDownSearchLimit;
-		private System.Windows.Forms.RadioButton rbSearchLimit;
-		private System.Windows.Forms.RadioButton rbSearchAll;
-		private System.Windows.Forms.ToolStripMenuItem saveImageAssToolStripMenuItem;
+		private System.Windows.Forms.RadioButton radioButtonSearchLimited;
+		private System.Windows.Forms.RadioButton radioButtonSearchAll;
+		private System.Windows.Forms.ToolStripMenuItem miSaveVodThumbnailImageAssToolStripMenuItem;
 		private System.Windows.Forms.VScrollBar scrollBarStreams;
 		private System.Windows.Forms.Panel panelStreams;
 		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.ToolStripMenuItem openVideoInBrowserToolStripMenuItem;
-		private System.Windows.Forms.TextBox textBox_FileNameFormat;
+		private System.Windows.Forms.ToolStripMenuItem miOpenVideoInBrowserToolStripMenuItem;
+		private System.Windows.Forms.TextBox textBoxOutputFileNameFormat;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripMenuItem miCopyVideoUrl;
-		private System.Windows.Forms.Button btnRestoreDefaultFilenameFormat;
+		private System.Windows.Forms.Button btnRestoreDefaultOutputFileNameFormat;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private System.Windows.Forms.GroupBox groupBox2;
+		private System.Windows.Forms.GroupBox groupBoxSearchByUrls;
 		private System.Windows.Forms.Button btnSearchByUrls;
-		private System.Windows.Forms.TextBox textBoxUrls;
+		private System.Windows.Forms.TextBox textBoxVideoUrls;
 		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.CheckBox chkUseGmtTime;
-		private System.Windows.Forms.CheckBox chkSaveVodInfo;
-		private System.Windows.Forms.CheckBox chkSaveVodChunksInfo;
-		private System.Windows.Forms.ToolStripMenuItem miSavePlaylistAsToolStripMenuItem;
+		private System.Windows.Forms.CheckBox checkBoxUseGmtTime;
+		private System.Windows.Forms.CheckBox checkBoxSaveVodInfo;
+		private System.Windows.Forms.CheckBox checkBoxSaveVodChunkInfo;
+		private System.Windows.Forms.ToolStripMenuItem miSaveVodPlaylistAsToolStripMenuItem;
 		private System.Windows.Forms.Button btnAddChannelToList;
 		private System.Windows.Forms.TextBox textBoxChannelName;
 		private System.Windows.Forms.ListBox listBoxChannelList;
@@ -987,16 +987,16 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.Label lblHelixApiTokenExpirationDate;
 		private System.Windows.Forms.Button btnUpdateHelixApiToken;
 		private System.Windows.Forms.GroupBox groupBoxHelixApiToken;
-		private System.Windows.Forms.GroupBox groupBoxTwitchApplication;
+		private System.Windows.Forms.GroupBox groupBoxTwitchApplicationSettings;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Label label12;
 		private System.Windows.Forms.Label label11;
-		private System.Windows.Forms.TextBox textBoxHelixApiClentSecretKey;
+		private System.Windows.Forms.TextBox textBoxHelixApiClientSecretKey;
 		private System.Windows.Forms.TextBox textBoxHelixApiClientId;
 		private System.Windows.Forms.TextBox textBoxApiApplicationDescription;
 		private System.Windows.Forms.TextBox textBoxApiApplicationTitle;
-		private System.Windows.Forms.Button btnSetDefaultApiApplication;
+		private System.Windows.Forms.Button btnRestoreDefaultApiApplication;
 		private System.Windows.Forms.Button btnApplyApiApplication;
 		private System.Windows.Forms.Button btnResetHelixApiToken;
 	}
