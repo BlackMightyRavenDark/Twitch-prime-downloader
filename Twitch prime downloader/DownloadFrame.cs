@@ -460,7 +460,7 @@ namespace Twitch_prime_downloader
 			IsDownloading = true;
 			btnStartDownload.Enabled = false;
 			DownloadStarted = DateTime.Now;
-			lblProgressChunkGroup.Text = null;
+			lblProgressChunkGroup.Text = "Подготовка к скачиванию...";
 			lblElapsedTime.Text = "Прошло времени: 0:00:00";
 			timerElapsedTime.Enabled = true;
 			if (DownloadMode == DownloadMode.SingleFile)
