@@ -56,7 +56,7 @@ namespace Twitch_prime_downloader
 				json["webBrowserExeFilePath"] = config.BrowserExeFilePath;
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
-				json["saveVodChunkInfo"] = config.SaveVodChunksInfo;
+				json["saveVodChunkInfo"] = config.SaveVodChunkInfo;
 				json["apiApplicationTitle"] = config.ApiApplicationTitle;
 				json["apiApplicationDescription"] = config.ApiApplicationDescription;
 				json["apiApplicationClientId"] = config.ApiApplicationClientId;
@@ -93,7 +93,7 @@ namespace Twitch_prime_downloader
 				}
 				{
 					JToken jt = json.Value<JToken>("saveVodChunkInfo");
-					config.SaveVodChunksInfo = jt == null || jt.Value<bool>();
+					config.SaveVodChunkInfo = jt == null || jt.Value<bool>();
 				}
 
 				config.ApiApplicationTitle = json.Value<string>("apiApplicationTitle");
@@ -110,7 +110,7 @@ namespace Twitch_prime_downloader
 			{
 				checkBoxUseGmtTime.Checked = config.UseGmtVodDates;
 				checkBoxSaveVodInfo.Checked = config.SaveVodInfo;
-				checkBoxSaveVodChunkInfo.Checked = config.SaveVodChunksInfo;
+				checkBoxSaveVodChunkInfo.Checked = config.SaveVodChunkInfo;
 				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
 				textBoxBrowserExePath.Text = config.BrowserExeFilePath;
@@ -567,7 +567,7 @@ namespace Twitch_prime_downloader
 
 		private void checkBoxSaveVodChunkInfo_CheckedChanged(object sender, EventArgs e)
 		{
-			config.SaveVodChunksInfo = checkBoxSaveVodChunkInfo.Checked;
+			config.SaveVodChunkInfo = checkBoxSaveVodChunkInfo.Checked;
 		}
 
 		private void listBoxChannelList_SelectedIndexChanged(object sender, EventArgs e)

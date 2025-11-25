@@ -21,7 +21,7 @@ namespace Twitch_prime_downloader
 		public int VodInfoHudFontSize { get; set; }
 		public bool UseGmtVodDates { get; set; }
 		public bool SaveVodInfo { get; set; }
-		public bool SaveVodChunksInfo { get; set; }
+		public bool SaveVodChunkInfo { get; set; }
 		public bool DebugMode { get; set; }
 		public string ApiApplicationTitle { get; set; }
 		public string ApiApplicationDescription { get; set; }
@@ -55,7 +55,7 @@ namespace Twitch_prime_downloader
 			BrowserExeFilePath = "firefox.exe";
 			UseGmtVodDates = true;
 			SaveVodInfo = true;
-			SaveVodChunksInfo = false;
+			SaveVodChunkInfo = false;
 		}
 
 		public void Load()
