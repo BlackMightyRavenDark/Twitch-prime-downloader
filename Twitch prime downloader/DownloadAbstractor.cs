@@ -86,7 +86,8 @@ namespace Twitch_prime_downloader
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
-				JArray jaChunks = config.SaveVodChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
+				bool saveChunkInfo = config.SaveVodChunkInfo;
+				JArray jaChunks = saveChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
 					VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
 
@@ -228,7 +229,7 @@ namespace Twitch_prime_downloader
 										{
 											string fn = Path.Combine(outputFilePath, progressItem.VodChunk.FileName);
 											success = SaveStreamToFile(progressItem.OutputStream, fn);
-											if (success)
+											if (success && saveChunkInfo)
 											{
 												JObject jChunk = progressItem.VodChunk.Serialize(-1L, progressItem.ChunkSize);
 												File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
