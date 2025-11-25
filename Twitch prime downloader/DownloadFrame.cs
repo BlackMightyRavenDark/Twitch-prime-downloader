@@ -16,12 +16,12 @@ namespace Twitch_prime_downloader
 	public partial class DownloadFrame : UserControl
 	{ 
 		private DownloadAbstractor downloadAbstractor = null;
-		public TwitchVod StreamInfo { get; private set; }
-		public string OutputDirPath { get; private set; }
-		public string OutputFilePathOrig { get; private set; }
+		public TwitchVod VodInfo { get; private set; }
+		public string OutputDirectory { get; private set; }
+		public string OutputFilePathOriginal { get; private set; }
 		public string OutputFilePath { get; private set; }
-		public int ChunkFrom { get { return _chunkFrom; } set { SetChunkFrom(value); } }
-		public int ChunkTo { get { return _chunkTo; } set { SetChunkTo(value); } }
+		public int ChunkFrom { get => _chunkFrom; set { SetChunkFrom(value); } }
+		public int ChunkTo { get => _chunkTo; set { SetChunkTo(value); } }
 		public int ChunkGroupSize { get; private set; } = 3;
 		public DownloadMode DownloadMode { get; private set; }
 		public DateTime DownloadStarted { get; private set; }
@@ -33,7 +33,7 @@ namespace Twitch_prime_downloader
 
 		private int _chunkFrom = 0;
 		private int _chunkTo = 10;
-		private string _fixedFileName;
+		private string _fixedFileNameWithoutExt;
 
 		public const int EXTRA_WIDTH = 450;
 		private int fcstId = 0;
@@ -42,25 +42,18 @@ namespace Twitch_prime_downloader
 		public delegate void ClosedDelegate(object sender);
 		public ClosedDelegate Closed;
 
-		public DownloadFrame(TwitchVod streamInfo, TwitchVodPlaylist vodPlaylist)
+		public DownloadFrame(TwitchVod vodInfo, TwitchVodPlaylist vodPlaylist)
 		{
 			InitializeComponent();
 
 			Playlist = vodPlaylist;
-			OutputDirPath = config.DownloadDirectory;
-			SetStreamInfo(streamInfo);
+			DownloadMode = radioButtonDownloadChunksSeparately.Checked ? DownloadMode.Chunked : DownloadMode.SingleFile;
+			OutputDirectory = config.DownloadDirectory ?? config.SelfDirectory;
+			SetStreamInfo(vodInfo);
 
-			OnFrameCreate();
-		}
-
-		private void OnFrameCreate()
-		{
 			lblProgressChunkGroup.Text = null;
 			lblElapsedTime.Text = null;
 			pictureBoxScrollBar.Top = Height - pictureBoxScrollBar.Height;
-
-			lblOutputFileName.Text = DownloadMode == DownloadMode.SingleFile ?
-				$"Имя файла: {OutputFilePathOrig}" : $"Папка для скачивания: {OutputFilePathOrig}";
 		}
 
 		public void FrameDispose()
@@ -135,21 +128,21 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				using (Font fnt = new Font("Arial", 12.0f))
+				using (Font font = new Font("Arial", 12.0f))
 				{
-					if (StreamInfo.Duration > TimeSpan.MinValue)
+					if (VodInfo.Duration > TimeSpan.MinValue)
 					{
-						string t = StreamInfo.Duration.ToString("h':'mm':'ss");
-						SizeF sz = e.Graphics.MeasureString(t, fnt);
+						string t = VodInfo.Duration.ToString("h':'mm':'ss");
+						SizeF sz = e.Graphics.MeasureString(t, font);
 						e.Graphics.FillRectangle(Brushes.Black, new RectangleF(0.0f, 0.0f, sz.Width, sz.Height));
-						e.Graphics.DrawString(t, fnt, Brushes.Lime, 0.0f, 0.0f);
+						e.Graphics.DrawString(t, font, Brushes.Lime, 0.0f, 0.0f);
 					}
-					if (StreamInfo.IsSubscribersOnly)
+					if (VodInfo.IsSubscribersOnly)
 					{
-						SizeF sz = e.Graphics.MeasureString("$", fnt);
+						SizeF sz = e.Graphics.MeasureString("$", font);
 						float x = (sender as PictureBox).Width - sz.Width;
 						e.Graphics.FillRectangle(Brushes.Black, new RectangleF(x, 0.0f, sz.Width, sz.Height));
-						e.Graphics.DrawString("$", fnt, Brushes.Lime, x, 0.0f);
+						e.Graphics.DrawString("$", font, Brushes.Lime, x, 0.0f);
 					}
 				}
 			}
@@ -251,7 +244,7 @@ namespace Twitch_prime_downloader
 
 		private void miCopyVodTitleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SetClipboardText(StreamInfo.Title);
+			SetClipboardText(VodInfo.Title);
 		}
 
 		private void miDecreaseChunkGroupSizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -289,17 +282,13 @@ namespace Twitch_prime_downloader
 		private void radioButtonDownloadSingleBigVideoFile_CheckedChanged(object sender, EventArgs e)
 		{
 			DownloadMode = DownloadMode.SingleFile;
-			string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts";
-			OutputFilePathOrig = Path.Combine(OutputDirPath, fn);
-			lblOutputFileName.Text = $"Имя файла: {OutputFilePathOrig}";
+			DisplayOutputFilePathOrDirectory();
 		}
 
 		private void radioButtonDownloadChunksSeparately_CheckedChanged(object sender, EventArgs e)
 		{
 			DownloadMode = DownloadMode.Chunked;
-			string fn = StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight]" : _fixedFileName;
-			OutputFilePathOrig = Path.Combine(OutputDirPath, fn + "\\");
-			lblOutputFileName.Text = $"Папка для скачивания: {OutputFilePathOrig}";
+			DisplayOutputFilePathOrDirectory();
 		}
 
 		private void textBoxChunkFrom_Leave(object sender, EventArgs e)
@@ -355,10 +344,7 @@ namespace Twitch_prime_downloader
 		private void timerAnimation_Tick(object sender, EventArgs e)
 		{
 			fcstId++;
-			if (fcstId > 7)
-			{
-				fcstId = 0;
-			}
+			if (fcstId > 7) { fcstId = 0; }
 
 			pictureBoxAnimation.Image = (Bitmap)Resources.ResourceManager.GetObject($"fcst_istra_0{fcstId + 1}");
 		}
@@ -474,16 +460,17 @@ namespace Twitch_prime_downloader
 			IsDownloading = true;
 			btnStartDownload.Enabled = false;
 			DownloadStarted = DateTime.Now;
+			lblProgressChunkGroup.Text = null;
 			lblElapsedTime.Text = "Прошло времени: 0:00:00";
 			timerElapsedTime.Enabled = true;
 			if (DownloadMode == DownloadMode.SingleFile)
 			{
-				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOrig);
+				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOriginal + ".ts");
 				lblOutputFileName.Text = "Имя файла: " + OutputFilePath;
 			}
 			else
 			{
-				OutputFilePath = GetNumberedDirectoryName(OutputFilePathOrig);
+				OutputFilePath = GetNumberedDirectoryName(OutputFilePathOriginal);
 				lblOutputFileName.Text = $"Папка для скачивания: {OutputFilePath}";
 			}
 			TotalChunkDownloadedCount = 0;
@@ -508,7 +495,7 @@ namespace Twitch_prime_downloader
 			{
 				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
-					_chunkFrom, ChunkTo, DownloadMode, StreamInfo.RawData,
+					_chunkFrom, ChunkTo, DownloadMode, VodInfo.RawData,
 					OnGroupDownloadStarted, OnGroupDownloadProgressed, OnGroupDownloadFinished,
 					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
 			});
@@ -517,69 +504,66 @@ namespace Twitch_prime_downloader
 			timerElapsedTime.Enabled = false;
 			timerAnimation.Enabled = false;
 
-			string msgCaption = StreamInfo.IsSubscribersOnly ? "Скачиватор платного бесплатно" : "Скачивание";
+			string msgCaption = VodInfo.IsSubscribersOnly ? "Скачиватор платного бесплатно" : "Скачивание";
 			switch (errorCode)
 			{
 				case 200:
-					{
-						string msg = $"{StreamInfo.Title}\nСкачано успешно!";
-						MessageBox.Show(msg, msgCaption,
-							MessageBoxButtons.OK, MessageBoxIcon.Information);
-					}
+					MessageBox.Show($"{VodInfo.Title}\nСкачано успешно!", msgCaption,
+						MessageBoxButtons.OK, MessageBoxIcon.Information);
 					break;
 
 				case FileDownloader.DOWNLOAD_ERROR_CANCELED:
-					MessageBox.Show($"{StreamInfo.Title}\nСкачивание успешно отменено!", msgCaption,
+					MessageBox.Show($"{VodInfo.Title}\nСкачивание успешно отменено!", msgCaption,
 						MessageBoxButtons.OK, MessageBoxIcon.Warning);
 					break;
 
 				case FileDownloader.DOWNLOAD_ERROR_DATA_SIZE_MISMATCH:
-					MessageBox.Show($"{StreamInfo.Title}\nОшибка DATA_SIZE_MISMATCH!\nСкачивание прервано!",
+					MessageBox.Show($"{VodInfo.Title}\nОшибка DATA_SIZE_MISMATCH!\nСкачивание прервано!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
-					MessageBox.Show($"{StreamInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
+					MessageBox.Show($"{VodInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS:
-					MessageBox.Show($"{StreamInfo.Title}\nПапка для скачивания не найдена!",
+					MessageBox.Show($"{VodInfo.Title}\nПапка для скачивания не найдена!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
-					MessageBox.Show($"{StreamInfo.Title}\nФайл на сервере пуст!",
+					MessageBox.Show($"{VodInfo.Title}\nФайл на сервере пуст!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_EMPTY:
-					MessageBox.Show($"{StreamInfo.Title}\nГруппа чанков пуста!",
+					MessageBox.Show($"{VodInfo.Title}\nГруппа чанков пуста!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_SEQUENCE:
-					MessageBox.Show($"{StreamInfo.Title}\nНеправильная последовательность чанков!",
+					MessageBox.Show($"{VodInfo.Title}\nНеправильная последовательность чанков!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_RANGE:
-					MessageBox.Show($"{StreamInfo.Title}\nУказан неверный диапазон чанков!",
+					MessageBox.Show($"{VodInfo.Title}\nУказан неверный диапазон чанков!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE:
-					MessageBox.Show($"{StreamInfo.Title}\nОдин из чанков скачался неудачно!\nСкачивание прервано!",
+					MessageBox.Show($"{VodInfo.Title}\nОдин из чанков скачался неудачно!\nСкачивание прервано!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				case DownloadAbstractor.DOWNLOAD_ERROR_EMPTY_CHUNK:
-					MessageBox.Show($"{StreamInfo.Title}\nОдин из скачанных чанков оказался пуст!\nСкачивание прервано!",
+					MessageBox.Show($"{VodInfo.Title}\nОдин из скачанных чанков оказался пуст!\nСкачивание прервано!",
 						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
 
 				default:
-					MessageBox.Show($"{StreamInfo.Title}\nНеизвестная ошибка!" +
+					MessageBox.Show($"{VodInfo.Title}\nНеизвестная ошибка!" +
 						$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
 					break;
@@ -602,26 +586,13 @@ namespace Twitch_prime_downloader
 
 		public void SetStreamInfo(TwitchVod vod)
 		{
-			StreamInfo = vod;
-			lblVodTitle.Text = $"Стрим: {StreamInfo.Title}";
-			_fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, StreamInfo));
-			if (radioButtonDownloadSingleBigVideoFile.Checked)
-			{
-				DownloadMode = DownloadMode.SingleFile;
-				OutputFilePathOrig = Path.Combine(OutputDirPath,
-					 StreamInfo.IsHighlight ? $"{_fixedFileName} [highlight].ts" : $"{_fixedFileName}.ts");
-				lblOutputFileName.Text = $"Имя файла: {OutputFilePathOrig}";
-			}
-			else
-			{
-				DownloadMode = DownloadMode.Chunked;
-				OutputFilePathOrig = Path.Combine(OutputDirPath, _fixedFileName);
-				lblOutputFileName.Text = $"Папка для скачивания: {OutputFilePathOrig}";
-			}
+			VodInfo = vod;
+			lblVodTitle.Text = $"Стрим: {VodInfo.Title}";
+			_fixedFileNameWithoutExt = FixFileName(FormatFileName(config.OutputFileNameFormat, VodInfo));
+			DisplayOutputFilePathOrDirectory();
 
-			Image image = TryLoadImageFromStream(vod.ThumbnailImageData);
-			if (image == null) { image = GenerateErrorImage(); }
-			pictureBoxVodThumbnailImage.Image = image;
+			pictureBoxVodThumbnailImage.Image =
+				TryLoadImageFromStream(vod.ThumbnailImageData) ?? GenerateErrorImage();
 
 			listBoxChunkFileList.Items.Clear();
 			if (Playlist != null && Playlist.Count > 0)
@@ -677,6 +648,15 @@ namespace Twitch_prime_downloader
 
 				SetChunkCountIndicators();
 			}
+		}
+
+		private void DisplayOutputFilePathOrDirectory()
+		{
+			string fn = VodInfo.IsHighlight ? $"{_fixedFileNameWithoutExt} [highlight]" : _fixedFileNameWithoutExt;
+			OutputFilePathOriginal = Path.Combine(OutputDirectory, fn);
+			lblOutputFileName.Text = DownloadMode == DownloadMode.SingleFile ?
+				$"Имя файла: {OutputFilePathOriginal}.ts" :
+				$"Папка для скачивания: {OutputFilePathOriginal + "\\"}";
 		}
 	}
 }
