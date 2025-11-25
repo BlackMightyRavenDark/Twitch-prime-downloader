@@ -10,6 +10,7 @@ using TwitchApiLib;
 using static TwitchApiLib.TwitchVodChunk;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
+using System.Threading;
 
 namespace Twitch_prime_downloader
 {
@@ -34,6 +35,7 @@ namespace Twitch_prime_downloader
 		private int _chunkFrom = 0;
 		private int _chunkTo = 10;
 		private string _fixedFileNameWithoutExt;
+		private bool _isAborted = false;
 
 		public const int EXTRA_WIDTH = 450;
 		private int fcstId = 0;
@@ -57,11 +59,6 @@ namespace Twitch_prime_downloader
 			lblProgressChunkGroup.Text = null;
 			lblElapsedTime.Text = null;
 			pictureBoxScrollBar.Top = Height - pictureBoxScrollBar.Height;
-		}
-
-		public void FrameDispose()
-		{
-			StopDownload();
 		}
 
 		private void downloadFrame_Resize(object sender, EventArgs e)
@@ -197,12 +194,25 @@ namespace Twitch_prime_downloader
 #endif
 		}
 
-		private void btnCloseFrame_Click(object sender, EventArgs e)
+		private async void btnCloseFrame_Click(object sender, EventArgs e)
 		{
 			if (MessageBox.Show("Закрыть фрейм?", "Быть или не быть?",
 				MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 			{
-				FrameDispose();
+				_isAborted = true;
+				btnCloseFrame.Enabled =
+				btnStartDownload.Enabled =
+				btnStopDownload.Enabled = false;
+
+				if (IsDownloading)
+				{
+					StopDownload();
+					await Task.Run(() =>
+					{
+						while (IsDownloading) { Thread.Sleep(200); }
+					});
+				}
+
 				Closed?.Invoke(this);
 				Dispose();
 			}
@@ -457,6 +467,7 @@ namespace Twitch_prime_downloader
 
 		private async void StartDownload()
 		{
+			if (_isAborted) { return; }
 			if (IsDownloading)
 			{
 				btnStartDownload.Enabled = false;
@@ -510,78 +521,80 @@ namespace Twitch_prime_downloader
 
 			timerElapsedTime.Enabled = false;
 			timerAnimation.Enabled = false;
-
-			string msgCaption = VodInfo.IsSubscribersOnly ? "Скачиватор платного бесплатно" : "Скачивание";
-			switch (errorCode)
+			if (!_isAborted)
 			{
-				case 200:
-					MessageBox.Show($"{VodInfo.Title}\nСкачано успешно!", msgCaption,
-						MessageBoxButtons.OK, MessageBoxIcon.Information);
-					break;
+				string msgCaption = VodInfo.IsSubscribersOnly ? "Скачиватор платного бесплатно" : "Скачивание";
+				switch (errorCode)
+				{
+					case 200:
+						MessageBox.Show($"{VodInfo.Title}\nСкачано успешно!", msgCaption,
+							MessageBoxButtons.OK, MessageBoxIcon.Information);
+						break;
 
-				case FileDownloader.DOWNLOAD_ERROR_CANCELED:
-					MessageBox.Show($"{VodInfo.Title}\nСкачивание успешно отменено!", msgCaption,
-						MessageBoxButtons.OK, MessageBoxIcon.Warning);
-					break;
+					case FileDownloader.DOWNLOAD_ERROR_CANCELED:
+						MessageBox.Show($"{VodInfo.Title}\nСкачивание успешно отменено!", msgCaption,
+							MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						break;
 
-				case FileDownloader.DOWNLOAD_ERROR_DATA_SIZE_MISMATCH:
-					MessageBox.Show($"{VodInfo.Title}\nОшибка DATA_SIZE_MISMATCH!\nСкачивание прервано!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case FileDownloader.DOWNLOAD_ERROR_DATA_SIZE_MISMATCH:
+						MessageBox.Show($"{VodInfo.Title}\nОшибка DATA_SIZE_MISMATCH!\nСкачивание прервано!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
-					MessageBox.Show($"{VodInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS:
+						MessageBox.Show($"{VodInfo.Title}\nОшибка объединения чанков!\nСкачивание прервано!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS:
-					MessageBox.Show($"{VodInfo.Title}\nПапка для скачивания не найдена!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS:
+						MessageBox.Show($"{VodInfo.Title}\nПапка для скачивания не найдена!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
-					MessageBox.Show($"{VodInfo.Title}\nФайл на сервере пуст!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case FileDownloader.DOWNLOAD_ERROR_ZERO_LENGTH_CONTENT:
+						MessageBox.Show($"{VodInfo.Title}\nФайл на сервере пуст!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_EMPTY:
-					MessageBox.Show($"{VodInfo.Title}\nГруппа чанков пуста!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_EMPTY:
+						MessageBox.Show($"{VodInfo.Title}\nГруппа чанков пуста!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_SEQUENCE:
-					MessageBox.Show($"{VodInfo.Title}\nНеправильная последовательность чанков!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_GROUP_SEQUENCE:
+						MessageBox.Show($"{VodInfo.Title}\nНеправильная последовательность чанков!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_RANGE:
-					MessageBox.Show($"{VodInfo.Title}\nУказан неверный диапазон чанков!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_RANGE:
+						MessageBox.Show($"{VodInfo.Title}\nУказан неверный диапазон чанков!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE:
-					MessageBox.Show($"{VodInfo.Title}\nОдин из чанков скачался неудачно!\nСкачивание прервано!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE:
+						MessageBox.Show($"{VodInfo.Title}\nОдин из чанков скачался неудачно!\nСкачивание прервано!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				case DownloadAbstractor.DOWNLOAD_ERROR_EMPTY_CHUNK:
-					MessageBox.Show($"{VodInfo.Title}\nОдин из скачанных чанков оказался пуст!\nСкачивание прервано!",
-						msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					case DownloadAbstractor.DOWNLOAD_ERROR_EMPTY_CHUNK:
+						MessageBox.Show($"{VodInfo.Title}\nОдин из скачанных чанков оказался пуст!\nСкачивание прервано!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
 
-				default:
-					MessageBox.Show($"{VodInfo.Title}\nНеизвестная ошибка!" +
-						$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
-						MessageBoxButtons.OK, MessageBoxIcon.Error);
-					break;
+					default:
+						MessageBox.Show($"{VodInfo.Title}\nНеизвестная ошибка!" +
+							$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,
+							MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
+				}
+
+				textBoxChunkFrom.Enabled = true;
+				textBoxChunkTo.Enabled = true;
+				btnSetMaxChunkTo.Enabled = true;
+				radioButtonDownloadSingleBigVideoFile.Enabled = true;
+				radioButtonDownloadChunksSeparately.Enabled = true;
+				btnStartDownload.Enabled = true;
 			}
-
-			textBoxChunkFrom.Enabled = true;
-			textBoxChunkTo.Enabled = true;
-			btnSetMaxChunkTo.Enabled = true;
-			radioButtonDownloadSingleBigVideoFile.Enabled = true;
-			radioButtonDownloadChunksSeparately.Enabled = true;
-			btnStartDownload.Enabled = true;
 
 			IsDownloading = false;
 		}
