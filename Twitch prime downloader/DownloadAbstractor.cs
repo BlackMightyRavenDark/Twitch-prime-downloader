@@ -86,8 +86,7 @@ namespace Twitch_prime_downloader
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
-				bool saveChunksInfo = config.SaveVodChunksInfo;
-				JArray jaChunks = saveChunksInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
+				JArray jaChunks = config.SaveVodChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
 					VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
 
