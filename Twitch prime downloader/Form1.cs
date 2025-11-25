@@ -174,7 +174,6 @@ namespace Twitch_prime_downloader
 			ClearVodFrames();
 			foreach (DownloadFrame frame in downloadFrames)
 			{
-				frame.FrameDispose();
 				frame.Dispose();
 			}
 
