@@ -48,6 +48,9 @@ namespace Twitch_prime_downloader
 
 			Playlist = vodPlaylist;
 			DownloadMode = radioButtonDownloadChunksSeparately.Checked ? DownloadMode.Chunked : DownloadMode.SingleFile;
+			string t = DownloadMode == DownloadMode.SingleFile ? "файл" : "папка";
+			toolTip1.SetToolTip(lblOutputFileName,
+				$"Если {t} уже существует, будет использовано пронумерованное имя");
 			OutputDirectory = config.DownloadDirectory ?? config.SelfDirectory;
 			SetStreamInfo(vodInfo);
 
@@ -282,12 +285,16 @@ namespace Twitch_prime_downloader
 		private void radioButtonDownloadSingleBigVideoFile_CheckedChanged(object sender, EventArgs e)
 		{
 			DownloadMode = DownloadMode.SingleFile;
+			toolTip1.SetToolTip(lblOutputFileName,
+				"Если файл уже существует, будет использовано пронумерованное имя");
 			DisplayOutputFilePathOrDirectory();
 		}
 
 		private void radioButtonDownloadChunksSeparately_CheckedChanged(object sender, EventArgs e)
 		{
 			DownloadMode = DownloadMode.Chunked;
+			toolTip1.SetToolTip(lblOutputFileName,
+				"Если папка уже существует, будет использовано пронумерованное имя");
 			DisplayOutputFilePathOrDirectory();
 		}
 
