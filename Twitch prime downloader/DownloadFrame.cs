@@ -207,7 +207,7 @@ namespace Twitch_prime_downloader
 					StopDownload();
 					await Task.Run(() =>
 					{
-						while (IsDownloading) { Thread.Sleep(200); }
+						do { Thread.Sleep(200); } while (IsDownloading);
 					});
 				}
 

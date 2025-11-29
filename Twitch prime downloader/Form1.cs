@@ -15,8 +15,8 @@ namespace Twitch_prime_downloader
 {
 	public partial class Form1 : Form
 	{
-		private VodFrame activeFrameStream = null;
-		private bool isClosing = false;
+		private VodFrame _activeFrameStream = null;
+		private bool _isClosing = false;
 
 		public Form1()
 		{
@@ -173,26 +173,26 @@ namespace Twitch_prime_downloader
 
 		private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			if (isClosing) { e.Cancel = true; return; }
+			if (_isClosing) { e.Cancel = true; return; }
 			if (IsUnfinishedTaskPresent())
 			{
 				e.Cancel = true;
 				string msg = $"Скачивание не завершено!{Environment.NewLine}Остановить скачивание и закрыть программу?";
 				if (MessageBox.Show(msg, "Вопрошающий вопрос",
-					MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+					MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
 				{
 					StopAllTasks();
 					await Task.Run(() =>
 					{
 						bool unfinished = true;
-						while (unfinished)
+						do
 						{
 							Thread.Sleep(200);
 							Invoke(new MethodInvoker(() => { unfinished = IsUnfinishedTaskPresent(); }));
-						}
+						} while (unfinished);
 					});
 
-					isClosing = false;
+					_isClosing = false;
 					Close();
 				}
 			}
@@ -201,10 +201,7 @@ namespace Twitch_prime_downloader
 		private void form1_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			ClearVodFrames();
-			foreach (DownloadFrame frame in downloadFrames)
-			{
-				frame.Dispose();
-			}
+			ClearDownloadFrames();
 
 			if (File.Exists(config.UrlListFilePath))
 			{
@@ -237,7 +234,7 @@ namespace Twitch_prime_downloader
 				frame.BackColor = VodFrame.ColorInactive;
 			}
 
-			activeFrameStream = null;
+			_activeFrameStream = null;
 		}
 
 		private async void btnSearchByChannelName_Click(object sender, EventArgs e)
@@ -619,12 +616,12 @@ namespace Twitch_prime_downloader
 			sfd.Filter = "jpg|*.jpg";
 			sfd.DefaultExt = ".jpg";
 			sfd.InitialDirectory = config.LastUsedDirectory;
-			string fn = FixFileName(FormatFileName(config.OutputFileNameFormat, activeFrameStream.StreamInfo));
+			string fn = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
 			sfd.FileName = fn + "_thumbnail";
 			if (sfd.ShowDialog() != DialogResult.Cancel)
 			{
 				config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
-				activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
+				_activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
 			}
 			sfd.Dispose();
 		}
@@ -647,13 +644,13 @@ namespace Twitch_prime_downloader
 			Process process = new Process();
 			process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFilePath);
 			process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFilePath);
-			process.StartInfo.Arguments = activeFrameStream.StreamInfo.Url;
+			process.StartInfo.Arguments = _activeFrameStream.StreamInfo.Url;
 			process.Start();
 		}
 
 		private void miCopyVodThumbnailImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			string url = activeFrameStream.StreamInfo?.FormatThumbnailTemplateUrl(1920, 1080);
+			string url = _activeFrameStream.StreamInfo?.FormatThumbnailTemplateUrl(1920, 1080);
 			if (!string.IsNullOrEmpty(url) && !string.IsNullOrWhiteSpace(url))
 			{
 				SetClipboardText(url);
@@ -662,26 +659,26 @@ namespace Twitch_prime_downloader
 
 		private void miCopyVideoUrl_Click(object sender, EventArgs e)
 		{
-			if (activeFrameStream != null && activeFrameStream.StreamInfo != null)
+			if (_activeFrameStream?.StreamInfo != null)
 			{
-				if (!string.IsNullOrEmpty(activeFrameStream.StreamInfo.Url) &&
-					!string.IsNullOrWhiteSpace(activeFrameStream.StreamInfo.Url))
+				if (!string.IsNullOrEmpty(_activeFrameStream.StreamInfo.Url) &&
+					!string.IsNullOrWhiteSpace(_activeFrameStream.StreamInfo.Url))
 				{
-					SetClipboardText(activeFrameStream.StreamInfo.Url);
+					SetClipboardText(_activeFrameStream.StreamInfo.Url);
 				}
 			}
 		}
 
 		private void miCopyVodInfoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			TwitchVod vod = activeFrameStream.StreamInfo;
-			if (!string.IsNullOrEmpty(vod.RawData) && !string.IsNullOrWhiteSpace(vod.RawData))
+			TwitchVod vod = _activeFrameStream?.StreamInfo;
+			if (vod != null && !string.IsNullOrEmpty(vod.RawData) && !string.IsNullOrWhiteSpace(vod.RawData))
 			{
 				SetClipboardText(vod.RawData);
 			}
 			else
 			{
-				MessageBox.Show("Информация о стриме пуста", "Ошибка!",
+				MessageBox.Show("Информация о стриме пуста!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 		}
@@ -690,7 +687,7 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				string playlistRaw = activeFrameStream.StreamInfo?.Playlist?.PlaylistRaw;
+				string playlistRaw = _activeFrameStream.StreamInfo?.Playlist?.PlaylistRaw;
 				if (!string.IsNullOrEmpty(playlistRaw) && !string.IsNullOrWhiteSpace(playlistRaw))
 				{
 					using (SaveFileDialog sfd = new SaveFileDialog())
@@ -699,7 +696,7 @@ namespace Twitch_prime_downloader
 						sfd.Filter = "*.m3u8|*.M3U8-files";
 						sfd.DefaultExt = ".m3u8";
 						sfd.InitialDirectory = config.DownloadDirectory;
-						sfd.FileName = FixFileName(FormatFileName(config.OutputFileNameFormat, activeFrameStream.StreamInfo)) + "_playlist.m3u8";
+						sfd.FileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo)) + "_playlist.m3u8";
 						if (sfd.ShowDialog() == DialogResult.OK)
 						{
 							if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
@@ -787,10 +784,10 @@ namespace Twitch_prime_downloader
 
 		private void OnVodFrame_Activated(object sender)
 		{
-			activeFrameStream = sender as VodFrame;
+			_activeFrameStream = sender as VodFrame;
 			foreach (VodFrame frameStream in vodFrames)
 			{
-				frameStream.BackColor = frameStream == activeFrameStream ?
+				frameStream.BackColor = frameStream == _activeFrameStream ?
 					VodFrame.ColorActive : VodFrame.ColorInactive;
 			}
 		}
@@ -857,6 +854,15 @@ namespace Twitch_prime_downloader
 			}
 
 			frameStream.btnDownload.Enabled = true;
+		}
+
+		private void ClearDownloadFrames()
+		{
+			foreach (DownloadFrame frame in downloadFrames)
+			{
+				frame.Dispose();
+			}
+			downloadFrames.Clear();
 		}
 
 		private void ClearVodFrames()
