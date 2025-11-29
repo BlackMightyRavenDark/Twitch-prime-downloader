@@ -37,6 +37,7 @@ namespace Twitch_prime_downloader
 			this.tabPageSettings = new System.Windows.Forms.TabPage();
 			this.tabControlSettings = new System.Windows.Forms.TabControl();
 			this.tabPageMainSettings = new System.Windows.Forms.TabPage();
+			this.checkBoxAskWhenClosingWithActiveTasks = new System.Windows.Forms.CheckBox();
 			this.groupBoxFilesAndFoldersSettings = new System.Windows.Forms.GroupBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
@@ -105,7 +106,6 @@ namespace Twitch_prime_downloader
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.miOpenVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.checkBoxAskWhenClosingWithActiveTasks = new System.Windows.Forms.CheckBox();
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
@@ -207,6 +207,17 @@ namespace Twitch_prime_downloader
 			this.tabPageMainSettings.Size = new System.Drawing.Size(796, 434);
 			this.tabPageMainSettings.TabIndex = 0;
 			this.tabPageMainSettings.Text = "Общее";
+			// 
+			// checkBoxAskWhenClosingWithActiveTasks
+			// 
+			this.checkBoxAskWhenClosingWithActiveTasks.AutoSize = true;
+			this.checkBoxAskWhenClosingWithActiveTasks.Location = new System.Drawing.Point(7, 205);
+			this.checkBoxAskWhenClosingWithActiveTasks.Name = "checkBoxAskWhenClosingWithActiveTasks";
+			this.checkBoxAskWhenClosingWithActiveTasks.Size = new System.Drawing.Size(423, 17);
+			this.checkBoxAskWhenClosingWithActiveTasks.TabIndex = 21;
+			this.checkBoxAskWhenClosingWithActiveTasks.Text = "Запрашивать подтверждение при закрытии программы во время скачивания";
+			this.checkBoxAskWhenClosingWithActiveTasks.UseVisualStyleBackColor = true;
+			this.checkBoxAskWhenClosingWithActiveTasks.CheckedChanged += new System.EventHandler(this.checkBoxAskWhenClosingWithActiveTasks_CheckedChanged);
 			// 
 			// groupBoxFilesAndFoldersSettings
 			// 
@@ -662,7 +673,7 @@ namespace Twitch_prime_downloader
 			// 
 			// btnAddChannelToList
 			// 
-			this.btnAddChannelToList.Location = new System.Drawing.Point(216, 17);
+			this.btnAddChannelToList.Location = new System.Drawing.Point(230, 17);
 			this.btnAddChannelToList.Name = "btnAddChannelToList";
 			this.btnAddChannelToList.Size = new System.Drawing.Size(75, 23);
 			this.btnAddChannelToList.TabIndex = 8;
@@ -675,7 +686,7 @@ namespace Twitch_prime_downloader
 			// 
 			this.textBoxChannelName.Location = new System.Drawing.Point(110, 19);
 			this.textBoxChannelName.Name = "textBoxChannelName";
-			this.textBoxChannelName.Size = new System.Drawing.Size(100, 20);
+			this.textBoxChannelName.Size = new System.Drawing.Size(114, 20);
 			this.textBoxChannelName.TabIndex = 7;
 			// 
 			// listBoxChannelList
@@ -929,17 +940,6 @@ namespace Twitch_prime_downloader
 			this.miOpenVideoInBrowserToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
 			this.miOpenVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
 			this.miOpenVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.miOpenVideoInBrowserToolStripMenuItem_Click);
-			// 
-			// checkBoxAskWhenClosingWithActiveTasks
-			// 
-			this.checkBoxAskWhenClosingWithActiveTasks.AutoSize = true;
-			this.checkBoxAskWhenClosingWithActiveTasks.Location = new System.Drawing.Point(7, 205);
-			this.checkBoxAskWhenClosingWithActiveTasks.Name = "checkBoxAskWhenClosingWithActiveTasks";
-			this.checkBoxAskWhenClosingWithActiveTasks.Size = new System.Drawing.Size(423, 17);
-			this.checkBoxAskWhenClosingWithActiveTasks.TabIndex = 21;
-			this.checkBoxAskWhenClosingWithActiveTasks.Text = "Запрашивать подтверждение при закрытии программы во время скачивания";
-			this.checkBoxAskWhenClosingWithActiveTasks.UseVisualStyleBackColor = true;
-			this.checkBoxAskWhenClosingWithActiveTasks.CheckedChanged += new System.EventHandler(this.checkBoxAskWhenClosingWithActiveTasks_CheckedChanged);
 			// 
 			// Form1
 			// 
