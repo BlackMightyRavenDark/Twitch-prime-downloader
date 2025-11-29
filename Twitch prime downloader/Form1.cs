@@ -59,6 +59,7 @@ namespace Twitch_prime_downloader
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunkInfo"] = config.SaveVodChunkInfo;
+				json["askWhenClosingWithActiveTasks"] = config.AskWhenClosingWithActiveTasks;
 				json["apiApplicationTitle"] = config.ApiApplicationTitle;
 				json["apiApplicationDescription"] = config.ApiApplicationDescription;
 				json["apiApplicationClientId"] = config.ApiApplicationClientId;
@@ -97,6 +98,10 @@ namespace Twitch_prime_downloader
 					JToken jt = json.Value<JToken>("saveVodChunkInfo");
 					config.SaveVodChunkInfo = jt == null || jt.Value<bool>();
 				}
+				{
+					JToken jt = json.Value<JToken>("askWhenClosingWithActiveTasks");
+					config.AskWhenClosingWithActiveTasks = jt == null || jt.Value<bool>();
+				}
 
 				config.ApiApplicationTitle = json.Value<string>("apiApplicationTitle");
 				config.ApiApplicationDescription = json.Value<string>("apiApplicationDescription");
@@ -116,6 +121,7 @@ namespace Twitch_prime_downloader
 				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
 				textBoxBrowserExePath.Text = config.BrowserExeFilePath;
+				checkBoxAskWhenClosingWithActiveTasks.Checked = config.AskWhenClosingWithActiveTasks;
 				textBoxApiApplicationTitle.Text = config.ApiApplicationTitle;
 				textBoxApiApplicationDescription.Text = config.ApiApplicationDescription;
 				textBoxHelixApiClientId.Text = config.ApiApplicationClientId;
@@ -178,7 +184,7 @@ namespace Twitch_prime_downloader
 			{
 				e.Cancel = true;
 				bool canClose = true;
-				if (e.CloseReason == CloseReason.UserClosing)
+				if (config.AskWhenClosingWithActiveTasks && e.CloseReason == CloseReason.UserClosing)
 				{
 					string msg = $"Скачивание не завершено!{Environment.NewLine}Остановить скачивание и закрыть программу?";
 					if (MessageBox.Show(msg, "Вопрошающий вопрос",
@@ -600,6 +606,11 @@ namespace Twitch_prime_downloader
 		private void checkBoxSaveVodChunkInfo_CheckedChanged(object sender, EventArgs e)
 		{
 			config.SaveVodChunkInfo = checkBoxSaveVodChunkInfo.Checked;
+		}
+
+		private void checkBoxAskWhenClosingWithActiveTasks_CheckedChanged(object sender, EventArgs e)
+		{
+			config.AskWhenClosingWithActiveTasks = checkBoxAskWhenClosingWithActiveTasks.Checked;
 		}
 
 		private void listBoxChannelList_SelectedIndexChanged(object sender, EventArgs e)

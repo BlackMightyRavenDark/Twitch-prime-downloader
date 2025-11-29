@@ -22,6 +22,7 @@ namespace Twitch_prime_downloader
 		public bool UseGmtVodDates { get; set; }
 		public bool SaveVodInfo { get; set; }
 		public bool SaveVodChunkInfo { get; set; }
+		public bool AskWhenClosingWithActiveTasks { get; set; }
 		public bool DebugMode { get; set; }
 		public string ApiApplicationTitle { get; set; }
 		public string ApiApplicationDescription { get; set; }
@@ -56,6 +57,7 @@ namespace Twitch_prime_downloader
 			UseGmtVodDates = true;
 			SaveVodInfo = true;
 			SaveVodChunkInfo = false;
+			AskWhenClosingWithActiveTasks = true;
 		}
 
 		public void Load()
