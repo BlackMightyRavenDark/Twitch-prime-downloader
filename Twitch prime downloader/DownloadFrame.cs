@@ -200,9 +200,7 @@ namespace Twitch_prime_downloader
 				MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 			{
 				_isAborted = true;
-				btnCloseFrame.Enabled =
-				btnStartDownload.Enabled =
-				btnStopDownload.Enabled = false;
+				EnableControls(false);
 
 				if (IsDownloading)
 				{
@@ -677,6 +675,24 @@ namespace Twitch_prime_downloader
 			lblOutputFileName.Text = DownloadMode == DownloadMode.SingleFile ?
 				$"Имя файла: {OutputFilePathOriginal}.ts" :
 				$"Папка для скачивания: {OutputFilePathOriginal + "\\"}";
+		}
+
+		private void EnableControls(bool enabled)
+		{
+			btnStartDownload.Enabled =
+			btnStopDownload.Enabled =
+			btnCopyVodChunkUrlList.Enabled =
+			btnCloseFrame.Enabled = enabled;
+		}
+
+		public void AbortDownload()
+		{
+			if (!_isAborted)
+			{
+				StopDownload();
+				_isAborted = true;
+				EnableControls(false);
+			}
 		}
 	}
 }

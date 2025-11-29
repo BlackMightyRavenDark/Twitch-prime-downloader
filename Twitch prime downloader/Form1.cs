@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
@@ -15,6 +16,7 @@ namespace Twitch_prime_downloader
 	public partial class Form1 : Form
 	{
 		private VodFrame activeFrameStream = null;
+		private bool isClosing = false;
 
 		public Form1()
 		{
@@ -167,6 +169,33 @@ namespace Twitch_prime_downloader
 			}
 
 			tabControlMain.SelectedTab = tabPageSearch;
+		}
+
+		private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (isClosing) { e.Cancel = true; return; }
+			if (IsUnfinishedTaskPresent())
+			{
+				e.Cancel = true;
+				string msg = $"Скачивание не завершено!{Environment.NewLine}Остановить скачивание и закрыть программу?";
+				if (MessageBox.Show(msg, "Вопрошающий вопрос",
+					MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+				{
+					StopAllTasks();
+					await Task.Run(() =>
+					{
+						bool unfinished = true;
+						while (unfinished)
+						{
+							Thread.Sleep(200);
+							Invoke(new MethodInvoker(() => { unfinished = IsUnfinishedTaskPresent(); }));
+						}
+					});
+
+					isClosing = false;
+					Close();
+				}
+			}
 		}
 
 		private void form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -951,6 +980,19 @@ namespace Twitch_prime_downloader
 			}
 
 			return true;
+		}
+
+		private static bool IsUnfinishedTaskPresent()
+		{
+			return downloadFrames.Any(frame => frame.IsDownloading);
+		}
+
+		private static void StopAllTasks()
+		{
+			foreach (DownloadFrame frame in downloadFrames)
+			{
+				frame.AbortDownload();
+			}
 		}
 	}
 }
