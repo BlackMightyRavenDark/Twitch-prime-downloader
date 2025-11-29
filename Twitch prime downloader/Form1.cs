@@ -177,10 +177,17 @@ namespace Twitch_prime_downloader
 			if (IsUnfinishedTaskPresent())
 			{
 				e.Cancel = true;
-				string msg = $"Скачивание не завершено!{Environment.NewLine}Остановить скачивание и закрыть программу?";
-				if (MessageBox.Show(msg, "Вопрошающий вопрос",
-					MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+				bool canClose = true;
+				if (e.CloseReason == CloseReason.UserClosing)
 				{
+					string msg = $"Скачивание не завершено!{Environment.NewLine}Остановить скачивание и закрыть программу?";
+					if (MessageBox.Show(msg, "Вопрошающий вопрос",
+						MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No)
+					{
+						canClose = false;
+					}
+				}
+				if (canClose) {
 					StopAllTasks();
 					await Task.Run(() =>
 					{
