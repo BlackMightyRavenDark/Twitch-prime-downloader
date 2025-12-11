@@ -191,16 +191,16 @@ namespace Twitch_prime_downloader
 							if (!statusesOk)
 							{
 								ClearGarbage(items);
-								downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE);
-								return DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
+								lastErrorCode = DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
+								break;
 							}
 
 							bool hasEmptyChunk = items.Any(item => item.ChunkSize <= 0L || item.OutputStream == null || item.OutputStream.Length == 0L);
 							if (hasEmptyChunk)
 							{
 								ClearGarbage(items);
-								downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_EMPTY_CHUNK);
-								return DOWNLOAD_ERROR_EMPTY_CHUNK;
+								lastErrorCode = DOWNLOAD_ERROR_EMPTY_CHUNK;
+								break;
 							}
 
 							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
