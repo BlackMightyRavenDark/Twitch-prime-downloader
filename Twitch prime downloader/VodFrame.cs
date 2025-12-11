@@ -65,7 +65,7 @@ namespace Twitch_prime_downloader
 			StreamInfo = vod;
 			lblVodTitle.Text = StreamInfo.Title;
 			lblChannelName.Text = StreamInfo.User.DisplayName;
-			lblGameName.Text = StreamInfo.Game.Title;
+			lblGameName.Text = StreamInfo.Game?.Title;
 			lblBroadcastType.Text = StreamInfo.VodType.ToString();
 			lblIsPrime.Visible = StreamInfo.IsSubscribersOnly;
 
