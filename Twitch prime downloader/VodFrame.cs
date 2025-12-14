@@ -68,16 +68,29 @@ namespace Twitch_prime_downloader
 			lblBroadcastType.Text = StreamInfo.VodType.ToString();
 			lblIsPrime.Visible = StreamInfo.IsSubscribersOnly;
 
-			MutedSegments = await Task.Run(() =>
+			await Task.Run(() =>
 			{
-				if (vod.Playlist == null) { vod.UpdatePlaylistManifest(); }
-				if (vod.Playlist != null)
+				Task[] tasks = new Task[]
 				{
-					vod.Playlist.Parse();
-					return vod.Playlist.MutedSegments;
-				}
-
-				return null;
+					Task.Run(() =>
+					{
+						if (vod.Playlist == null) { vod.UpdatePlaylistManifest(); }
+						if (vod.Playlist != null && vod.Playlist.Parse() > 0)
+						{
+							MutedSegments = vod.Playlist.MutedSegments;
+						}
+					}),
+					Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
+					Task.Run(() =>
+					{
+						int errorCode = StreamInfo.UpdateGameInformation();
+						if (errorCode == 200 || errorCode == 204)
+						{
+							StreamInfo.Game.ReceiveThumbnail(52, 72);
+						}
+					})
+				};
+				Task.WhenAll(tasks).Wait();
 			});
 
 			if (MutedSegments != null && MutedSegments.Segments.Count > 0)
@@ -91,20 +104,6 @@ namespace Twitch_prime_downloader
 				lblMutedChunks.Visible = false;
 			}
 
-			Task[] tasks = new Task[]
-			{
-				Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
-				Task.Run(() =>
-				{
-					int errorCode = StreamInfo.UpdateGameInformation();
-					if (errorCode == 200 || errorCode == 204)
-					{
-						StreamInfo.Game.ReceiveThumbnail(52, 72);
-					}
-				})
-			};
-			await Task.WhenAll(tasks);
-
 			Image imagePreview = TryLoadImageFromStream(StreamInfo.ThumbnailImageData) ?? GenerateErrorImage();
 			pictureBoxThumbnailImageVod.Image = imagePreview;
 			if (StreamInfo.Game != null)
@@ -112,6 +111,11 @@ namespace Twitch_prime_downloader
 				if (StreamInfo.Game.IsKnown)
 				{
 					lblGameName.Text = StreamInfo.Game.Title;
+					lblGameName.Visible = true;
+				}
+				else
+				{
+					lblGameName.Visible = false;
 				}
 
 				pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game.ThumbnailImageData);
