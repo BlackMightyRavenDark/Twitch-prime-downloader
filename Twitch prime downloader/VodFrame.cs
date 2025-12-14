@@ -65,7 +65,6 @@ namespace Twitch_prime_downloader
 			StreamInfo = vod;
 			lblVodTitle.Text = StreamInfo.Title;
 			lblChannelName.Text = StreamInfo.User.DisplayName;
-			lblGameName.Text = StreamInfo.Game?.Title;
 			lblBroadcastType.Text = StreamInfo.VodType.ToString();
 			lblIsPrime.Visible = StreamInfo.IsSubscribersOnly;
 
@@ -95,13 +94,28 @@ namespace Twitch_prime_downloader
 			Task[] tasks = new Task[]
 			{
 				Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
-				Task.Run(() => StreamInfo.Game?.ReceiveThumbnail(52, 72))
+				Task.Run(() =>
+				{
+					int errorCode = StreamInfo.UpdateGameInformation();
+					if (errorCode == 200 || errorCode == 204)
+					{
+						StreamInfo.Game.ReceiveThumbnail(52, 72);
+					}
+				})
 			};
 			await Task.WhenAll(tasks);
 
 			Image imagePreview = TryLoadImageFromStream(StreamInfo.ThumbnailImageData) ?? GenerateErrorImage();
 			pictureBoxThumbnailImageVod.Image = imagePreview;
-			pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game?.ThumbnailImageData);
+			if (StreamInfo.Game != null)
+			{
+				if (StreamInfo.Game.IsKnown)
+				{
+					lblGameName.Text = StreamInfo.Game.Title;
+				}
+
+				pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game.ThumbnailImageData);
+			}
 		}
 
 		private void pictureBoxThumbnailImageVod_Paint(object sender, PaintEventArgs e)
