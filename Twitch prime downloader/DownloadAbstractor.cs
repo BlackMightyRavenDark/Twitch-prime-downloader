@@ -283,19 +283,43 @@ namespace Twitch_prime_downloader
 				_cancellationTokenSource.Dispose();
 				_cancellationTokenSource = null;
 
-				if (config.SaveVodInfo && !string.IsNullOrEmpty(rawVodInfo))
+				try
 				{
-					string infoFilePath = downloadMode == DownloadMode.SingleFile ?
-						outputFilePath + "_info.json" :
-						Path.Combine(outputFilePath, "_info.json");
-					File.WriteAllText(infoFilePath, rawVodInfo);
+					if (config.SaveVodInfo && !string.IsNullOrEmpty(rawVodInfo))
+					{
+						string infoFilePath = downloadMode == DownloadMode.SingleFile ?
+							outputFilePath + "_info.json" :
+							Path.Combine(outputFilePath, "_info.json");
+						File.WriteAllText(infoFilePath, rawVodInfo);
+					}
+				}
+#if DEBUG
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine(ex.Message);
+#else
+				catch
+				{
+#endif
 				}
 
-				if (jaChunks != null && jaChunks.Count > 0)
+				try
 				{
-					string chunksFilePath = outputFilePath + "_chunks.json";
-					if (File.Exists(chunksFilePath)) { File.Delete(chunksFilePath); }
-					File.WriteAllText(chunksFilePath, jaChunks.ToString());
+					if (jaChunks != null && jaChunks.Count > 0)
+					{
+						string chunksFilePath = outputFilePath + "_chunks.json";
+						if (File.Exists(chunksFilePath)) { File.Delete(chunksFilePath); }
+						File.WriteAllText(chunksFilePath, jaChunks.ToString());
+					}
+				}
+#if DEBUG
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine(ex.Message);
+#else
+				catch
+				{
+#endif
 				}
 
 				downloadCompleted?.Invoke(this, lastErrorCode);
