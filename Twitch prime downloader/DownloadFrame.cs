@@ -579,6 +579,12 @@ namespace Twitch_prime_downloader
 							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
 						break;
 
+					case DownloadAbstractor.DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH:
+						MessageBox.Show($"{VodInfo.Title}\nОдин из скачанных чанков не соответствует размеру, который указан на сервере! " +
+							"Вероятно, во время скачивания произошла ошибка!\nСкачивание прервано!",
+							msgCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+						break;
+
 					default:
 						MessageBox.Show($"{VodInfo.Title}\nНеизвестная ошибка!" +
 							$"\nСкачивание прервано!\nКод ошибки: {errorCode}", msgCaption,

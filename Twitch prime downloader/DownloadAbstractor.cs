@@ -32,6 +32,7 @@ namespace Twitch_prime_downloader
 		public const int DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS = int.MaxValue - 3;
 		public const int DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE = int.MaxValue - 4;
 		public const int DOWNLOAD_ERROR_EMPTY_CHUNK = int.MaxValue - 5;
+		public const int DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH = int.MaxValue - 6;
 
 		private CancellationTokenSource _cancellationTokenSource;
 
@@ -200,6 +201,14 @@ namespace Twitch_prime_downloader
 							{
 								ClearGarbage(items);
 								lastErrorCode = DOWNLOAD_ERROR_EMPTY_CHUNK;
+								break;
+							}
+
+							bool sizesOk = items.All(item => item.DownloadedSize > 0L && item.DownloadedSize == item.ChunkSize);
+							if (!sizesOk)
+							{
+								ClearGarbage(items);
+								lastErrorCode = DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH;
 								break;
 							}
 
