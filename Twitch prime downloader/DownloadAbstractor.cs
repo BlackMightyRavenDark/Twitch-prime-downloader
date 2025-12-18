@@ -291,7 +291,7 @@ namespace Twitch_prime_downloader
 					File.WriteAllText(infoFilePath, rawVodInfo);
 				}
 
-				if (jaChunks != null)
+				if (jaChunks != null && jaChunks.Count > 0)
 				{
 					string chunksFilePath = outputFilePath + "_chunks.json";
 					if (File.Exists(chunksFilePath)) { File.Delete(chunksFilePath); }
