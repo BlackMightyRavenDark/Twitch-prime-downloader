@@ -93,7 +93,7 @@ namespace Twitch_prime_downloader
 
 				int lastErrorCode = 400;
 				int currentChunkId = firstChunkId;
-				bool wasFinished = false;
+				bool hasChunkError = false;
 				object errorCodeLocker = new object();
 				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
@@ -149,16 +149,16 @@ namespace Twitch_prime_downloader
 							{
 								lock (errorCodeLocker)
 								{
-									if (!wasFinished)
+									if (!hasChunkError)
 									{
 										lastErrorCode = errCode;
-										wasFinished = true;
+										hasChunkError = errCode != 200 && errCode != FileDownloader.DOWNLOAD_ERROR_OUT_OF_TRIES_LEFT;
 									}
 								}
 
 								DownloadProgressItem progressItem = new DownloadProgressItem(
 									taskId, chunk, contentLength, downloadedBytes, chunkStream,
-									lastErrorCode, DownloadItemState.Finished);
+									errCode, DownloadItemState.Finished);
 								OnProgressChanged(progressItem);
 							};
 
