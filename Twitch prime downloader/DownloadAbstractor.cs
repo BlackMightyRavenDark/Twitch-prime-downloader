@@ -188,15 +188,15 @@ namespace Twitch_prime_downloader
 
 							List<DownloadProgressItem> items = dictProgress.Values.ToList();
 
-							bool statusesOk = items.All(item => item.ErrorCode == 200);
-							if (!statusesOk)
+							bool allChunkStatusesOk = items.All(item => item.ErrorCode == 200);
+							if (!allChunkStatusesOk)
 							{
 								ClearGarbage(items);
 								lastErrorCode = DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
 								break;
 							}
 
-							bool hasEmptyChunk = items.Any(item => item.ChunkSize <= 0L || item.OutputStream == null || item.OutputStream.Length == 0L);
+							bool hasEmptyChunk = items.Any(item => item.DownloadedSize <= 0L || item.ChunkSize <= 0L || item.OutputStream == null || item.OutputStream.Length == 0L);
 							if (hasEmptyChunk)
 							{
 								ClearGarbage(items);
@@ -204,8 +204,8 @@ namespace Twitch_prime_downloader
 								break;
 							}
 
-							bool sizesOk = items.All(item => item.DownloadedSize > 0L && item.DownloadedSize == item.ChunkSize);
-							if (!sizesOk)
+							bool allChunkSizesOk = items.All(item => item.DownloadedSize > 0L && item.DownloadedSize == item.ChunkSize);
+							if (!allChunkSizesOk)
 							{
 								ClearGarbage(items);
 								lastErrorCode = DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH;
@@ -398,7 +398,7 @@ namespace Twitch_prime_downloader
 			int itemCount = items.Count();
 			if (itemCount == 0) { return false; }
 
-			long totalSize = items.Where(item => item.ChunkSize > 0L).Sum(item => item.ChunkSize);
+			long totalSize = items.Sum(item => item.DownloadedSize);
 			long totalProcessed = 0L;
 			long outputStreamInitialPosition = outpuStream.Position;
 
@@ -408,7 +408,7 @@ namespace Twitch_prime_downloader
 			{
 				if (success)
 				{
-					void func(long sourcePosition, long sourceLength,
+					void progressFunc(long sourcePosition, long sourceLength,
 						long destinationPosition, long destinationLength, long bytesTransferred)
 					{
 						totalProcessed = destinationPosition - outputStreamInitialPosition;
@@ -424,10 +424,11 @@ namespace Twitch_prime_downloader
 							totalProcessed = 0L;
 							chunkMergingProgressed?.Invoke(this, totalProcessed, totalSize,
 								iter, itemCount, DownloadMode.SingleFile);
-						}, func, func);
+						},
+						progressFunc, progressFunc);
 					if (success && chunkList != null)
 					{
-						JObject jChunk = item.VodChunk.Serialize(chunkPosition, item.ChunkSize);
+						JObject jChunk = item.VodChunk.Serialize(chunkPosition, item.DownloadedSize);
 						chunkList.Add(jChunk);
 					}
 
