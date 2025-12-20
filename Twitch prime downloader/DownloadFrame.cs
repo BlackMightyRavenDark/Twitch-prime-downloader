@@ -511,7 +511,7 @@ namespace Twitch_prime_downloader
 			{
 				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
-					_chunkFrom, ChunkTo, DownloadMode, VodInfo.RawData,
+					_chunkFrom, ChunkTo, DownloadMode, config.SaveVodChunkInfo, VodInfo.RawData,
 					OnGroupDownloadStarted, OnGroupDownloadProgressed, OnGroupDownloadFinished,
 					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
 			});

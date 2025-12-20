@@ -33,6 +33,7 @@ namespace Twitch_prime_downloader
 		public const int DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE = int.MaxValue - 4;
 		public const int DOWNLOAD_ERROR_EMPTY_CHUNK = int.MaxValue - 5;
 		public const int DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH = int.MaxValue - 6;
+		public const int DOWNLOAD_ERROR_UNDEFINED = int.MaxValue - 7;
 
 		private CancellationTokenSource _cancellationTokenSource;
 
@@ -52,6 +53,7 @@ namespace Twitch_prime_downloader
 			int firstChunkId,
 			int lastChunkId,
 			DownloadMode downloadMode,
+			bool saveChunkInfo,
 			string rawVodInfo,
 			GroupDownloadStartedDelegate groupDownloadStarted,
 			GroupDownloadProgressedDelegate groupDownloadProgressed,
@@ -61,10 +63,13 @@ namespace Twitch_prime_downloader
 			ChunkChangedDelegate chunkChanged,
 			DownloadCompletedDelegate downloadCompleted)
 		{
+			int lastErrorCode = DOWNLOAD_ERROR_UNDEFINED;
+
 			try
 			{
 				if (lastChunkId >= VodPlaylist.Count)
 				{
+					downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_CHUNK_RANGE);
 					return DOWNLOAD_ERROR_CHUNK_RANGE;
 				}
 
@@ -74,6 +79,7 @@ namespace Twitch_prime_downloader
 
 					if (!Directory.Exists(outputFilePath))
 					{
+						downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS);
 						return DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS;
 					}
 				}
@@ -87,12 +93,10 @@ namespace Twitch_prime_downloader
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
-				bool saveChunkInfo = config.SaveVodChunkInfo;
 				JArray jaChunks = saveChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
 					VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
 
-				int lastErrorCode = 400;
 				int currentChunkId = firstChunkId;
 				bool hasChunkError = false;
 				object errorCodeLocker = new object();
@@ -100,188 +104,176 @@ namespace Twitch_prime_downloader
 				{
 					TwitchVodChunk[] chunkGroup = GetChunkGroup(VodPlaylist, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
 
-					if (chunkGroup.Length > 0)
-					{
-						ConcurrentDictionary<int, DownloadProgressItem> dictProgress = new ConcurrentDictionary<int, DownloadProgressItem>();
-						for (int i = 0; i < chunkGroup.Length; ++i)
-						{
-							dictProgress[i] = new DownloadProgressItem(i, chunkGroup[i],
-								0L, 0L, null, 0, DownloadItemState.Preparing);
-						}
-
-						groupDownloadStarted?.Invoke(this, dictProgress.Values);
-
-						void OnProgressChanged(DownloadProgressItem progressItem)
-						{
-							dictProgress[progressItem.TaskId] = progressItem;
-
-							List<DownloadProgressItem> items = dictProgress.Values.ToList();
-							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
-							groupDownloadProgressed?.Invoke(this, items);
-						}
-
-						var tasks = chunkGroup.Select((chunk, taskId) => Task.Run(() =>
-						{
-							Stream chunkStream = null;
-							FileDownloader d = new FileDownloader()
-							{
-								Url = streamRootUrl + chunk.FileName,
-								ConnectionTimeout = 5000,
-								SkipHeaderRequest = true,
-								TryCountLimit = 2,
-								RetryIntervalMilliseconds = 3000
-							};
-							d.Connecting += (sender, url, tryNumber, maxTryCount) =>
-							{
-								DownloadProgressItem progressItem = new DownloadProgressItem(
-									taskId, chunk, 0L, 0L, chunkStream, 0, DownloadItemState.Connecting);
-								OnProgressChanged(progressItem);
-							};
-
-							d.WorkProgress += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount) =>
-							{
-								DownloadProgressItem progressItem = new DownloadProgressItem(
-									taskId, chunk, contentLength, downloadedBytes, chunkStream,
-									(sender as FileDownloader).LastErrorCode, DownloadItemState.Downloading);
-								OnProgressChanged(progressItem);
-							};
-
-							d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
-							{
-								lock (errorCodeLocker)
-								{
-									if (!hasChunkError)
-									{
-										lastErrorCode = errCode;
-										hasChunkError = errCode != 200 && errCode != FileDownloader.DOWNLOAD_ERROR_OUT_OF_TRIES_LEFT;
-									}
-								}
-
-								DownloadProgressItem progressItem = new DownloadProgressItem(
-									taskId, chunk, contentLength, downloadedBytes, chunkStream,
-									errCode, DownloadItemState.Finished);
-								OnProgressChanged(progressItem);
-							};
-
-							int errorCode = DownloadChunk(d, chunk, streamRootUrl, ref chunkStream,
-								() => chunkChanged?.Invoke(this, chunk, currentChunkId + taskId));
-							return errorCode;
-						}));
-
-						try
-						{
-							Task.WhenAll(tasks).Wait();
-
-							if (_cancellationTokenSource.IsCancellationRequested)
-							{
-								ClearGarbage(dictProgress.Values);
-								break;
-							}
-
-							if (downloadMode == DownloadMode.SingleFile && chunkGroup.Length > 1 && 
-								!IsContinuousSequence(dictProgress))
-							{
-								ClearGarbage(dictProgress.Values);
-								downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_SEQUENCE);
-								return DOWNLOAD_ERROR_GROUP_SEQUENCE;
-							}
-
-							List<DownloadProgressItem> items = dictProgress.Values.ToList();
-
-							bool allChunkStatusesOk = items.All(item => item.ErrorCode == 200);
-							if (!allChunkStatusesOk)
-							{
-								ClearGarbage(items);
-								lastErrorCode = DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
-								break;
-							}
-
-							bool hasEmptyChunk = items.Any(item => item.DownloadedSize <= 0L || item.ChunkSize <= 0L || item.OutputStream == null || item.OutputStream.Length == 0L);
-							if (hasEmptyChunk)
-							{
-								ClearGarbage(items);
-								lastErrorCode = DOWNLOAD_ERROR_EMPTY_CHUNK;
-								break;
-							}
-
-							bool allChunkSizesOk = items.All(item => item.DownloadedSize > 0L && item.DownloadedSize == item.ChunkSize);
-							if (!allChunkSizesOk)
-							{
-								ClearGarbage(items);
-								lastErrorCode = DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH;
-								break;
-							}
-
-							items.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
-
-							groupDownloadFinished?.Invoke(this, items, lastErrorCode);
-
-							if (lastErrorCode == 200)
-							{
-								if (outputStream != null)
-								{
-									if (!AppendGroup(items, outputStream, jaChunks, chunkMergingProgressed))
-									{
-										lastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
-										groupMergingFinished?.Invoke(this, items, lastErrorCode);
-										break;
-									}
-
-									groupMergingFinished?.Invoke(this, items, 200);
-								}
-								else if (downloadMode == DownloadMode.Chunked)
-								{
-									bool success = true;
-									foreach (DownloadProgressItem progressItem in items)
-									{
-										if (success)
-										{
-											string fn = Path.Combine(outputFilePath, progressItem.VodChunk.FileName);
-											success = SaveStreamToFile(progressItem.OutputStream, fn);
-											if (success && saveChunkInfo)
-											{
-												JObject jChunk = progressItem.VodChunk.Serialize(-1L, progressItem.ChunkSize);
-												File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
-											}
-										}
-
-										progressItem.OutputStream.Dispose();
-									}
-
-									if (!success)
-									{
-										lastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
-										break;
-									}
-
-									groupMergingFinished?.Invoke(this, items, 200);
-								}
-							}
-						}
-						catch (Exception ex)
-						{
-#if DEBUG
-							System.Diagnostics.Debug.WriteLine(ex.Message);
-#endif
-							lastErrorCode = ex.HResult;
-							break;
-						}
-
-						currentChunkId += chunkGroup.Length;
-					}
-					else
+					if (chunkGroup.Length <= 0)
 					{
 						lastErrorCode = DOWNLOAD_ERROR_GROUP_EMPTY;
+						downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_EMPTY);
 						break;
 					}
+
+					ConcurrentDictionary<int, DownloadProgressItem> dictProgress = new ConcurrentDictionary<int, DownloadProgressItem>();
+					for (int i = 0; i < chunkGroup.Length; ++i)
+					{
+						dictProgress[i] = new DownloadProgressItem(i, chunkGroup[i],
+							0L, 0L, null, 0, DownloadItemState.Preparing);
+					}
+
+					groupDownloadStarted?.Invoke(this, dictProgress.Values);
+
+					void OnProgressChanged(DownloadProgressItem progressItem)
+					{
+						dictProgress[progressItem.TaskId] = progressItem;
+						if (groupDownloadProgressed != null)
+						{
+							List<DownloadProgressItem> itemList = dictProgress.Values.ToList();
+							itemList.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
+							groupDownloadProgressed.Invoke(this, itemList);
+						}
+					}
+
+					var tasks = chunkGroup.Select((chunk, taskId) => Task.Run(() =>
+					{
+						Stream chunkStream = null;
+						FileDownloader d = new FileDownloader()
+						{
+							Url = streamRootUrl + chunk.FileName,
+							ConnectionTimeout = 5000,
+							SkipHeaderRequest = true,
+							TryCountLimit = 2,
+							RetryIntervalMilliseconds = 3000
+						};
+						d.Connecting += (sender, url, tryNumber, maxTryCount) =>
+						{
+							DownloadProgressItem progressItem = new DownloadProgressItem(
+								taskId, chunk, 0L, 0L, chunkStream, 0, DownloadItemState.Connecting);
+							OnProgressChanged(progressItem);
+						};
+
+						d.WorkProgress += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount) =>
+						{
+							DownloadProgressItem progressItem = new DownloadProgressItem(
+								taskId, chunk, contentLength, downloadedBytes, chunkStream,
+								(sender as FileDownloader).LastErrorCode, DownloadItemState.Downloading);
+							OnProgressChanged(progressItem);
+						};
+
+						d.WorkFinished += (sender, downloadedBytes, contentLength, tryNumber, maxTryCount, errCode) =>
+						{
+							lock (errorCodeLocker)
+							{
+								if (!hasChunkError)
+								{
+									lastErrorCode = errCode;
+									hasChunkError = errCode != 200 && errCode != FileDownloader.DOWNLOAD_ERROR_OUT_OF_TRIES_LEFT;
+								}
+							}
+
+							DownloadProgressItem progressItem = new DownloadProgressItem(
+								taskId, chunk, contentLength, downloadedBytes, chunkStream,
+								errCode, DownloadItemState.Finished);
+							OnProgressChanged(progressItem);
+						};
+
+						int errorCode = DownloadChunk(d, chunk, streamRootUrl, ref chunkStream,
+							() => chunkChanged?.Invoke(this, chunk, currentChunkId + taskId));
+						return errorCode;
+					}));
+
+					Task.WhenAll(tasks).Wait();
+
+					if (_cancellationTokenSource.IsCancellationRequested)
+					{
+						ClearGarbage(dictProgress.Values);
+						break;
+					}
+
+					if (downloadMode == DownloadMode.SingleFile && chunkGroup.Length > 1 &&
+						!IsContinuousSequence(dictProgress))
+					{
+						ClearGarbage(dictProgress.Values);
+						downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_SEQUENCE);
+						return DOWNLOAD_ERROR_GROUP_SEQUENCE;
+					}
+
+					List<DownloadProgressItem> groupItems = dictProgress.Values.ToList();
+
+					bool allChunkStatusesOk = groupItems.All(item => item.ErrorCode == 200);
+					if (!allChunkStatusesOk)
+					{
+						ClearGarbage(groupItems);
+						lastErrorCode = DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE;
+						break;
+					}
+
+					bool hasEmptyChunk = groupItems.Any(item => item.DownloadedSize <= 0L || item.ChunkSize <= 0L || item.OutputStream == null || item.OutputStream.Length == 0L);
+					if (hasEmptyChunk)
+					{
+						ClearGarbage(groupItems);
+						lastErrorCode = DOWNLOAD_ERROR_EMPTY_CHUNK;
+						break;
+					}
+
+					bool allChunkSizesOk = groupItems.All(item => item.DownloadedSize > 0L && item.DownloadedSize == item.ChunkSize);
+					if (!allChunkSizesOk)
+					{
+						ClearGarbage(groupItems);
+						lastErrorCode = DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH;
+						break;
+					}
+
+					groupItems.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
+
+					groupDownloadFinished?.Invoke(this, groupItems, lastErrorCode);
+
+					if (lastErrorCode == 200)
+					{
+						if (outputStream != null)
+						{
+							if (!AppendGroup(groupItems, outputStream, jaChunks, chunkMergingProgressed))
+							{
+								lastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
+								groupMergingFinished?.Invoke(this, groupItems, lastErrorCode);
+								break;
+							}
+
+							groupMergingFinished?.Invoke(this, groupItems, 200);
+						}
+						else if (downloadMode == DownloadMode.Chunked)
+						{
+							bool success = true;
+							foreach (DownloadProgressItem progressItem in groupItems)
+							{
+								if (success)
+								{
+									string fn = Path.Combine(outputFilePath, progressItem.VodChunk.FileName);
+									success = SaveStreamToFile(progressItem.OutputStream, fn);
+									if (success && saveChunkInfo)
+									{
+										JObject jChunk = progressItem.VodChunk.Serialize(-1L, progressItem.DownloadedSize);
+										File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
+									}
+								}
+
+								progressItem.OutputStream.Dispose();
+							}
+
+							if (!success)
+							{
+								ClearGarbage(groupItems);
+								lastErrorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
+								break;
+							}
+
+							groupMergingFinished?.Invoke(this, groupItems, 200);
+						}
+					}
+
+					currentChunkId += chunkGroup.Length;
 				}
 
 				if (_cancellationTokenSource.IsCancellationRequested) { lastErrorCode = FileDownloader.DOWNLOAD_ERROR_CANCELED; }
 
 				outputStream?.Dispose();
-
-				_cancellationTokenSource.Dispose();
-				_cancellationTokenSource = null;
 
 				try
 				{
@@ -321,24 +313,23 @@ namespace Twitch_prime_downloader
 				{
 #endif
 				}
-
-				downloadCompleted?.Invoke(this, lastErrorCode);
-
-				return lastErrorCode;
-			} catch (Exception ex)
+			}
+			catch (Exception ex)
 			{
 #if DEBUG
 				System.Diagnostics.Debug.WriteLine(ex.Message);
 #endif
-				if (_cancellationTokenSource != null)
-				{
-					_cancellationTokenSource.Dispose();
-					_cancellationTokenSource = null;
-				}
-
-				downloadCompleted?.Invoke(this, ex.HResult);
-				return ex.HResult;
+				lastErrorCode = ex.HResult;
 			}
+
+			if (_cancellationTokenSource != null)
+			{
+				_cancellationTokenSource.Dispose();
+				_cancellationTokenSource = null;
+			}
+
+			downloadCompleted?.Invoke(this, lastErrorCode);
+			return lastErrorCode;
 		}
 
 		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchVodPlaylist playlist,
