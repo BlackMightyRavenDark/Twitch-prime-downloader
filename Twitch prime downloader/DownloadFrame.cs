@@ -237,7 +237,14 @@ namespace Twitch_prime_downloader
 
 		private void btnStopDownload_Click(object sender, EventArgs e)
 		{
-			StopDownload();
+			btnStopDownload.Enabled = false;
+			if (IsDownloading && !_isAborted &&
+				MessageBox.Show("Остановить скачивание?", "Отменятор отменения отмены",
+					MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+			{
+				StopDownload();
+			}
+			if (!_isAborted) { btnStopDownload.Enabled = true; }
 		}
 
 		private void btnSetMaxChunkTo_Click(object sender, EventArgs e)
@@ -475,6 +482,7 @@ namespace Twitch_prime_downloader
 
 			IsDownloading = true;
 			btnStartDownload.Enabled = false;
+			btnStopDownload.Enabled = true;
 			DownloadStarted = DateTime.Now;
 			lblProgressChunkGroup.Text = "Подготовка к скачиванию...";
 			lblElapsedTime.Text = "Прошло времени: 0:00:00";
