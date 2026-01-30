@@ -12,7 +12,6 @@ namespace Twitch_prime_downloader
 	public partial class VodFrame : UserControl
 	{
 		public TwitchVod StreamInfo { get; private set; }
-		public TwitchVodMutedSegments MutedSegments { get; private set; }
 		public bool UseGmtTime
 		{
 			get { return _useGmtTime; }
@@ -74,11 +73,7 @@ namespace Twitch_prime_downloader
 				{
 					Task.Run(() =>
 					{
-						if (vod.Playlist == null) { vod.UpdatePlaylistManifest(); }
-						if (vod.Playlist != null && vod.Playlist.Parse() > 0)
-						{
-							MutedSegments = vod.Playlist.MutedSegments;
-						}
+						if (vod.Playlist == null && vod.UpdatePlaylistManifest() == 200) { vod.Playlist.Parse(); }
 					}),
 					Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
 					Task.Run(() =>
@@ -93,9 +88,9 @@ namespace Twitch_prime_downloader
 				Task.WhenAll(tasks).Wait();
 			});
 
-			if (MutedSegments != null && MutedSegments.Segments.Count > 0)
+			if (StreamInfo.Playlist.UpdateMutedSegments(true) > 0 && StreamInfo.Playlist.MutedSegments.Segments.Count > 0)
 			{
-				lblMutedChunks.Text = $"Muted segments: {MutedSegments.Segments.Count}";
+				lblMutedChunks.Text = $"Muted segments: {StreamInfo.Playlist.MutedSegments.Segments.Count}";
 				lblMutedChunks.Left = Width - lblMutedChunks.Width;
 				lblMutedChunks.Visible = true;
 			}
@@ -251,10 +246,10 @@ namespace Twitch_prime_downloader
 
 		private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
 		{
-			string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{MutedSegments}";
+			string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{StreamInfo.Playlist.MutedSegments}";
 
-			string durationFormatted = MutedSegments.TotalDuration.ToString("h':'mm':'ss");
-			double percent = 100.0 / StreamInfo.Duration.Ticks * MutedSegments.TotalDuration.Ticks;
+			string durationFormatted = StreamInfo.Playlist.MutedSegments.TotalDuration.ToString("h':'mm':'ss");
+			double percent = 100.0 / StreamInfo.Duration.Ticks * StreamInfo.Playlist.MutedSegments.TotalDuration.Ticks;
 			string percentFormatted = string.Format("{0:F2}", percent);
 			t += $"{Environment.NewLine}Всего выпилено: {durationFormatted} ({percentFormatted}%){Environment.NewLine}";
 			if (MessageBox.Show($"{t}{Environment.NewLine}Скопировать это прямо в буфер?", "Определятор выпиленного звука",
