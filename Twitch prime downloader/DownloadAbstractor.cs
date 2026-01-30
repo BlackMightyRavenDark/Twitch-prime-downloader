@@ -14,7 +14,7 @@ namespace Twitch_prime_downloader
 {
 	internal class DownloadAbstractor : IDisposable
 	{
-		public TwitchVodPlaylist VodPlaylist { get; }
+		public TwitchPlaylist VodPlaylist { get; }
 		public int MaxGroupSize { get; set; }
 
 		public delegate void GroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
@@ -37,7 +37,7 @@ namespace Twitch_prime_downloader
 
 		private CancellationTokenSource _cancellationTokenSource;
 
-		public DownloadAbstractor(TwitchVodPlaylist vodPlaylist, int maxGroupSize)
+		public DownloadAbstractor(TwitchPlaylist vodPlaylist, int maxGroupSize)
 		{
 			VodPlaylist = vodPlaylist;
 			MaxGroupSize = maxGroupSize;
@@ -332,7 +332,7 @@ namespace Twitch_prime_downloader
 			return lastErrorCode;
 		}
 
-		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchVodPlaylist playlist,
+		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchPlaylist playlist,
 			int currentChunkId, int lastChunkId, int maxGroupSize)
 		{
 			for (int i = 0; i < maxGroupSize; ++i)
@@ -340,7 +340,7 @@ namespace Twitch_prime_downloader
 				int id = currentChunkId + i;
 				if (id > lastChunkId) { break; }
 
-				yield return playlist.GetChunk(id);
+				yield return playlist[id];
 			}
 		}
 
@@ -357,7 +357,7 @@ namespace Twitch_prime_downloader
 				{
 					stream.Dispose();
 					stream = new MemoryStream();
-					chunk.NextState();
+					chunk.SetNextState();
 					stateModified?.Invoke();
 					fileDownloader.Url = streamRootUrl + chunk.FileName;
 					errorCode = fileDownloader.Download(stream, BUFFER_SIZE, _cancellationTokenSource);
@@ -365,7 +365,7 @@ namespace Twitch_prime_downloader
 					{
 						stream.Dispose();
 						stream = new MemoryStream();
-						chunk.NextState();
+						chunk.SetNextState();
 						stateModified?.Invoke();
 						fileDownloader.Url = streamRootUrl + chunk.FileName;
 						errorCode = fileDownloader.Download(stream, BUFFER_SIZE, _cancellationTokenSource);

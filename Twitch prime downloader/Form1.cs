@@ -830,12 +830,12 @@ namespace Twitch_prime_downloader
 			VodFrame frameStream = sender as VodFrame;
 			frameStream.btnDownload.Enabled = false;
 
-			TwitchVodPlaylistResult playlistResult = await Task.Run(() =>
+			TwitchPlaylistResult playlistResult = await Task.Run(() =>
 			{
 				if (frameStream.StreamInfo.IsLive && frameStream.StreamInfo.UpdatePlaylistManifest() == 200 &&
 					frameStream.StreamInfo.PlaylistManifest[0].UpdatePlaylist() == 200)
 				{
-					return new TwitchVodPlaylistResult(frameStream.StreamInfo.PlaylistManifest[0].Playlist, 200, null);
+					return new TwitchPlaylistResult(frameStream.StreamInfo.PlaylistManifest[0].Playlist, 200, null);
 				}
 
 				return frameStream.StreamInfo.GetPlaylist("chunked");

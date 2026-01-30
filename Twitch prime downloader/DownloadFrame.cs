@@ -26,7 +26,7 @@ namespace Twitch_prime_downloader
 		public int ChunkGroupSize { get; private set; } = 3;
 		public DownloadMode DownloadMode { get; private set; }
 		public DateTime DownloadStarted { get; private set; }
-		public TwitchVodPlaylist Playlist { get; }
+		public TwitchPlaylist Playlist { get; }
 		public int TotalChunkDownloadedCount { get; private set; }
 		public long TotalByteDownloadedCount { get; private set; }
 		public bool IsDownloading { get; private set; }
@@ -44,7 +44,7 @@ namespace Twitch_prime_downloader
 		public delegate void ClosedDelegate(object sender);
 		public ClosedDelegate Closed;
 
-		public DownloadFrame(TwitchVod vodInfo, TwitchVodPlaylist vodPlaylist)
+		public DownloadFrame(TwitchVod vodInfo, TwitchPlaylist vodPlaylist)
 		{
 			InitializeComponent();
 
@@ -175,9 +175,9 @@ namespace Twitch_prime_downloader
 					{
 						TwitchVodChunkItem chunkItem = listBoxChunkFileList.Items[e.Index] as TwitchVodChunkItem;
 						TwitchVodChunkState chunkState = chunkItem.Chunk.GetState();
-						Brush brush = chunkState == TwitchVodChunkState.NotMuted ? Brushes.Black : Brushes.Red;
+						Brush brush = chunkState == TwitchVodChunkState.Normal ? Brushes.Black : Brushes.Red;
 						bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-						if (selected) { brush = chunkState == TwitchVodChunkState.NotMuted ? Brushes.White : Brushes.Gold; }
+						if (selected) { brush = chunkState == TwitchVodChunkState.Normal ? Brushes.White : Brushes.Gold; }
 						g.FillRectangle(selected ? SystemBrushes.Highlight : Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
 						g.DrawString(chunkItem.Chunk.FileName, listBoxChunkFileList.Font, brush, 0f, 0f);
 						e.Graphics.DrawImage(bitmap, e.Bounds.X, e.Bounds.Y);
@@ -631,7 +631,7 @@ namespace Twitch_prime_downloader
 			{
 				for (int i = 0; i < Playlist.Count; ++i)
 				{
-					TwitchVodChunkItem item = new TwitchVodChunkItem(Playlist.GetChunk(i));
+					TwitchVodChunkItem item = new TwitchVodChunkItem(Playlist[i]);
 					listBoxChunkFileList.Items.Add(item);
 				}
 			}
