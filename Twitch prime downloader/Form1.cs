@@ -838,7 +838,9 @@ namespace Twitch_prime_downloader
 					return new TwitchPlaylistResult(frameStream.StreamInfo.PlaylistManifest[0].Playlist, 200, null);
 				}
 
-				return frameStream.StreamInfo.GetPlaylist("chunked");
+				TwitchPlaylistResult result = frameStream.StreamInfo.GetPlaylist("chunked");
+				return result.ErrorCode == 200 ? result :
+					new TwitchPlaylistResult(frameStream.StreamInfo.Playlist, frameStream.StreamInfo.Playlist != null ? 200 : 404, null);
 			});
 			if (playlistResult.ErrorCode == 200)
 			{

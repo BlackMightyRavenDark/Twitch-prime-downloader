@@ -93,6 +93,12 @@ namespace Twitch_prime_downloader
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
+				List<TwitchVodChunk> chunkList = VodPlaylist.GetFilteredChunkList(item => true).ToList();
+				if (VodPlaylist.StreamHeaderChunk != null)
+				{
+					chunkList.Insert(0, VodPlaylist.StreamHeaderChunk);
+				}
+
 				JArray jaChunks = saveChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				string streamRootUrl = VodPlaylist.StreamRootUrl.EndsWith("/") ?
 					VodPlaylist.StreamRootUrl : $"{VodPlaylist.StreamRootUrl}/";
@@ -102,7 +108,7 @@ namespace Twitch_prime_downloader
 				object errorCodeLocker = new object();
 				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
-					TwitchVodChunk[] chunkGroup = GetChunkGroup(VodPlaylist, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
+					TwitchVodChunk[] chunkGroup = GetChunkGroup(chunkList, currentChunkId, lastChunkId, MaxGroupSize).ToArray();
 
 					if (chunkGroup.Length <= 0)
 					{
@@ -332,7 +338,7 @@ namespace Twitch_prime_downloader
 			return lastErrorCode;
 		}
 
-		private static IEnumerable<TwitchVodChunk> GetChunkGroup(TwitchPlaylist playlist,
+		private static IEnumerable<TwitchVodChunk> GetChunkGroup(List<TwitchVodChunk> chunks,
 			int currentChunkId, int lastChunkId, int maxGroupSize)
 		{
 			for (int i = 0; i < maxGroupSize; ++i)
@@ -340,7 +346,7 @@ namespace Twitch_prime_downloader
 				int id = currentChunkId + i;
 				if (id > lastChunkId) { break; }
 
-				yield return playlist[id];
+				yield return chunks[id];
 			}
 		}
 

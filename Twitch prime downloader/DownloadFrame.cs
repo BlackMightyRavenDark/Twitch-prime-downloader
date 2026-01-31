@@ -489,7 +489,7 @@ namespace Twitch_prime_downloader
 			timerElapsedTime.Enabled = true;
 			if (DownloadMode == DownloadMode.SingleFile)
 			{
-				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOriginal + ".ts");
+				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOriginal + Playlist.StreamFileExtension);
 				lblOutputFileName.Text = "Имя файла: " + OutputFilePath;
 			}
 			else
@@ -629,6 +629,11 @@ namespace Twitch_prime_downloader
 			listBoxChunkFileList.Items.Clear();
 			if (Playlist != null && Playlist.Count > 0)
 			{
+				if (Playlist.StreamHeaderChunk != null)
+				{
+					listBoxChunkFileList.Items.Add(new TwitchVodChunkItem(Playlist.StreamHeaderChunk));
+				}
+
 				for (int i = 0; i < Playlist.Count; ++i)
 				{
 					TwitchVodChunkItem item = new TwitchVodChunkItem(Playlist[i]);
