@@ -88,7 +88,9 @@ namespace Twitch_prime_downloader
 				Task.WhenAll(tasks).Wait();
 			});
 
-			if (StreamInfo.Playlist.UpdateMutedSegments(true) > 0 && StreamInfo.Playlist.MutedSegments.Segments.Count > 0)
+			if (StreamInfo.Playlist != null &&
+				StreamInfo.Playlist.UpdateMutedSegments(true) > 0 &&
+				StreamInfo.Playlist.MutedSegments.Segments.Count > 0)
 			{
 				lblMutedChunks.Text = $"Muted segments: {StreamInfo.Playlist.MutedSegments.Segments.Count}";
 				lblMutedChunks.Left = Width - lblMutedChunks.Width;
