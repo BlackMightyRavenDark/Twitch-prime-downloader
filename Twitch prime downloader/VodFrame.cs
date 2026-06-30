@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
@@ -37,6 +38,7 @@ namespace Twitch_prime_downloader
 		{
 			InitializeComponent();
 
+			lblGameName.Text = null;
 			_useGmtTime = config.UseGmtVodDates;
 
 			try
@@ -116,6 +118,16 @@ namespace Twitch_prime_downloader
 				}
 
 				pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game.ThumbnailImageData);
+			}
+			else
+			{
+				lblGameName.Text = null;
+				Stream stream = null;
+				if (await Task.Run(() => DownloadData(TwitchGame.UNKNOWN_GAME_BOXART_URL, out stream)) == 200 &&
+					stream.Length > 0L)
+				{
+					pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(stream);
+				}
 			}
 		}
 

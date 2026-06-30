@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using TwitchApiLib;
+using MultiThreadedDownloaderLib;
 
 namespace Twitch_prime_downloader
 {
@@ -295,6 +296,25 @@ namespace Twitch_prime_downloader
 		public static Image TryLoadImageFromStream(Stream stream)
 		{
 			return TryLoadImageFromStream(stream, out _);
+		}
+
+		public static int DownloadData(string url, out Stream stream, FileDownloader downloader = null)
+		{
+			try
+			{
+				FileDownloader d = downloader ?? new FileDownloader();
+				d.Url = url;
+				stream = new MemoryStream();
+				return d.Download(stream);
+			}
+			catch (Exception ex)
+			{
+#if DEBUG
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
+				stream = null;
+				return ex.HResult;
+			}
 		}
 	}
 }
