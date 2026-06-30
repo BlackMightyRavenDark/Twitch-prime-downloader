@@ -33,7 +33,7 @@
 			this.lblChannelName = new System.Windows.Forms.Label();
 			this.lblGameName = new System.Windows.Forms.Label();
 			this.btnDownload = new System.Windows.Forms.Button();
-			this.contextMenuVodThumbnail = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.contextMenuVodTitle = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.miCopyVodTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.miCopyVodCreationDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.miCopyVodTitlePlusCreationDateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,7 +43,7 @@
 			this.pictureBoxThumbnailImageVod = new System.Windows.Forms.PictureBox();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.lblBroadcastType = new System.Windows.Forms.Label();
-			this.contextMenuVodThumbnail.SuspendLayout();
+			this.contextMenuVodTitle.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageGame)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageVod)).BeginInit();
 			this.SuspendLayout();
@@ -95,14 +95,14 @@
 			this.btnDownload.Paint += new System.Windows.Forms.PaintEventHandler(this.btnDownload_Paint);
 			this.btnDownload.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
 			// 
-			// contextMenuVodThumbnail
+			// contextMenuVodTitle
 			// 
-			this.contextMenuVodThumbnail.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.contextMenuVodTitle.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 			this.miCopyVodTitleToolStripMenuItem,
 			this.miCopyVodCreationDateToolStripMenuItem,
 			this.miCopyVodTitlePlusCreationDateToolStripMenuItem});
-			this.contextMenuVodThumbnail.Name = "contextMenuStrip1";
-			this.contextMenuVodThumbnail.Size = new System.Drawing.Size(236, 70);
+			this.contextMenuVodTitle.Name = "contextMenuStrip1";
+			this.contextMenuVodTitle.Size = new System.Drawing.Size(236, 92);
 			// 
 			// miCopyVodTitleToolStripMenuItem
 			// 
@@ -203,7 +203,7 @@
 			this.Name = "VodFrame";
 			this.Size = new System.Drawing.Size(380, 296);
 			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.vodFrame_MouseDown);
-			this.contextMenuVodThumbnail.ResumeLayout(false);
+			this.contextMenuVodTitle.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageGame)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxThumbnailImageVod)).EndInit();
 			this.ResumeLayout(false);
@@ -219,7 +219,7 @@
 		public System.Windows.Forms.Label lblChannelName;
 		public System.Windows.Forms.Label lblGameName;
 		public System.Windows.Forms.Button btnDownload;
-		private System.Windows.Forms.ContextMenuStrip contextMenuVodThumbnail;
+		private System.Windows.Forms.ContextMenuStrip contextMenuVodTitle;
 		private System.Windows.Forms.ToolStripMenuItem miCopyVodTitleToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem miCopyVodCreationDateToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem miCopyVodTitlePlusCreationDateToolStripMenuItem;

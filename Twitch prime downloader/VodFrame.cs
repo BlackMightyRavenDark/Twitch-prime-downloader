@@ -194,7 +194,7 @@ namespace Twitch_prime_downloader
 			Activated?.Invoke(this);
 			if (e.Button == MouseButtons.Right)
 			{
-				contextMenuVodThumbnail.Show(Cursor.Position);
+				contextMenuVodTitle.Show(Cursor.Position);
 			}
 		}
 
