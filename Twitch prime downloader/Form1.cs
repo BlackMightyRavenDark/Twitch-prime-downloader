@@ -630,18 +630,36 @@ namespace Twitch_prime_downloader
 
 		private void miSaveVodThumbnailImageAssToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SaveFileDialog sfd = new SaveFileDialog();
-			sfd.Filter = "jpg|*.jpg";
-			sfd.DefaultExt = ".jpg";
-			sfd.InitialDirectory = config.LastUsedDirectory;
-			string fn = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
-			sfd.FileName = fn + "_thumbnail";
-			if (sfd.ShowDialog() != DialogResult.Cancel)
+			try
 			{
-				config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
-				_activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
+				string fixedFlleName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
+				using (SaveFileDialog sfd = new SaveFileDialog()
+				{
+					Title = "Куда будем сохранять картинку?",
+					Filter = "JPG-files|*.jpg",
+					DefaultExt = ".jpg",
+					FileName = fixedFlleName + "_thumbnail"
+				})
+				{
+					if (!string.IsNullOrEmpty(config.LastUsedDirectory) &&
+						!string.IsNullOrWhiteSpace(config.LastUsedDirectory) &&
+						Directory.Exists(config.LastUsedDirectory))
+					{
+						sfd.InitialDirectory = config.LastUsedDirectory;
+					}
+
+					if (sfd.ShowDialog() == DialogResult.OK)
+					{
+						config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
+						_activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
+					}
+				}
 			}
-			sfd.Dispose();
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		private void miOpenVideoInBrowserToolStripMenuItem_Click(object sender, EventArgs e)
@@ -708,13 +726,22 @@ namespace Twitch_prime_downloader
 				string playlistRaw = _activeFrameStream.StreamInfo?.Playlist?.PlaylistRaw;
 				if (!string.IsNullOrEmpty(playlistRaw) && !string.IsNullOrWhiteSpace(playlistRaw))
 				{
-					using (SaveFileDialog sfd = new SaveFileDialog())
+					string fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
+					using (SaveFileDialog sfd = new SaveFileDialog()
 					{
-						sfd.Title = "Куда будем сохранять?";
-						sfd.Filter = "*.m3u8|*.M3U8-files";
-						sfd.DefaultExt = ".m3u8";
-						sfd.InitialDirectory = config.DownloadDirectory;
-						sfd.FileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo)) + "_playlist.m3u8";
+						Title = "Куда будем сохранять плейлист?",
+						Filter = "M3U8-files|*.m3u8",
+						DefaultExt = ".m3u8",
+						FileName = fixedFileName + "_playlist"
+					})
+					{
+						if (!string.IsNullOrEmpty(config.DownloadDirectory) &&
+							!string.IsNullOrWhiteSpace(config.DownloadDirectory) &&
+							Directory.Exists(config.DownloadDirectory))
+						{
+							sfd.InitialDirectory = config.DownloadDirectory;
+						}
+
 						if (sfd.ShowDialog() == DialogResult.OK)
 						{
 							if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
