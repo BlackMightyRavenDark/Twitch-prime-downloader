@@ -8,7 +8,7 @@ using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
-	public static class Helper
+	public static class ExtensionMethods
 	{
 		public static string ToText(this IEnumerable<string> collection)
 		{

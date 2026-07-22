@@ -118,7 +118,7 @@
     <Compile Include="VodFrame.designer.cs">
       <DependentUpon>VodFrame.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helper.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Configurator.cs" />
     <Compile Include="MultipleProgressBar.cs">
       <SubType>Component</SubType>
