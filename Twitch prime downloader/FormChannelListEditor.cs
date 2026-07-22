@@ -20,9 +20,9 @@ namespace Twitch_prime_downloader
 			if (textBoxChannels.Lines.Length > 0)
 			{
 				Channels = new LinkedList<string>();
-				foreach (string t in textBoxChannels.Lines)
+				foreach (string line in textBoxChannels.Lines)
 				{
-					string channelName = t.Trim();
+					string channelName = line.Trim();
 					if (!string.IsNullOrEmpty(channelName))
 					{
 						if (channelName.Contains(" "))
