@@ -692,7 +692,7 @@ namespace Twitch_prime_downloader
 			string fn = VodInfo.IsHighlight ? $"{_fixedFileNameWithoutExt} [highlight]" : _fixedFileNameWithoutExt;
 			OutputFilePathOriginal = Path.Combine(OutputDirectory, fn);
 			lblOutputFileName.Text = DownloadMode == DownloadMode.SingleFile ?
-				$"Имя файла: {OutputFilePathOriginal}.ts" :
+				$"Имя файла: {OutputFilePathOriginal}{Playlist.StreamFileExtension}" :
 				$"Папка для скачивания: {OutputFilePathOriginal + "\\"}";
 		}
 
