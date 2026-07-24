@@ -59,6 +59,7 @@ namespace Twitch_prime_downloader
 				json["useGmtTime"] = config.UseGmtVodDates;
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunkInfo"] = config.SaveVodChunkInfo;
+				json["storeVodSubChunksInfo"] = config.StoreVodSubChunksInfo;
 				json["askWhenClosingWithActiveTasks"] = config.AskWhenClosingWithActiveTasks;
 				json["apiApplicationTitle"] = config.ApiApplicationTitle;
 				json["apiApplicationDescription"] = config.ApiApplicationDescription;
@@ -99,6 +100,10 @@ namespace Twitch_prime_downloader
 					config.SaveVodChunkInfo = jt == null || jt.Value<bool>();
 				}
 				{
+					JToken jt = json.Value<JToken>("storeVodSubChunksInfo");
+					config.StoreVodSubChunksInfo = jt == null || jt.Value<bool>();
+				}
+				{
 					JToken jt = json.Value<JToken>("askWhenClosingWithActiveTasks");
 					config.AskWhenClosingWithActiveTasks = jt == null || jt.Value<bool>();
 				}
@@ -117,7 +122,8 @@ namespace Twitch_prime_downloader
 			{
 				checkBoxUseGmtTime.Checked = config.UseGmtVodDates;
 				checkBoxSaveVodInfo.Checked = config.SaveVodInfo;
-				checkBoxSaveVodChunkInfo.Checked = config.SaveVodChunkInfo;
+				checkBoxSaveVodChunkInfo.Checked = checkBoxStoreSubChunksInfo.Enabled = config.SaveVodChunkInfo;
+				checkBoxStoreSubChunksInfo.Checked = config.StoreVodSubChunksInfo;
 				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
 				textBoxBrowserExePath.Text = config.BrowserExeFilePath;
@@ -605,7 +611,12 @@ namespace Twitch_prime_downloader
 
 		private void checkBoxSaveVodChunkInfo_CheckedChanged(object sender, EventArgs e)
 		{
-			config.SaveVodChunkInfo = checkBoxSaveVodChunkInfo.Checked;
+			config.SaveVodChunkInfo = checkBoxStoreSubChunksInfo.Enabled = checkBoxSaveVodChunkInfo.Checked;
+		}
+
+		private void checkBoxStoreSubChunksInfo_CheckedChanged(object sender, EventArgs e)
+		{
+			config.StoreVodSubChunksInfo = checkBoxStoreSubChunksInfo.Checked;
 		}
 
 		private void checkBoxAskWhenClosingWithActiveTasks_CheckedChanged(object sender, EventArgs e)

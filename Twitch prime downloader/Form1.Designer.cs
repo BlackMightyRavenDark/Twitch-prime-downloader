@@ -106,6 +106,7 @@ namespace Twitch_prime_downloader
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.miOpenVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.checkBoxStoreSubChunksInfo = new System.Windows.Forms.CheckBox();
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
@@ -211,7 +212,7 @@ namespace Twitch_prime_downloader
 			// checkBoxAskWhenClosingWithActiveTasks
 			// 
 			this.checkBoxAskWhenClosingWithActiveTasks.AutoSize = true;
-			this.checkBoxAskWhenClosingWithActiveTasks.Location = new System.Drawing.Point(7, 205);
+			this.checkBoxAskWhenClosingWithActiveTasks.Location = new System.Drawing.Point(7, 226);
 			this.checkBoxAskWhenClosingWithActiveTasks.Name = "checkBoxAskWhenClosingWithActiveTasks";
 			this.checkBoxAskWhenClosingWithActiveTasks.Size = new System.Drawing.Size(423, 17);
 			this.checkBoxAskWhenClosingWithActiveTasks.TabIndex = 21;
@@ -332,12 +333,13 @@ namespace Twitch_prime_downloader
 			// 
 			this.groupBoxVideoInformationSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxStoreSubChunksInfo);
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodChunkInfo);
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxUseGmtTime);
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodInfo);
 			this.groupBoxVideoInformationSettings.Location = new System.Drawing.Point(7, 152);
 			this.groupBoxVideoInformationSettings.Name = "groupBoxVideoInformationSettings";
-			this.groupBoxVideoInformationSettings.Size = new System.Drawing.Size(783, 47);
+			this.groupBoxVideoInformationSettings.Size = new System.Drawing.Size(783, 68);
 			this.groupBoxVideoInformationSettings.TabIndex = 20;
 			this.groupBoxVideoInformationSettings.TabStop = false;
 			this.groupBoxVideoInformationSettings.Text = "Информация о видео";
@@ -356,7 +358,7 @@ namespace Twitch_prime_downloader
 			// checkBoxUseGmtTime
 			// 
 			this.checkBoxUseGmtTime.AutoSize = true;
-			this.checkBoxUseGmtTime.Location = new System.Drawing.Point(402, 19);
+			this.checkBoxUseGmtTime.Location = new System.Drawing.Point(6, 42);
 			this.checkBoxUseGmtTime.Name = "checkBoxUseGmtTime";
 			this.checkBoxUseGmtTime.Size = new System.Drawing.Size(176, 17);
 			this.checkBoxUseGmtTime.TabIndex = 16;
@@ -941,6 +943,17 @@ namespace Twitch_prime_downloader
 			this.miOpenVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
 			this.miOpenVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.miOpenVideoInBrowserToolStripMenuItem_Click);
 			// 
+			// checkBoxStoreSubChunksInfo
+			// 
+			this.checkBoxStoreSubChunksInfo.AutoSize = true;
+			this.checkBoxStoreSubChunksInfo.Location = new System.Drawing.Point(402, 19);
+			this.checkBoxStoreSubChunksInfo.Name = "checkBoxStoreSubChunksInfo";
+			this.checkBoxStoreSubChunksInfo.Size = new System.Drawing.Size(273, 17);
+			this.checkBoxStoreSubChunksInfo.TabIndex = 19;
+			this.checkBoxStoreSubChunksInfo.Text = "Сохранять информацию о вложенных сегментах";
+			this.checkBoxStoreSubChunksInfo.UseVisualStyleBackColor = true;
+			this.checkBoxStoreSubChunksInfo.CheckedChanged += new System.EventHandler(this.checkBoxStoreSubChunksInfo_CheckedChanged);
+			// 
 			// Form1
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -1063,5 +1076,6 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.TabPage tabPageMainSettings;
 		private System.Windows.Forms.TabPage tabPageSystemSettings;
 		private System.Windows.Forms.CheckBox checkBoxAskWhenClosingWithActiveTasks;
+		private System.Windows.Forms.CheckBox checkBoxStoreSubChunksInfo;
 	}
 }

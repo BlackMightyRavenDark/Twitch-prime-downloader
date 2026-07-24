@@ -68,12 +68,22 @@ namespace Twitch_prime_downloader
 			JObject j = new JObject();
 			if (position >= 0L) { j["position"] = position; }
 			j["size"] = fileSize;
-			if (!(chunk is TwitchVodHeaderChunk))
+			if (chunk.Duration >= 0.0)
 			{
 				j["length"] = chunk.Duration;
+			}
+			if (chunk.Offset >= 0.0)
+			{
 				j["offset"] = chunk.Offset;
 			}
-			j["fileName"] = chunk.FileName;
+			if (chunk.AbsoluteOffset >= 0.0 && chunk.AbsoluteOffset != chunk.Offset)
+			{
+				j["absoluteOffset"] = chunk.AbsoluteOffset;
+			}
+			if (!string.IsNullOrEmpty(chunk.FileName) && !string.IsNullOrWhiteSpace(chunk.FileName))
+			{
+				j["fileName"] = chunk.FileName;
+			}
 			return j;
 		}
 	}
