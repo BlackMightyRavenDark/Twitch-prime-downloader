@@ -643,7 +643,7 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				string fixedFlleName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
+				string fixedFlleName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.Vod));
 				using (SaveFileDialog sfd = new SaveFileDialog()
 				{
 					Title = "Куда будем сохранять картинку?",
@@ -662,7 +662,7 @@ namespace Twitch_prime_downloader
 					if (sfd.ShowDialog() == DialogResult.OK)
 					{
 						config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
-						_activeFrameStream.StreamInfo.ThumbnailImageData.SaveToFile(sfd.FileName);
+						_activeFrameStream.Vod.ThumbnailImageData.SaveToFile(sfd.FileName);
 					}
 				}
 			}
@@ -691,13 +691,13 @@ namespace Twitch_prime_downloader
 			Process process = new Process();
 			process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFilePath);
 			process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFilePath);
-			process.StartInfo.Arguments = _activeFrameStream.StreamInfo.Url;
+			process.StartInfo.Arguments = _activeFrameStream.Vod.Url;
 			process.Start();
 		}
 
 		private void miCopyVodThumbnailImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			string url = _activeFrameStream.StreamInfo?.FormatThumbnailTemplateUrl(1920, 1080);
+			string url = _activeFrameStream.Vod?.FormatThumbnailTemplateUrl(1920, 1080);
 			if (!string.IsNullOrEmpty(url) && !string.IsNullOrWhiteSpace(url))
 			{
 				SetClipboardText(url);
@@ -706,19 +706,19 @@ namespace Twitch_prime_downloader
 
 		private void miCopyVideoUrl_Click(object sender, EventArgs e)
 		{
-			if (_activeFrameStream?.StreamInfo != null)
+			if (_activeFrameStream?.Vod != null)
 			{
-				if (!string.IsNullOrEmpty(_activeFrameStream.StreamInfo.Url) &&
-					!string.IsNullOrWhiteSpace(_activeFrameStream.StreamInfo.Url))
+				if (!string.IsNullOrEmpty(_activeFrameStream.Vod.Url) &&
+					!string.IsNullOrWhiteSpace(_activeFrameStream.Vod.Url))
 				{
-					SetClipboardText(_activeFrameStream.StreamInfo.Url);
+					SetClipboardText(_activeFrameStream.Vod.Url);
 				}
 			}
 		}
 
 		private void miCopyVodInfoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			TwitchVod vod = _activeFrameStream?.StreamInfo;
+			TwitchVod vod = _activeFrameStream?.Vod;
 			if (vod != null && !string.IsNullOrEmpty(vod.RawData) && !string.IsNullOrWhiteSpace(vod.RawData))
 			{
 				SetClipboardText(vod.RawData);
@@ -734,10 +734,10 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				string playlistRaw = _activeFrameStream.StreamInfo?.Playlist?.PlaylistRaw;
+				string playlistRaw = _activeFrameStream.Vod?.Playlist?.PlaylistRaw;
 				if (!string.IsNullOrEmpty(playlistRaw) && !string.IsNullOrWhiteSpace(playlistRaw))
 				{
-					string fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.StreamInfo));
+					string fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.Vod));
 					using (SaveFileDialog sfd = new SaveFileDialog()
 					{
 						Title = "Куда будем сохранять плейлист?",
@@ -870,15 +870,15 @@ namespace Twitch_prime_downloader
 
 			TwitchPlaylistResult playlistResult = await Task.Run(() =>
 			{
-				if (frameStream.StreamInfo.IsLive && frameStream.StreamInfo.UpdatePlaylistManifest() == 200 &&
-					frameStream.StreamInfo.PlaylistManifest[0].UpdatePlaylist() == 200)
+				if (frameStream.Vod.IsLive && frameStream.Vod.UpdatePlaylistManifest() == 200 &&
+					frameStream.Vod.PlaylistManifest[0].UpdatePlaylist() == 200)
 				{
-					return new TwitchPlaylistResult(frameStream.StreamInfo.PlaylistManifest[0].Playlist, 200, null);
+					return new TwitchPlaylistResult(frameStream.Vod.PlaylistManifest[0].Playlist, 200, null);
 				}
 
-				TwitchPlaylistResult result = frameStream.StreamInfo.GetPlaylist("chunked");
+				TwitchPlaylistResult result = frameStream.Vod.GetPlaylist("chunked");
 				return result.ErrorCode == 200 ? result :
-					new TwitchPlaylistResult(frameStream.StreamInfo.Playlist, frameStream.StreamInfo.Playlist != null ? 200 : 404, null);
+					new TwitchPlaylistResult(frameStream.Vod.Playlist, frameStream.Vod.Playlist != null ? 200 : 404, null);
 			});
 			if (playlistResult.ErrorCode == 200)
 			{
@@ -889,7 +889,7 @@ namespace Twitch_prime_downloader
 
 				playlistResult.Playlist.Parse();
 
-				DownloadFrame frame = new DownloadFrame(frameStream.StreamInfo, playlistResult.Playlist);
+				DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist);
 				frame.Parent = panelDownloads;
 				frame.Location = new Point(0, 0);
 				frame.Closed += OnFrameDownload_Closed;

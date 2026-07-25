@@ -12,17 +12,48 @@ namespace Twitch_prime_downloader
 {
 	public partial class VodFrame : UserControl
 	{
-		public TwitchVod StreamInfo { get; private set; }
+
+		public TwitchVod Vod { get; private set; }
 		public bool UseGmtTime
 		{
-			get { return _useGmtTime; }
-			set { _useGmtTime = value; Refresh(); }
+			get => _useGmtTime;
+			set
+			{
+				if (_useGmtTime != value)
+				{
+					_useGmtTime = value;
+					Refresh();
+				}
+			}
 		}
-		private int _hudInfoFontSize = 10;
-		private bool _showStreamInfoHud = true;
+		public bool ShowVodInfoHud
+		{
+			get => _showVodInfoHud;
+			set
+			{
+				if (_showVodInfoHud != value)
+				{
+					_showVodInfoHud = value;
+					Refresh();
+				}
+			}
+		}
+		public int HudFontSize
+		{
+			get => _hudFontSize;
+			set
+			{
+				if (_hudFontSize != value)
+				{
+					_hudFontSize = value;
+					Refresh();
+				}
+			}
+		}
+
 		private bool _useGmtTime;
-		public int HudInfoFontSize { get { return _hudInfoFontSize; } set { SetInfoGuiFontSize(value); } }
-		public bool ShowStreamInfoHud { get { return _showStreamInfoHud; } set { SetShowInfoHud(value); } }
+		private bool _showVodInfoHud = true;
+		private int _hudFontSize = 10;
 
 		public static readonly Color ColorActive = IntToColor(0x909090);
 		public static readonly Color ColorInactive = IntToColor(0x303030);
@@ -58,16 +89,16 @@ namespace Twitch_prime_downloader
 #else
 			catch { }
 #endif
-			SetStreamInfo(twitchVod);
+			SetVod(twitchVod);
 		}
 
-		private async void SetStreamInfo(TwitchVod vod)
+		private async void SetVod(TwitchVod vod)
 		{
-			StreamInfo = vod;
-			lblVodTitle.Text = StreamInfo.Title;
-			lblChannelName.Text = StreamInfo.User.DisplayName;
-			lblBroadcastType.Text = StreamInfo.VodType.ToString();
-			lblIsPrime.Visible = StreamInfo.IsSubscribersOnly;
+			Vod = vod;
+			lblVodTitle.Text = vod.Title;
+			lblChannelName.Text = vod.User.DisplayName;
+			lblBroadcastType.Text = vod.VodType.ToString();
+			lblIsPrime.Visible = vod.IsSubscribersOnly;
 
 			await Task.Run(() =>
 			{
@@ -77,24 +108,24 @@ namespace Twitch_prime_downloader
 					{
 						if (vod.Playlist == null && vod.UpdatePlaylistManifest() == 200) { vod.Playlist.Parse(); }
 					}),
-					Task.Run(() => StreamInfo.ReceiveThumbnail(1920, 1080)),
+					Task.Run(() => vod.ReceiveThumbnail(1920, 1080)),
 					Task.Run(() =>
 					{
-						int errorCode = StreamInfo.UpdateGameInformation();
+						int errorCode = vod.UpdateGameInformation();
 						if (errorCode == 200 || errorCode == 204)
 						{
-							StreamInfo.Game.ReceiveThumbnail(52, 72);
+							vod.Game.ReceiveThumbnail(52, 72);
 						}
 					})
 				};
 				Task.WhenAll(tasks).Wait();
 			});
 
-			if (StreamInfo.Playlist != null &&
-				StreamInfo.Playlist.UpdateMutedSegments(true) > 0 &&
-				StreamInfo.Playlist.MutedSegments.Segments.Count > 0)
+			if (vod.Playlist != null &&
+				vod.Playlist.UpdateMutedSegments(true) > 0 &&
+				vod.Playlist.MutedSegments.Segments.Count > 0)
 			{
-				lblMutedChunks.Text = $"Muted segments: {StreamInfo.Playlist.MutedSegments.Segments.Count}";
+				lblMutedChunks.Text = $"Muted segments: {vod.Playlist.MutedSegments.Segments.Count}";
 				lblMutedChunks.Left = Width - lblMutedChunks.Width;
 				lblMutedChunks.Visible = true;
 			}
@@ -103,13 +134,13 @@ namespace Twitch_prime_downloader
 				lblMutedChunks.Visible = false;
 			}
 
-			Image imagePreview = TryLoadImageFromStream(StreamInfo.ThumbnailImageData) ?? GenerateErrorImage();
+			Image imagePreview = TryLoadImageFromStream(vod.ThumbnailImageData) ?? GenerateErrorImage();
 			pictureBoxThumbnailImageVod.Image = imagePreview;
-			if (StreamInfo.Game != null)
+			if (vod.Game != null)
 			{
-				if (StreamInfo.Game.IsKnown)
+				if (vod.Game.IsKnown)
 				{
-					lblGameName.Text = StreamInfo.Game.Title;
+					lblGameName.Text = vod.Game.Title;
 					lblGameName.Visible = true;
 				}
 				else
@@ -117,7 +148,7 @@ namespace Twitch_prime_downloader
 					lblGameName.Visible = false;
 				}
 
-				pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(StreamInfo.Game.ThumbnailImageData);
+				pictureBoxThumbnailImageGame.Image = TryLoadImageFromStream(vod.Game.ThumbnailImageData);
 			}
 			else
 			{
@@ -133,35 +164,35 @@ namespace Twitch_prime_downloader
 
 		private void pictureBoxThumbnailImageVod_Paint(object sender, PaintEventArgs e)
 		{
-			if (ShowStreamInfoHud)
+			if (ShowVodInfoHud)
 			{
 				try
 				{
-					using (Font fnt = new Font("Lucida Console", HudInfoFontSize))
+					using (Font fnt = new Font("Lucida Console", HudFontSize))
 					{
-						string durationFormatted = StreamInfo.Duration.ToString("h':'mm':'ss");
+						string durationFormatted = Vod.Duration.ToString("h':'mm':'ss");
 						SizeF size = e.Graphics.MeasureString(durationFormatted, fnt);
 						RectangleF r = new RectangleF(0, 0, size.Width, size.Height);
 						e.Graphics.FillRectangle(Brushes.Black, r);
 						e.Graphics.DrawString(durationFormatted, fnt, Brushes.White, r.X, r.Y);
 
-						DateTime creationDate = UseGmtTime ? StreamInfo.CreationDate : StreamInfo.CreationDate.ToLocalTime();
+						DateTime creationDate = UseGmtTime ? Vod.CreationDate : Vod.CreationDate.ToLocalTime();
 						string creationDateFormatted = creationDate.FormatDateTime();
 						size = e.Graphics.MeasureString(creationDateFormatted, fnt);
 						r = new RectangleF(
-							(sender as PictureBox).Width - size.Width - 2,
-							(sender as PictureBox).Height - size.Height - 2,
+							(sender as PictureBox).Width - size.Width - 2.0f,
+							(sender as PictureBox).Height - size.Height - 2.0f,
 							size.Width, size.Height);
 						e.Graphics.FillRectangle(Brushes.Black, r);
 						e.Graphics.DrawString(creationDateFormatted, fnt, Brushes.White, r.X, r.Y);
-						if (StreamInfo.VodType == TwitchApi.TwitchVodType.Archive &&
-							StreamInfo.DeletionDate < DateTime.MaxValue)
+						if (Vod.VodType == TwitchApi.TwitchVodType.Archive &&
+							Vod.DeletionDate < DateTime.MaxValue)
 						{
-							DateTime deletionDate = UseGmtTime ? StreamInfo.DeletionDate : StreamInfo.DeletionDate.ToLocalTime();
+							DateTime deletionDate = UseGmtTime ? Vod.DeletionDate : Vod.DeletionDate.ToLocalTime();
 							string deletionDateString = $"Будет удалён: {deletionDate.FormatDateTime()}";
-							int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
+							int y = (int)((sender as PictureBox).Height - (size.Height * 2.0f) - 2.0f);
 							size = e.Graphics.MeasureString(deletionDateString, fnt);
-							r = new RectangleF((sender as PictureBox).Width - size.Width - 2, y, size.Width, size.Height);
+							r = new RectangleF((sender as PictureBox).Width - size.Width - 2.0f, y, size.Width, size.Height);
 							e.Graphics.FillRectangle(Brushes.Black, r);
 							e.Graphics.DrawString(deletionDateString, fnt, Brushes.Yellow, r.X, r.Y);
 						}
@@ -222,47 +253,26 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		private void SetInfoGuiFontSize(int newFontSize)
-		{
-			if (_hudInfoFontSize != newFontSize)
-			{
-				_hudInfoFontSize = newFontSize;
-				if (ShowStreamInfoHud)
-				{
-					pictureBoxThumbnailImageVod.Refresh();
-				}
-			}
-		}
-
-		private void SetShowInfoHud(bool flag)
-		{
-			if (_showStreamInfoHud != flag)
-			{
-				_showStreamInfoHud = flag;
-				pictureBoxThumbnailImageVod.Refresh();
-			}
-		}
-
 		private void miCopyVodTitleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SetClipboardText(StreamInfo.Title);
+			SetClipboardText(Vod.Title);
 		}
 
 		private void miCopyVodCreationDateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SetClipboardText(StreamInfo.CreationDate.ToString("[yyyy-MM-dd]"));
+			SetClipboardText(Vod.CreationDate.ToString("[yyyy-MM-dd]"));
 		}
 
 		private void miCopyVodTitlePlusCreationDateToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SetClipboardText($"[{StreamInfo.CreationDate:yyyy-MM-dd}] {StreamInfo.Title}");
+			SetClipboardText($"[{Vod.CreationDate:yyyy-MM-dd}] {Vod.Title}");
 		}
 
 		private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
 		{
-			string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{StreamInfo.Playlist.MutedSegments}";
-			string durationFormatted = StreamInfo.Playlist.MutedSegments.TotalDuration.ToString("h':'mm':'ss");
-			double percent = 100.0 / StreamInfo.Duration.Ticks * StreamInfo.Playlist.MutedSegments.TotalDuration.Ticks;
+			string t = $"Стрим: {Vod.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{Vod.Playlist.MutedSegments}";
+			string durationFormatted = Vod.Playlist.MutedSegments.TotalDuration.ToString("h':'mm':'ss");
+			double percent = 100.0 / Vod.Duration.Ticks * Vod.Playlist.MutedSegments.TotalDuration.Ticks;
 			string percentFormatted = string.Format("{0:F2}", percent);
 			t += $"{Environment.NewLine}Всего выпилено: {durationFormatted} ({percentFormatted}%){Environment.NewLine}";
 			if (MessageBox.Show($"{t}{Environment.NewLine}Скопировать это прямо в буфер?", "Определятор выпиленного звука",
