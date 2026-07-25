@@ -145,7 +145,7 @@ namespace Twitch_prime_downloader
 						e.Graphics.FillRectangle(Brushes.Black, r);
 						e.Graphics.DrawString(durationFormatted, fnt, Brushes.White, r.X, r.Y);
 
-						DateTime creationDate = UseGmtTime ? StreamInfo.CreationDate : StreamInfo.CreationDate.ToLocal();
+						DateTime creationDate = UseGmtTime ? StreamInfo.CreationDate : StreamInfo.CreationDate.ToLocalTime();
 						string creationDateFormatted = creationDate.FormatDateTime();
 						size = e.Graphics.MeasureString(creationDateFormatted, fnt);
 						r = new RectangleF(
@@ -153,17 +153,17 @@ namespace Twitch_prime_downloader
 							(sender as PictureBox).Height - size.Height - 2,
 							size.Width, size.Height);
 						e.Graphics.FillRectangle(Brushes.Black, r);
-						e.Graphics.DrawString(creationDateFormatted, fnt, Brushes.White, new Point((int)r.X, (int)r.Y));
+						e.Graphics.DrawString(creationDateFormatted, fnt, Brushes.White, r.X, r.Y);
 						if (StreamInfo.VodType == TwitchApi.TwitchVodType.Archive &&
 							StreamInfo.DeletionDate < DateTime.MaxValue)
 						{
-							DateTime deletionDate = UseGmtTime ? StreamInfo.DeletionDate : StreamInfo.DeletionDate.ToLocal();
+							DateTime deletionDate = UseGmtTime ? StreamInfo.DeletionDate : StreamInfo.DeletionDate.ToLocalTime();
 							string deletionDateString = $"Будет удалён: {deletionDate.FormatDateTime()}";
 							int y = (int)((sender as PictureBox).Height - (size.Height * 2) - 2);
 							size = e.Graphics.MeasureString(deletionDateString, fnt);
 							r = new RectangleF((sender as PictureBox).Width - size.Width - 2, y, size.Width, size.Height);
 							e.Graphics.FillRectangle(Brushes.Black, r);
-							e.Graphics.DrawString(deletionDateString, fnt, Brushes.Yellow, new Point((int)r.X, (int)r.Y));
+							e.Graphics.DrawString(deletionDateString, fnt, Brushes.Yellow, r.X, r.Y);
 						}
 					}
 				}
@@ -217,7 +217,7 @@ namespace Twitch_prime_downloader
 				int x = (int)(button.Width / 2 - sz.Width / 2);
 				int y = (int)(button.Height / 2 - sz.Height / 2);
 				brush = new SolidBrush(button.ForeColor);
-				e.Graphics.DrawString(t, button.Font, brush, new Point(x, y));
+				e.Graphics.DrawString(t, button.Font, brush, x, y);
 				brush.Dispose();
 			}
 		}
@@ -261,7 +261,6 @@ namespace Twitch_prime_downloader
 		private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
 		{
 			string t = $"Стрим: {StreamInfo.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{StreamInfo.Playlist.MutedSegments}";
-
 			string durationFormatted = StreamInfo.Playlist.MutedSegments.TotalDuration.ToString("h':'mm':'ss");
 			double percent = 100.0 / StreamInfo.Duration.Ticks * StreamInfo.Playlist.MutedSegments.TotalDuration.Ticks;
 			string percentFormatted = string.Format("{0:F2}", percent);

@@ -28,16 +28,6 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static string GetWholeText(this ListBox listBox)
-		{
-			string t = string.Empty;
-			foreach (var item in listBox.Items)
-			{
-				t += item.ToString() + Environment.NewLine;
-			}
-			return t;
-		}
-
 		public static void SaveToFile(this IEnumerable<string> collection, string fileName)
 		{
 			string t = collection.ToText();
@@ -56,11 +46,6 @@ namespace Twitch_prime_downloader
 		public static Rectangle Deflate(this Rectangle rectangle, int width, int height)
 		{
 			return new Rectangle(rectangle.X, rectangle.Y, rectangle.Width - width, rectangle.Height - height);
-		}
-
-		public static DateTime ToLocal(this DateTime dateTime)
-		{
-			return dateTime.IsGmt() ? dateTime.ToLocalTime() : dateTime;
 		}
 
 		internal static JObject Serialize(this TwitchVodChunk chunk, long position, long fileSize)

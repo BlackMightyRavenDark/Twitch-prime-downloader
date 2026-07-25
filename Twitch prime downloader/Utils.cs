@@ -45,7 +45,7 @@ namespace Twitch_prime_downloader
 				}
 				return null;
 			}
-			catch (Exception)
+			catch
 			{
 				return null;
 			}
@@ -208,21 +208,16 @@ namespace Twitch_prime_downloader
 			return true;
 		}
 
-		public static string LeadZero(int n)
-		{
-			return n < 10 ? $"0{n}" : n.ToString();
-		}
-
 		public static string FormatFileName(string fmt, TwitchVod twitchVod)
 		{
 			DateTime creationDate = config.UseGmtVodDates ?
-				twitchVod.CreationDate : twitchVod.CreationDate.ToLocal();
-			return fmt.Replace("<year>", LeadZero(creationDate.Year))
-				.Replace("<month>", LeadZero(creationDate.Month))
-				.Replace("<day>", LeadZero(creationDate.Day))
-				.Replace("<hour>", LeadZero(creationDate.Hour))
-				.Replace("<minute>", LeadZero(creationDate.Minute))
-				.Replace("<second>", LeadZero(creationDate.Second))
+				twitchVod.CreationDate : twitchVod.CreationDate.ToLocalTime();
+			return fmt.Replace("<year>", creationDate.Year.ToString())
+				.Replace("<month>", creationDate.Month.ToString().PadLeft(2, '0'))
+				.Replace("<day>", creationDate.Day.ToString().PadLeft(2, '0'))
+				.Replace("<hour>", creationDate.Hour.ToString().PadLeft(2, '0'))
+				.Replace("<minute>", creationDate.Minute.ToString().PadLeft(2, '0'))
+				.Replace("<second>", creationDate.Second.ToString().PadLeft(2, '0'))
 				.Replace("<GMT>", config.UseGmtVodDates ? " GMT" : string.Empty)
 				.Replace("<video_title>", twitchVod.Title)
 				.Replace("<channel_name>", twitchVod.User.DisplayName);
