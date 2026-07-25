@@ -55,8 +55,8 @@ namespace Twitch_prime_downloader
 		private bool _showVodInfoHud = true;
 		private int _hudFontSize = 10;
 
-		public static readonly Color ColorActive = IntToColor(0x909090);
-		public static readonly Color ColorInactive = IntToColor(0x303030);
+		public static readonly Color ColorActive = GetColorFromRGB(0x909090);
+		public static readonly Color ColorInactive = GetColorFromRGB(0x303030);
 
 		public delegate void ImageMouseDownDelegate(object sender, MouseEventArgs e);
 		public delegate void FrameActivatedDelegate(object sender);

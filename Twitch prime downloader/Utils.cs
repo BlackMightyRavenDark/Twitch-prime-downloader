@@ -94,15 +94,12 @@ namespace Twitch_prime_downloader
 			return string.Format("{0} {1:D3} {2:D3} {3:D3} bytes", gb, mb, kb, b);
 		}
 
-		public static Color IntToColor(int color)
+		public static Color GetColorFromRGB(int rgbColor)
 		{
-			//TODO: Rewrite this shit
-			byte[] values = BitConverter.GetBytes(color);
-			if (!BitConverter.IsLittleEndian)
-			{
-				Array.Reverse(values);
-			}
-			return Color.FromArgb(values[0], values[1], values[2]);
+			byte r = (byte)(rgbColor >> 16 & 0xFF);
+			byte g = (byte)(rgbColor >>  8 & 0xFF);
+			byte b = (byte)(rgbColor       & 0xFF);
+			return Color.FromArgb(r, b, g);
 		}
 
 		public static Bitmap GenerateErrorImage()
