@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MultiThreadedDownloaderLib;
@@ -10,7 +11,6 @@ using TwitchApiLib;
 using static TwitchApiLib.TwitchVodChunk;
 using static Twitch_prime_downloader.Utils;
 using Twitch_prime_downloader.Properties;
-using System.Threading;
 
 namespace Twitch_prime_downloader
 {

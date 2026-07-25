@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using TwitchApiLib;
 using MultiThreadedDownloaderLib;
+using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
