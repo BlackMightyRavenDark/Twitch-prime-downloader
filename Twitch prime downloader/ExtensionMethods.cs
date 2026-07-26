@@ -66,6 +66,10 @@ namespace Twitch_prime_downloader
 			{
 				j["absoluteOffset"] = chunk.AbsoluteOffset;
 			}
+			if (chunk.CreationDate.Year > 2000 && chunk.CreationDate < DateTime.MaxValue)
+			{
+				j["creationDate"] = chunk.CreationDate;
+			}
 			if (!string.IsNullOrEmpty(chunk.FileName) && !string.IsNullOrWhiteSpace(chunk.FileName))
 			{
 				j["fileName"] = chunk.FileName;
