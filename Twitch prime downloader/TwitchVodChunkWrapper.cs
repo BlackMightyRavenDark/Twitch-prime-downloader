@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using TwitchApiLib;
 
@@ -21,6 +22,7 @@ namespace Twitch_prime_downloader
 			List<long> positions = new List<long>();
 			List<string> fileNames = new List<string>();
 			List<DateTime> creationDates = new List<DateTime>();
+			List<int> ids = new List<int>();
 
 			if (_fileExtension == ".mp4")
 			{
@@ -30,8 +32,10 @@ namespace Twitch_prime_downloader
 					if (CompareSample(sample, chunkData, i))
 					{
 						positions.Add(i - 4);
-						fileNames.Add(ExtractChunkFileName(chunkData, i));
+						string fn = ExtractChunkFileName(chunkData, i);
+						fileNames.Add(fn);
 						creationDates.Add(ExtractChunkCreationDate(chunkData, i));
+						ids.Add(ExtractChunkIdFromFileName(fn));
 					}
 				}
 			}
@@ -55,8 +59,10 @@ namespace Twitch_prime_downloader
 							}
 						}
 
-						fileNames.Add(ExtractChunkFileName(chunkData, i));
+						string fn = ExtractChunkFileName(chunkData, i);
+						fileNames.Add(fn);
 						creationDates.Add(ExtractChunkCreationDate(chunkData, i));
+						ids.Add(ExtractChunkIdFromFileName(fn));
 					}
 				}
 			}
@@ -67,11 +73,10 @@ namespace Twitch_prime_downloader
 				int subChunkCount = positions.Count;
 				for (int i = 0; i < subChunkCount; ++i)
 				{
-					JObject j = new JObject()
-					{
-						["position"] = chunkPosition + positions[i],
-						["size"] = (i < subChunkCount - 1 ? positions[i + 1] : chunkData.Length) - positions[i]
-					};
+					JObject j = new JObject();
+					if (ids[i] >= 0) { j["id"] = ids[i]; }
+					j["position"] = chunkPosition + positions[i];
+					j["size"] = (i < subChunkCount - 1 ? positions[i + 1] : chunkData.Length) - positions[i];
 					if (!string.IsNullOrEmpty(fileNames[i]))
 					{
 						j["fileName"] = fileNames[i];
@@ -161,6 +166,34 @@ namespace Twitch_prime_downloader
 			}
 
 			return DateTime.MaxValue;
+		}
+
+		private static int ExtractChunkIdFromFileName(string fileName)
+		{
+			try
+			{
+				if (!string.IsNullOrEmpty(fileName) && !string.IsNullOrWhiteSpace(fileName))
+				{
+					Regex regex = new Regex(@"(\d+)(?:-.*)?.\w*$");
+					Match match = regex.Match(fileName);
+					if (match.Success && match.Groups.Count > 1 &&
+						!string.IsNullOrEmpty(match.Groups[1].Value) &&
+						!string.IsNullOrWhiteSpace(match.Groups[1].Value) &&
+						int.TryParse(match.Groups[1].Value, out int id))
+					{
+						return id;
+					}
+				}
+			}
+#if DEBUG
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
+#else
+			catch { }
+#endif
+			return -1;
 		}
 	}
 }
