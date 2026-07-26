@@ -308,5 +308,22 @@ namespace Twitch_prime_downloader
 				return ex.HResult;
 			}
 		}
+
+		public static bool IsTwitchApplicationValid(out string errorMessage)
+		{
+			if (string.IsNullOrEmpty(config.ApiApplicationClientId) || string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
+			{
+				errorMessage = "Не указан ID приложения Twitch!";
+				return false;
+			}
+			else if (string.IsNullOrEmpty(config.ApiApplicationClientSecretKey) || string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
+			{
+				errorMessage = "Не указан секретный ключ приложения Twitch!";
+				return false;
+			}
+
+			errorMessage = null;
+			return true;
+		}
 	}
 }

@@ -259,8 +259,9 @@ namespace Twitch_prime_downloader
 		private async void btnSearchByChannelName_Click(object sender, EventArgs e)
 		{
 			btnSearchByChannelName.Enabled = false;
-			if (!IsTwitchApplicationValid())
+			if (!IsTwitchApplicationValid(out string errorMessage))
 			{
+				MessageBox.Show(errorMessage, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				btnSearchByChannelName.Enabled = true;
 				return;
 			}
@@ -346,16 +347,17 @@ namespace Twitch_prime_downloader
 		private async void btnSearchByUrls_Click(object sender, EventArgs e)
 		{
 			btnSearchByUrls.Enabled = false;
-			if (!IsTwitchApplicationValid())
-			{
-				btnSearchByUrls.Enabled = true;
-				return;
-			}
-
 			string[] urls = textBoxVideoUrls.Lines;
 			if (urls.Length == 0)
 			{
 				MessageBox.Show("Введите ссылки!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				btnSearchByUrls.Enabled = true;
+				return;
+			}
+
+			if (!IsTwitchApplicationValid(out string errorMessage))
+			{
+				MessageBox.Show(errorMessage, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				btnSearchByUrls.Enabled = true;
 				return;
 			}
@@ -529,13 +531,18 @@ namespace Twitch_prime_downloader
 			btnApplyApiApplication.Enabled =
 			btnRestoreDefaultApiApplication.Enabled = false;
 
-			if (IsTwitchApplicationValid())
+			if (IsTwitchApplicationValid(out string errorMessage))
 			{
 				await Task.Run(() =>
 				{
 					TwitchApplication application = TwitchApi.GetApplication();
-					TwitchApiLib.Utils.TwitchHelixOauthToken.Update(application, out _);
+					TwitchApiLib.Utils.TwitchHelixOauthToken.Update(application, out errorMessage);
 				});
+			}
+
+			if (!string.IsNullOrEmpty(errorMessage) && !string.IsNullOrWhiteSpace(errorMessage))
+			{
+				MessageBox.Show(errorMessage, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 
 			btnRestoreDefaultApiApplication.Enabled =
@@ -1026,24 +1033,6 @@ namespace Twitch_prime_downloader
 			textBoxHelixApiClientId.Text = config.ApiApplicationClientId = defaultApplication.ClientId;
 			textBoxHelixApiClientSecretKey.Text = config.ApiApplicationClientSecretKey = defaultApplication.ClientSecretKey;
 			TwitchApi.SetApplication(defaultApplication);
-		}
-
-		private static bool IsTwitchApplicationValid()
-		{
-			if (string.IsNullOrEmpty(config.ApiApplicationClientId) || string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
-			{
-				MessageBox.Show("Не указан ID приложения Twitch!", "Ошибка!",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return false;
-			}
-			if (string.IsNullOrEmpty(config.ApiApplicationClientSecretKey) || string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
-			{
-				MessageBox.Show("Не указан секретный ключ приложения Twitch!", "Ошибка!",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return false;
-			}
-
-			return true;
 		}
 
 		private static bool IsUnfinishedTaskPresent()
