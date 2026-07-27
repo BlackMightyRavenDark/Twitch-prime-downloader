@@ -10,7 +10,7 @@ namespace Twitch_prime_downloader
 {
 	internal class TwitchVodChunkWrapper : TwitchVodChunk
 	{
-		private string _fileExtension;
+		private readonly string _fileExtension;
 
 		public TwitchVodChunkWrapper(TwitchVodChunk chunk) : base(chunk)
 		{
