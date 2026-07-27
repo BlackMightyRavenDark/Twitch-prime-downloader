@@ -325,5 +325,11 @@ namespace Twitch_prime_downloader
 			errorMessage = null;
 			return true;
 		}
+
+		public static DateTime UnixMillisecondsToDateTime(long unixMilliseconds)
+		{
+			DateTime minUnixDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+			return minUnixDate.AddMilliseconds(unixMilliseconds);
+		}
 	}
 }

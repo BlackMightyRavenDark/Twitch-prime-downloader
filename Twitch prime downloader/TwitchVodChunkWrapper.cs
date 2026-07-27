@@ -158,8 +158,43 @@ namespace Twitch_prime_downloader
 							Array.Copy(chunkData, pos, dateBytes, 0, dateBytes.LongLength - 1L);
 							dateBytes[19] = (byte)'Z';
 							string dateString = Encoding.ASCII.GetString(dateBytes);
-							return DateTime.TryParse(dateString, null, System.Globalization.DateTimeStyles.AdjustToUniversal,
-								out DateTime dateTime) ? dateTime : DateTime.MaxValue;
+							bool isDateOk = DateTime.TryParse(dateString, null,
+								System.Globalization.DateTimeStyles.AdjustToUniversal, out DateTime dateTime);
+
+							// Searching for the 'ingest_r' value.
+							byte[] ingestSample = new byte[] { (byte)'i', (byte)'n', (byte)'g', (byte)'e', (byte)'s', (byte)'t', (byte)'_', (byte)'r' };
+							for (long n = 0L; n < 300L; ++n)
+							{
+								long pos2 = pos + n + 21L;
+								if (pos2 >= chunkData.LongLength)
+								{
+									return isDateOk ? dateTime : DateTime.MaxValue;
+								}
+
+								if (CompareSample(ingestSample, chunkData, pos2))
+								{
+									// The 'ingest_r' key is found.
+									byte[] ingestValueBytes = new byte[20];
+									for (long n2 = 0L; n2 < 20L; ++n2)
+									{
+										long pos3 = pos2 + n2 + ingestSample.LongLength + 2L;
+										if (pos3 >= chunkData.LongLength)
+										{
+											return isDateOk ? dateTime : DateTime.MinValue;
+										}
+
+										if (chunkData[pos3] == (byte)',') { break; }
+										ingestValueBytes[n2] = chunkData[pos3];
+									}
+
+									string ingestValueString = Encoding.ASCII.GetString(ingestValueBytes);
+									return long.TryParse(ingestValueString, out long ingestValue) ?
+										Utils.UnixMillisecondsToDateTime(ingestValue) :
+										(isDateOk ? dateTime : DateTime.MaxValue);
+								}
+							}
+
+							return isDateOk ? dateTime : DateTime.MaxValue;
 						}
 					}
 				}
