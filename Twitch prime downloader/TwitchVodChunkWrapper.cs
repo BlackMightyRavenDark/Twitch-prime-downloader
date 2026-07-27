@@ -27,14 +27,16 @@ namespace Twitch_prime_downloader
 			if (_fileExtension == ".mp4")
 			{
 				byte[] sample = new byte[] { (byte)'e', (byte)'m', (byte)'s', (byte)'g' };
-				for (long i = 0L; i < chunkData.LongLength - sample.LongLength; ++i)
+				for (long i = 0L; i < chunkData.LongLength; ++i)
 				{
+					if (i >= chunkData.LongLength - sample.LongLength) { break; }
 					if (CompareSample(sample, chunkData, i))
 					{
+						long maxPosition = i + 1020L;
 						positions.Add(i - 4);
-						string fn = ExtractChunkFileName(chunkData, i);
+						string fn = ExtractChunkFileName(chunkData, i, maxPosition);
 						fileNames.Add(fn);
-						creationDates.Add(ExtractChunkCreationDate(chunkData, i));
+						creationDates.Add(ExtractChunkCreationDate(chunkData, i, maxPosition));
 						ids.Add(ExtractChunkIdFromFileName(fn));
 					}
 				}
@@ -43,26 +45,34 @@ namespace Twitch_prime_downloader
 			{
 				byte[] sample = new byte[] { (byte)'T', (byte)'R', (byte)'C', (byte)'K' };
 				byte[] sample2 = new byte[] { (byte)'G', (byte)'@' };
-				const int maxBackwardRange = 1024;
-				for (long i = 0L; i < chunkData.LongLength - sample.LongLength; ++i)
+				const int maxRangeBetweenSamples = 1024;
+				for (long i = 0; i < chunkData.LongLength; ++i)
 				{
+					if (i >= chunkData.LongLength - sample.LongLength) { break; }
 					if (CompareSample(sample, chunkData, i))
 					{
-						for (int j = sample2.Length; j < maxBackwardRange; ++j)
+						long sample2Position = -1L;
+						for (int j = sample2.Length; j < maxRangeBetweenSamples; ++j)
 						{
 							long pos = i - j;
 							if ((positions.Count > 0 && pos <= positions[positions.Count - 1]) || pos < 0L) { break; }
 							if (CompareSample(sample2, chunkData, pos))
 							{
+								sample2Position = pos;
 								positions.Add(pos);
 								break;
 							}
 						}
 
-						string fn = ExtractChunkFileName(chunkData, i);
-						fileNames.Add(fn);
-						creationDates.Add(ExtractChunkCreationDate(chunkData, i));
-						ids.Add(ExtractChunkIdFromFileName(fn));
+						if (sample2Position >= 0L)
+						{
+							long maxPosition = sample2Position + 1024L;
+							if (maxPosition > chunkData.LongLength) { maxPosition = chunkData.LongLength; }
+							string fn = ExtractChunkFileName(chunkData, i, maxPosition);
+							fileNames.Add(fn);
+							creationDates.Add(ExtractChunkCreationDate(chunkData, i, maxPosition));
+							ids.Add(ExtractChunkIdFromFileName(fn));
+						}
 					}
 				}
 			}
@@ -113,22 +123,23 @@ namespace Twitch_prime_downloader
 			return matched;
 		}
 
-		private static string ExtractChunkFileName(byte[] chunkData, long chunkStartPosition)
+		private static string ExtractChunkFileName(byte[] chunkData, long arrayIndex, long maxArrayIndex)
 		{
 			byte[] sample = new byte[] { (byte)'T', (byte)'O', (byte)'F', (byte)'N' };
 			for (int i = 0; i < 1024; ++i)
 			{
-				if (i + chunkStartPosition >= chunkData.LongLength) { return null; }
-				if (CompareSample(sample, chunkData, i + chunkStartPosition))
+				long pos = arrayIndex + i;
+				if (pos >= maxArrayIndex || pos >= chunkData.LongLength - sample.LongLength) { return null; }
+				if (CompareSample(sample, chunkData, pos))
 				{
 					for (long j = 12; j < 60; ++j)
 					{
-						long pos = i + j + chunkStartPosition;
-						if (pos >= chunkData.LongLength) { return null; }
-						if (chunkData[pos] == '\0')
+						long pos2 = pos + j;
+						if (pos2 >= maxArrayIndex || pos2 >= chunkData.LongLength - sample.LongLength) { return null; }
+						if (chunkData[pos2] == '\0')
 						{
-							long fileNamePosition = chunkStartPosition + i + 11L;
-							byte[] fileNameBytes = new byte[pos - fileNamePosition];
+							long fileNamePosition = pos + 11L;
+							byte[] fileNameBytes = new byte[pos2 - fileNamePosition];
 							Array.Copy(chunkData, fileNamePosition, fileNameBytes, 0, fileNameBytes.LongLength);
 							return Encoding.ASCII.GetString(fileNameBytes);
 						}
@@ -139,23 +150,25 @@ namespace Twitch_prime_downloader
 			return null;
 		}
 
-		private static DateTime ExtractChunkCreationDate(byte[] chunkData, long chunkStartPosition)
+		private static DateTime ExtractChunkCreationDate(byte[] chunkData, long arrayIndex, long maxArrayIndex)
 		{
 			byte[] sample = new byte[] { (byte)'T', (byte)'D', (byte)'E', (byte)'N' };
-			for (long i = 0L; i < 1024L && i + chunkStartPosition < chunkData.LongLength; ++i)
+			for (int i = 0; i < 1024; ++i)
 			{
-				if (CompareSample(sample, chunkData, i + chunkStartPosition))
+				long pos = arrayIndex + i;
+				if (pos >= maxArrayIndex || pos >= chunkData.LongLength - sample.LongLength) { break; }
+				if (CompareSample(sample, chunkData, pos))
 				{
 					byte byteTwo = (byte)'2';
-					for (long j = 0L; j < 100L; ++j)
+					for (int j = 0; j < 100; ++j)
 					{
-						long pos = i + j + chunkStartPosition;
-						if (pos >= chunkData.LongLength) { return DateTime.MaxValue; }
-						if (chunkData[pos] == byteTwo)
+						long pos2 = pos + j;
+						if (pos2 >= maxArrayIndex || pos2 >= chunkData.LongLength - sample.LongLength) { return DateTime.MaxValue; }
+						if (chunkData[pos2] == byteTwo)
 						{
-							if (pos + 20L >= chunkData.LongLength) { return DateTime.MaxValue; }
+							if (pos2 + 20L >= chunkData.LongLength) { return DateTime.MaxValue; }
 							byte[] dateBytes = new byte[20];
-							Array.Copy(chunkData, pos, dateBytes, 0, dateBytes.LongLength - 1L);
+							Array.Copy(chunkData, pos2, dateBytes, 0, dateBytes.LongLength - 1L);
 							dateBytes[19] = (byte)'Z';
 							string dateString = Encoding.ASCII.GetString(dateBytes);
 							bool isDateOk = DateTime.TryParse(dateString, null,
@@ -163,28 +176,28 @@ namespace Twitch_prime_downloader
 
 							// Searching for the 'ingest_r' value.
 							byte[] ingestSample = new byte[] { (byte)'i', (byte)'n', (byte)'g', (byte)'e', (byte)'s', (byte)'t', (byte)'_', (byte)'r' };
-							for (long n = 0L; n < 300L; ++n)
+							for (int n = 0; n < 1024; ++n)
 							{
-								long pos2 = pos + n + 21L;
-								if (pos2 >= chunkData.LongLength)
+								long pos3 = pos2 + n + 21L;
+								if (pos3 >= maxArrayIndex || pos3 >= chunkData.LongLength - ingestSample.LongLength)
 								{
 									return isDateOk ? dateTime : DateTime.MaxValue;
 								}
 
-								if (CompareSample(ingestSample, chunkData, pos2))
+								if (CompareSample(ingestSample, chunkData, pos3))
 								{
 									// The 'ingest_r' key is found.
 									byte[] ingestValueBytes = new byte[20];
-									for (long n2 = 0L; n2 < 20L; ++n2)
+									for (int n2 = 0; n2 < 20; ++n2)
 									{
-										long pos3 = pos2 + n2 + ingestSample.LongLength + 2L;
-										if (pos3 >= chunkData.LongLength)
+										long pos4 = pos3 + n2 + ingestSample.LongLength + 2L;
+										if (pos4 >= chunkData.LongLength)
 										{
 											return isDateOk ? dateTime : DateTime.MinValue;
 										}
 
-										if (chunkData[pos3] == (byte)',') { break; }
-										ingestValueBytes[n2] = chunkData[pos3];
+										if (chunkData[pos4] == (byte)',') { break; }
+										ingestValueBytes[n2] = chunkData[pos4];
 									}
 
 									string ingestValueString = Encoding.ASCII.GetString(ingestValueBytes);
