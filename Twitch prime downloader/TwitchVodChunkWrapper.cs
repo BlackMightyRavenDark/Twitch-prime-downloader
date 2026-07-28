@@ -12,22 +12,22 @@ namespace Twitch_prime_downloader
 	{
 		private readonly string _fileExtension;
 
-		public TwitchVodChunkWrapper(TwitchVodChunk chunk) : base(chunk)
+		internal TwitchVodChunkWrapper(TwitchVodChunk chunk) : base(chunk)
 		{
 			_fileExtension = Path.GetExtension(chunk.FileName);
 		}
 
-		public JArray ExtractSubChunks(byte[] chunkData, long chunkPosition)
+		internal JArray ExtractSubChunks(byte[] chunkData, long chunkPosition)
 		{
 			return ExtractSubChunks(chunkData, chunkPosition, _fileExtension);
 		}
 
-		public JArray ExtractSubChunks(Stream chunkData, long chunkPosition)
+		internal JArray ExtractSubChunks(Stream chunkData, long chunkPosition)
 		{
 			return ExtractSubChunks(chunkData, chunkPosition, _fileExtension);
 		}
 
-		public static JArray ExtractSubChunks(byte[] chunkData, long chunkPosition, string fileExtension)
+		internal static JArray ExtractSubChunks(byte[] chunkData, long chunkPosition, string fileExtension)
 		{
 			List<long> positions = new List<long>();
 			List<string> fileNames = new List<string>();
@@ -113,7 +113,7 @@ namespace Twitch_prime_downloader
 			return null;
 		}
 
-		public static JArray ExtractSubChunks(Stream chunkData, long chunkPosition, string fileExtension)
+		internal static JArray ExtractSubChunks(Stream chunkData, long chunkPosition, string fileExtension)
 		{
 			byte[] bytes = new byte[chunkData.Length];
 			chunkData.Position = 0L;
