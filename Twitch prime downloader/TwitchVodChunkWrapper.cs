@@ -114,9 +114,11 @@ namespace Twitch_prime_downloader
 		{
 			if (buffer.LongLength < sample.LongLength) { return false; }
 			bool matched = true;
-			for (long i = 0L; i < sample.LongLength && i + bufferPosition < buffer.LongLength; ++i)
+			for (int i = 0; i < sample.Length; ++i)
 			{
-				matched &= buffer[i + bufferPosition] == sample[i];
+				long pos = bufferPosition + i;
+				if (pos >= buffer.LongLength) { return false; }
+				matched &= buffer[pos] == sample[i];
 				if (!matched) { break; }
 			}
 
