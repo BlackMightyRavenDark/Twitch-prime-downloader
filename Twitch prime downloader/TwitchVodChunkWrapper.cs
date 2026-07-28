@@ -19,12 +19,22 @@ namespace Twitch_prime_downloader
 
 		public JArray ExtractSubChunks(byte[] chunkData, long chunkPosition)
 		{
+			return ExtractSubChunks(chunkData, chunkPosition, _fileExtension);
+		}
+
+		public JArray ExtractSubChunks(Stream chunkData, long chunkPosition)
+		{
+			return ExtractSubChunks(chunkData, chunkPosition, _fileExtension);
+		}
+
+		public static JArray ExtractSubChunks(byte[] chunkData, long chunkPosition, string fileExtension)
+		{
 			List<long> positions = new List<long>();
 			List<string> fileNames = new List<string>();
 			List<DateTime> creationDates = new List<DateTime>();
 			List<int> ids = new List<int>();
 
-			if (_fileExtension == ".mp4")
+			if (fileExtension == ".mp4")
 			{
 				byte[] sample = new byte[] { (byte)'e', (byte)'m', (byte)'s', (byte)'g' };
 				for (long i = 0L; i < chunkData.LongLength; ++i)
@@ -103,11 +113,11 @@ namespace Twitch_prime_downloader
 			return null;
 		}
 
-		public JArray ExtractSubChunks(Stream chunkData, long chunkPosition)
+		public static JArray ExtractSubChunks(Stream chunkData, long chunkPosition, string fileExtension)
 		{
 			byte[] bytes = new byte[chunkData.Length];
 			chunkData.Position = 0L;
-			return chunkData.Read(bytes, 0, bytes.Length) != chunkData.Length ? null : ExtractSubChunks(bytes, chunkPosition);
+			return chunkData.Read(bytes, 0, bytes.Length) != chunkData.Length ? null : ExtractSubChunks(bytes, chunkPosition, fileExtension);
 		}
 
 		private static bool CompareSample(byte[] sample, byte[] buffer, long bufferPosition)
