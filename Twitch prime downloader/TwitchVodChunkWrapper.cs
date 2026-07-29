@@ -11,6 +11,7 @@ namespace Twitch_prime_downloader
 	internal class TwitchVodChunkWrapper : TwitchVodChunk
 	{
 		private readonly string _fileExtension;
+		private delegate void SubChunkFoundDelegate(long subChunkPosition, long samplePosition);
 
 		internal TwitchVodChunkWrapper(TwitchVodChunk chunk) : base(chunk)
 		{
@@ -27,65 +28,25 @@ namespace Twitch_prime_downloader
 			return ExtractSubChunks(chunkData, chunkPosition, _fileExtension);
 		}
 
-		internal static JArray ExtractSubChunks(byte[] chunkData, long chunkPosition, string fileExtension)
+		internal static JArray ExtractSubChunks(byte[] chunkData, long chunkPositionInStream, string fileExtension)
 		{
 			List<long> positions = new List<long>();
 			List<string> fileNames = new List<string>();
 			List<DateTime> creationDates = new List<DateTime>();
 			List<int> ids = new List<int>();
 
-			if (fileExtension == ".mp4")
-			{
-				byte[] sample = new byte[] { (byte)'e', (byte)'m', (byte)'s', (byte)'g' };
-				for (long i = 0L; i < chunkData.LongLength; ++i)
+			bool isMp4 = string.Equals(fileExtension, ".mp4", StringComparison.OrdinalIgnoreCase);
+			FindSubChunkPositions(chunkData, positions.Count > 0 ? positions[positions.Count - 1] : 0L, isMp4,
+				(subChunkPosition, samplePosition) =>
 				{
-					if (i >= chunkData.LongLength - sample.LongLength) { break; }
-					if (CompareSample(sample, chunkData, i))
-					{
-						long maxPosition = i + 1020L;
-						positions.Add(i - 4);
-						string fn = ExtractChunkFileName(chunkData, i, maxPosition);
-						fileNames.Add(fn);
-						creationDates.Add(ExtractChunkCreationDate(chunkData, i, maxPosition));
-						ids.Add(ExtractChunkIdFromFileName(fn));
-					}
+					positions.Add(subChunkPosition);
+					long maxPosition = subChunkPosition + 1024L;
+					string fn = ExtractChunkFileName(chunkData, samplePosition, maxPosition);
+					fileNames.Add(fn);
+					creationDates.Add(ExtractChunkCreationDate(chunkData, samplePosition, maxPosition));
+					ids.Add(ExtractChunkIdFromFileName(fn));
 				}
-			}
-			else
-			{
-				byte[] sample = new byte[] { (byte)'T', (byte)'R', (byte)'C', (byte)'K' };
-				byte[] sample2 = new byte[] { (byte)'G', (byte)'@' };
-				const int maxRangeBetweenSamples = 1024;
-				for (long i = 0; i < chunkData.LongLength; ++i)
-				{
-					if (i >= chunkData.LongLength - sample.LongLength) { break; }
-					if (CompareSample(sample, chunkData, i))
-					{
-						long sample2Position = -1L;
-						for (int j = sample2.Length; j < maxRangeBetweenSamples; ++j)
-						{
-							long pos = i - j;
-							if ((positions.Count > 0 && pos <= positions[positions.Count - 1]) || pos < 0L) { break; }
-							if (CompareSample(sample2, chunkData, pos))
-							{
-								sample2Position = pos;
-								positions.Add(pos);
-								break;
-							}
-						}
-
-						if (sample2Position >= 0L)
-						{
-							long maxPosition = sample2Position + 1024L;
-							if (maxPosition > chunkData.LongLength) { maxPosition = chunkData.LongLength; }
-							string fn = ExtractChunkFileName(chunkData, i, maxPosition);
-							fileNames.Add(fn);
-							creationDates.Add(ExtractChunkCreationDate(chunkData, i, maxPosition));
-							ids.Add(ExtractChunkIdFromFileName(fn));
-						}
-					}
-				}
-			}
+			);
 
 			if (positions.Count > 0)
 			{
@@ -95,7 +56,7 @@ namespace Twitch_prime_downloader
 				{
 					JObject j = new JObject();
 					if (ids[i] >= 0) { j["id"] = ids[i]; }
-					j["position"] = chunkPosition + positions[i];
+					j["position"] = chunkPositionInStream + positions[i];
 					j["size"] = (i < subChunkCount - 1 ? positions[i + 1] : chunkData.Length) - positions[i];
 					if (!string.IsNullOrEmpty(fileNames[i]))
 					{
@@ -120,13 +81,51 @@ namespace Twitch_prime_downloader
 			return chunkData.Read(bytes, 0, bytes.Length) != chunkData.Length ? null : ExtractSubChunks(bytes, chunkPosition, fileExtension);
 		}
 
-		private static bool CompareSample(byte[] sample, byte[] buffer, long bufferPosition)
+		private static void FindSubChunkPositions(byte[] chunkData, long lastSubChunkPosition,
+			bool isMp4File, SubChunkFoundDelegate subChunkFound)
+		{
+			byte[] sample = isMp4File ? new byte[] { (byte)'e', (byte)'m', (byte)'s', (byte)'g' } :
+				new byte[] { (byte)'T', (byte)'R', (byte)'C', (byte)'K' };
+			for (long i = 0L; i < chunkData.LongLength - 4L; ++i)
+			{
+				if (CompareSample(sample, chunkData, i))
+				{
+					if (isMp4File) // probably MP4 chunk.
+					{
+						subChunkFound.Invoke(i - 4L, i);
+					}
+					else // probably TS chunk.
+					{
+						byte[] sample2 = new byte[] { (byte)'G', (byte)'@' };
+						const int maxRangeBetweenSamples = 1024;
+						for (int j = 0; j < maxRangeBetweenSamples; ++j)
+						{
+							long pos = i - j;
+							if ((lastSubChunkPosition > 0L && pos <= lastSubChunkPosition) ||
+								(lastSubChunkPosition == 0L && pos < lastSubChunkPosition))
+							{
+								// Impossible situation. What to do?
+								break;
+							}
+
+							if (CompareSample(sample2, chunkData, pos))
+							{
+								subChunkFound.Invoke(pos, i);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		private static bool CompareSample(byte[] sample, byte[] buffer, long arrayIndex)
 		{
 			if (buffer.LongLength < sample.LongLength) { return false; }
 			bool matched = true;
 			for (int i = 0; i < sample.Length; ++i)
 			{
-				long pos = bufferPosition + i;
+				long pos = arrayIndex + i;
 				if (pos >= buffer.LongLength) { return false; }
 				matched &= buffer[pos] == sample[i];
 				if (!matched) { break; }
