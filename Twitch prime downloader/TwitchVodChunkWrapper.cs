@@ -253,9 +253,44 @@ namespace Twitch_prime_downloader
 									}
 
 									string ingestValueString = Encoding.ASCII.GetString(ingestValueBytes);
-									return long.TryParse(ingestValueString, out long ingestValue) ?
-										Utils.UnixMillisecondsToDateTime(ingestValue) :
-										(isDateOk ? dateTime : DateTime.MaxValue);
+									if (long.TryParse(ingestValueString, out long ingestValue) && ingestValue > 1000L)
+									{
+										return Utils.UnixMillisecondsToDateTime(ingestValue);
+									}
+
+									// Sometimes, the 'ingest_r' key contains an invalid value. So, continue searching the 'transc_r' key.
+									byte[] transcodeSample = new byte[] { (byte)'t', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'c', (byte)'_', (byte)'r' };
+									for (int n3 = 0; n3 < 60; ++n3)
+									{
+										long pos4 = n3 + pos3 + ingestSample.LongLength + 3L;
+										if (pos4 >= chunkData.LongLength)
+										{
+											return isDateOk ? dateTime : DateTime.MinValue;
+										}
+
+										if (CompareSample(transcodeSample, chunkData, pos4))
+										{
+											byte[] transcodeValueBytes = new byte[20];
+											for (int n4 = 0; n4 < 20; ++n4)
+											{
+												long pos5 = n4 + pos4 + transcodeSample.LongLength + 2L;
+												if (pos5 >= chunkData.LongLength)
+												{
+													return isDateOk ? dateTime : DateTime.MinValue;
+												}
+
+												if (chunkData[pos5] == (byte)',') { break; }
+												transcodeValueBytes[n4] = chunkData[pos5];
+											}
+
+											string transcodeValueString = Encoding.ASCII.GetString(transcodeValueBytes);
+											return long.TryParse(transcodeValueString, out long transcodeValue) ?
+												Utils.UnixMillisecondsToDateTime(transcodeValue) :
+												(isDateOk ? dateTime : DateTime.MinValue);
+										}
+									}
+
+									break;
 								}
 							}
 
