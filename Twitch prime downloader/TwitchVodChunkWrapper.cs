@@ -44,7 +44,7 @@ namespace Twitch_prime_downloader
 					string fn = ExtractChunkFileName(chunkData, samplePosition, maxPosition);
 					fileNames.Add(fn);
 					creationDates.Add(ExtractChunkCreationDate(chunkData, samplePosition, maxPosition));
-					ids.Add(ExtractChunkIdFromFileName(fn));
+					ids.Add(ExtractChunkId(chunkData, samplePosition, fn));
 				}
 			);
 
@@ -132,6 +132,47 @@ namespace Twitch_prime_downloader
 			}
 
 			return matched;
+		}
+
+		private static int ExtractChunkId(byte[] chunkData, long arrayIndex, string fileName = null)
+		{
+			byte[] sample = new byte[] { (byte)'T', (byte)'R', (byte)'C', (byte)'K' };
+			for (int i = 0; i < 1024; ++i)
+			{
+				long pos = arrayIndex + i;
+				if (CompareSample(sample, chunkData, pos))
+				{
+					if (chunkData.LongLength > pos + 11L)
+					{
+						const int idLength = 8;
+						byte[] idBytes = new byte[idLength];
+						for (int j = 0; j < idLength; ++j)
+						{
+							long pos2 = j + pos + 11L;
+							if (pos2 >= chunkData.LongLength) { return ExtractChunkIdFromFileName(fileName); }
+							if (chunkData[pos2] == '\0')
+							{
+								string idString = Encoding.ASCII.GetString(idBytes);
+								if (!int.TryParse(idString, out int id)) { break; }
+								return id;
+							}
+							else
+							{
+								idBytes[j] = chunkData[pos2];
+							}
+						}
+					}
+
+					break;
+				}
+			}
+
+			if (string.IsNullOrEmpty(fileName) || string.IsNullOrWhiteSpace(fileName))
+			{
+				fileName = ExtractChunkFileName(chunkData, arrayIndex, arrayIndex + 1000L);
+			}
+
+			return ExtractChunkIdFromFileName(fileName);
 		}
 
 		private static string ExtractChunkFileName(byte[] chunkData, long arrayIndex, long maxArrayIndex)
