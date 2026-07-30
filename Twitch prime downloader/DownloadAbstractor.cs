@@ -21,7 +21,7 @@ namespace Twitch_prime_downloader
 		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
 		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkMergingProgressedDelegate(object sender,
-			long processedBytes, long totalSize,int chunkId, int chunkCount, DownloadMode downloadMode);
+			long processedBytes, long totalSize, int chunkId, int chunkCount, DownloadMode downloadMode);
 		public delegate void GroupMergingFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkChangedDelegate(object sender, TwitchVodChunk chunk, int chunkId);
 		public delegate void DownloadCompletedDelegate(object sender, int errorCode);
