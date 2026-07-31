@@ -379,6 +379,16 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
+		private void OnChunkAppended(object sender, long outputFileSize)
+		{
+			Invoke(new MethodInvoker(() =>
+			{
+				TotalChunkDownloadedCount++;
+				TotalByteDownloadedCount = outputFileSize;
+				UpdateOverallProgressBarAndAnimationPosition();
+			}));
+		}
+
 		private void OnGroupDownloadStarted(object sender, IEnumerable<DownloadProgressItem> items)
 		{
 			Invoke(new MethodInvoker(() =>
@@ -412,19 +422,6 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
-		private void OnGroupDownloadFinished(object sender, IEnumerable<DownloadProgressItem> items, int errorCode)
-		{
-			Invoke(new MethodInvoker(() =>
-			{
-				TotalChunkDownloadedCount += items.Count();
-
-				long chunksSummarySize = items.Select(item => item.ChunkSize).Sum();
-				long downloaded = items.Select(item => item.DownloadedSize).Sum();
-				TotalByteDownloadedCount += downloaded;
-				lblProgressChunkGroup.Text = $"Скачано: {FormatSize(downloaded)} / {FormatSize(chunksSummarySize)}";
-			}));
-		}
-
 		private void OnChunkMergingProgressed(object sender,
 			long processedBytes, long totalSize,
 			int chunkId, int chunkCount, DownloadMode downloadMode)
@@ -453,21 +450,18 @@ namespace Twitch_prime_downloader
 			}));
 		}
 
-		private void OnGroupMergingFinished(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode)
+		private void UpdateOverallProgressBarAndAnimationPosition()
 		{
-			Invoke(new MethodInvoker(() =>
-			{
-				int chunkCountMax = ChunkTo - ChunkFrom + 1;
-				double percent = 100.0 / chunkCountMax * TotalChunkDownloadedCount;
-				string percentFormatted = string.Format("{0:F2}", percent);
-				string progressText = $"Скачано чанков: {TotalChunkDownloadedCount} / {chunkCountMax}" +
-					$" ({percentFormatted}%), Размер файла: {FormatSize(TotalByteDownloadedCount)}";
+			int chunkCountMax = ChunkTo - ChunkFrom + 1;
+			double percent = 100.0 / chunkCountMax * TotalChunkDownloadedCount;
+			string percentFormatted = string.Format("{0:F2}", percent);
+			string progressText = $"Скачано чанков: {TotalChunkDownloadedCount} / {chunkCountMax}" +
+				$" ({percentFormatted}%), Размер файла: {FormatSize(TotalByteDownloadedCount)}";
 
-				multipleProgressBarOverall.SetItem(0, chunkCountMax, TotalChunkDownloadedCount, progressText, Color.Lime);
+			multipleProgressBarOverall.SetItem(0, chunkCountMax, TotalChunkDownloadedCount, progressText, Color.Lime);
 
-				int animationPositionX = chunkCountMax > 0 ? TotalChunkDownloadedCount * (multipleProgressBarChunkGroup.Width - pictureBoxAnimation.Width) / chunkCountMax : 0;
-				pictureBoxAnimation.Left = animationPositionX;
-			}));
+			int animationPositionX = chunkCountMax > 0 ? TotalChunkDownloadedCount * (multipleProgressBarChunkGroup.Width - pictureBoxAnimation.Width) / chunkCountMax : 0;
+			pictureBoxAnimation.Left = animationPositionX;
 		}
 
 		private async void StartDownload()
@@ -520,8 +514,8 @@ namespace Twitch_prime_downloader
 				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
 					_chunkFrom, ChunkTo, DownloadMode, config.SaveVodChunkInfo, config.StoreVodSubChunksInfo, VodInfo.RawData,
-					OnGroupDownloadStarted, OnGroupDownloadProgressed, OnGroupDownloadFinished,
-					OnChunkMergingProgressed, OnGroupMergingFinished, OnChunkChanged, null);
+					OnGroupDownloadStarted, OnGroupDownloadProgressed, null,
+					OnChunkMergingProgressed, null, OnChunkChanged, OnChunkAppended, null);
 			});
 			downloadAbstractor = null;
 

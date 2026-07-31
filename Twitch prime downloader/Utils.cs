@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -255,16 +254,14 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		internal static bool IsContinuousSequence(ConcurrentDictionary<int, DownloadProgressItem> items)
+		internal static bool IsContinuousSequence(List<DownloadProgressItem> items)
 		{
-			int count = items.Count;
-			bool valid = true;
-			for (int i = 0; i < count; ++i)
+			for (int i = 0; i < items.Count; ++i)
 			{
-				valid &= items.ContainsKey(i);
-				if (!valid) { return false; }
+				if (items[i].TaskId != i) { return false; }
 			}
-			return valid;
+
+			return true;
 		}
 
 		public static bool SaveStreamToFile(Stream stream, string filePath)

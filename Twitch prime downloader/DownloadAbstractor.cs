@@ -22,6 +22,7 @@ namespace Twitch_prime_downloader
 		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkMergingProgressedDelegate(object sender,
 			long processedBytes, long totalSize, int chunkId, int chunkCount, DownloadMode downloadMode);
+		public delegate void ChunkAppendedDelegate(object sender, long totalSize);
 		public delegate void GroupMergingFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void ChunkChangedDelegate(object sender, TwitchVodChunk chunk, int chunkId);
 		public delegate void DownloadCompletedDelegate(object sender, int errorCode);
@@ -62,6 +63,7 @@ namespace Twitch_prime_downloader
 			ChunkMergingProgressedDelegate chunkMergingProgressed,
 			GroupMergingFinishedDelegate groupMergingFinished,
 			ChunkChangedDelegate chunkChanged,
+			ChunkAppendedDelegate chunkAppended,
 			DownloadCompletedDelegate downloadCompleted)
 		{
 			int errorCode = DOWNLOAD_ERROR_UNDEFINED;
@@ -169,22 +171,22 @@ namespace Twitch_prime_downloader
 					}));
 
 					Task.WhenAll(tasks).Wait();
+					List<DownloadProgressItem> groupProgressItems = dictProgress.Values.ToList();
+					groupDownloadFinished?.Invoke(this, groupProgressItems, errorCode);
 
 					if (_cancellationTokenSource.IsCancellationRequested)
 					{
-						ClearGarbage(dictProgress.Values);
+						ClearGarbage(groupProgressItems);
 						break;
 					}
 
 					if (downloadMode == DownloadMode.SingleFile && chunkGroup.Count > 1 &&
-						!IsContinuousSequence(dictProgress))
+						!IsContinuousSequence(groupProgressItems))
 					{
-						ClearGarbage(dictProgress.Values);
+						ClearGarbage(groupProgressItems);
 						downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_SEQUENCE);
 						return DOWNLOAD_ERROR_GROUP_SEQUENCE;
 					}
-
-					List<DownloadProgressItem> groupProgressItems = dictProgress.Values.ToList();
 
 					bool allChunkStatusesOk = groupProgressItems.All(item => item.ErrorCode == 200);
 					if (!allChunkStatusesOk)
@@ -212,11 +214,11 @@ namespace Twitch_prime_downloader
 
 					errorCode = 200;
 					groupProgressItems.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
-					groupDownloadFinished?.Invoke(this, groupProgressItems, errorCode);
 
 					if (outputStream != null)
 					{
-						if (!AppendGroup(groupProgressItems, outputStream, jaChunks, storeSubChunksInfo, chunkMergingProgressed))
+						if (!AppendGroup(groupProgressItems, outputStream, jaChunks, storeSubChunksInfo,
+							chunkMergingProgressed, chunkAppended))
 						{
 							errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
 							groupMergingFinished?.Invoke(this, groupProgressItems, errorCode);
@@ -395,7 +397,7 @@ namespace Twitch_prime_downloader
 
 		private bool AppendGroup(IEnumerable<DownloadProgressItem> items,
 			Stream outpuStream, JArray chunkList, bool storeSubChunksInfo,
-			ChunkMergingProgressedDelegate chunkMergingProgressed)
+			ChunkMergingProgressedDelegate chunkMergingProgressed, ChunkAppendedDelegate chunkAppended)
 		{
 			int itemCount = items.Count();
 			if (itemCount == 0) { return false; }
@@ -430,6 +432,7 @@ namespace Twitch_prime_downloader
 						progressFunc, progressFunc);
 					if (success && chunkList != null)
 					{
+						chunkAppended?.Invoke(this, outpuStream.Length);
 						JObject jChunk = item.Chunk.Serialize(chunkPosition, item.DownloadedSize);
 						if (storeSubChunksInfo)
 						{
