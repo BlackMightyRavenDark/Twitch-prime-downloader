@@ -396,7 +396,7 @@ namespace Twitch_prime_downloader
 		}
 
 		private bool AppendGroup(IEnumerable<DownloadProgressItem> items,
-			Stream outpuStream, JArray chunkList, bool storeSubChunksInfo,
+			Stream outputStream, JArray chunkList, bool storeSubChunksInfo,
 			ChunkMergingProgressedDelegate chunkMergingProgressed, ChunkAppendedDelegate chunkAppended)
 		{
 			int itemCount = items.Count();
@@ -404,7 +404,7 @@ namespace Twitch_prime_downloader
 
 			long totalSize = items.Sum(item => item.DownloadedSize);
 			long totalProcessed = 0L;
-			long outputStreamInitialPosition = outpuStream.Position;
+			long outputStreamInitialPosition = outputStream.Position;
 
 			bool success = true;
 			int iter = 0;
@@ -420,9 +420,9 @@ namespace Twitch_prime_downloader
 							iter, itemCount, DownloadMode.SingleFile);
 					}
 
-					long chunkPosition = outpuStream.Position;
+					long chunkPosition = outputStream.Position;
 					item.OutputStream.Position = 0L;
-					success = StreamAppender.Append(item.OutputStream, outpuStream,
+					success = StreamAppender.Append(item.OutputStream, outputStream,
 						(sourcePosition, sourceLength, destinationPosition, destinationLength) =>
 						{
 							totalProcessed = 0L;
@@ -432,7 +432,7 @@ namespace Twitch_prime_downloader
 						progressFunc, progressFunc);
 					if (success && chunkList != null)
 					{
-						chunkAppended?.Invoke(this, outpuStream.Length);
+						chunkAppended?.Invoke(this, outputStream.Length);
 						JObject jChunk = item.Chunk.Serialize(chunkPosition, item.DownloadedSize);
 						if (storeSubChunksInfo)
 						{
