@@ -220,7 +220,7 @@ namespace Twitch_prime_downloader
 		{
 			if (Playlist != null && Playlist.Count > 0)
 			{
-				string t = Playlist.ToString();
+				string t = Playlist.GetChunkUrlList();
 				SetClipboardText(t);
 			}
 			else
