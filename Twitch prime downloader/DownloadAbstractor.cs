@@ -182,8 +182,8 @@ namespace Twitch_prime_downloader
 						!IsContinuousSequence(groupProgressItems))
 					{
 						ClearGarbage(groupProgressItems);
-						downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_GROUP_SEQUENCE);
-						return DOWNLOAD_ERROR_GROUP_SEQUENCE;
+						errorCode = DOWNLOAD_ERROR_GROUP_SEQUENCE;
+						break;
 					}
 
 					bool allChunkStatusesOk = groupProgressItems.All(item => item.ErrorCode == 200);
