@@ -156,17 +156,17 @@ namespace Twitch_prime_downloader
 				switch (item.State)
 				{
 					case DownloadItemState.Preparing:
-						itemText = $"{item.Chunk.FileName}: Preparing...";
+						itemText = $"{item.ChunkDownloader.ChunkWrapper.FileName}: Preparing...";
 						break;
 
 					case DownloadItemState.Connecting:
-						itemText = $"{item.Chunk.FileName}: Connecting...";
+						itemText = $"{item.ChunkDownloader.ChunkWrapper.FileName}: Connecting...";
 						break;
 
 					case DownloadItemState.Downloading:
 					case DownloadItemState.Finished:
 					case DownloadItemState.Errored:
-						itemText = $"{item.Chunk.FileName}: " +
+						itemText = $"{item.ChunkDownloader.ChunkWrapper.FileName}: " +
 							$"{FormatSize(item.DownloadedSize)} / {FormatSize(item.ChunkSize)} ({percentFormatted}%)";
 						break;
 

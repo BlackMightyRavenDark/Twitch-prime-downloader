@@ -112,6 +112,7 @@
     <Compile Include="FormChannelListEditor.Designer.cs">
       <DependentUpon>FormChannelListEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="TwitchVodChunkDownloader.cs" />
     <Compile Include="TwitchVodChunkWrapper.cs" />
     <Compile Include="VodFrame.cs">
       <SubType>UserControl</SubType>

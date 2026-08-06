@@ -371,11 +371,11 @@ namespace Twitch_prime_downloader
 			pictureBoxAnimation.Image = (Bitmap)Resources.ResourceManager.GetObject($"fcst_istra_0{fcstId + 1}");
 		}
 
-		private void OnChunkChanged(object sender, TwitchVodChunk chunk, int chunkId)
+		private void OnChunkStateChanged(object sender, TwitchVodChunk chunk)
 		{
 			Invoke(new MethodInvoker(() =>
 			{
-				listBoxChunkFileList.Items[chunkId] = new TwitchVodChunkItem(chunk);
+				listBoxChunkFileList.Items[chunk.Id] = new TwitchVodChunkItem(chunk);
 			}));
 		}
 
@@ -515,7 +515,7 @@ namespace Twitch_prime_downloader
 				return downloadAbstractor.Download(OutputFilePath,
 					_chunkFrom, ChunkTo, DownloadMode, config.SaveVodChunkInfo, config.StoreVodSubChunksInfo, VodInfo.RawData,
 					OnGroupDownloadStarted, OnGroupDownloadProgressed, null,
-					OnChunkMergingProgressed, null, OnChunkChanged, OnChunkAppended, null);
+					OnChunkMergingProgressed, null, OnChunkStateChanged, OnChunkAppended, null);
 			});
 			downloadAbstractor = null;
 

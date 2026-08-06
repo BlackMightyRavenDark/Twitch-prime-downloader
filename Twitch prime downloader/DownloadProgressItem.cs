@@ -1,26 +1,22 @@
-﻿using System.IO;
-
+﻿
 namespace Twitch_prime_downloader
 {
 	internal class DownloadProgressItem
 	{
 		public int TaskId { get; }
-		public TwitchVodChunkWrapper Chunk { get; }
+		public TwitchVodChunkDownloader ChunkDownloader { get; }
 		public long ChunkSize { get; }
 		public long DownloadedSize { get; }
-		public Stream OutputStream { get; }
 		public int ErrorCode { get; }
 		public DownloadItemState State { get; }
 
-		public DownloadProgressItem(int taskId, TwitchVodChunkWrapper chunk,
-			long chunkSize, long downloadedSize, Stream outputStream,
-			int errorCode, DownloadItemState state)
+		public DownloadProgressItem(int taskId, TwitchVodChunkDownloader chunkDownloader,
+			long chunkSize, long downloadedSize, int errorCode, DownloadItemState state)
 		{
 			TaskId = taskId;
-			Chunk = chunk;
+			ChunkDownloader = chunkDownloader;
 			ChunkSize = chunkSize;
 			DownloadedSize = downloadedSize;
-			OutputStream = outputStream;
 			ErrorCode = errorCode;
 			State = state;
 		}
