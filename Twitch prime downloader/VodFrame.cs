@@ -12,7 +12,6 @@ namespace Twitch_prime_downloader
 {
 	public partial class VodFrame : UserControl
 	{
-
 		public TwitchVod Vod { get; private set; }
 		public bool UseGmtTime
 		{
