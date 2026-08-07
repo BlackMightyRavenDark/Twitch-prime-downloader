@@ -643,42 +643,36 @@ namespace Twitch_prime_downloader
 
 		private void SetChunkFrom(int chunkId)
 		{
-			if (chunkId != _chunkFrom)
+			if (chunkId < 0)
 			{
-				if (chunkId < 0)
-				{
-					chunkId = 0;
-				}
-				else if (chunkId >= TotalChunksCount)
-				{
-					chunkId = TotalChunksCount - 1;
-				}
-				_chunkFrom = chunkId;
-				if (_chunkTo < _chunkFrom)
-				{
-					_chunkTo = _chunkFrom;
-					textBoxChunkTo.Text = (_chunkTo + 1).ToString();
-				}
-				textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
-
-				SetChunkCountIndicators();
+				chunkId = 0;
 			}
+			else if (chunkId >= TotalChunksCount)
+			{
+				chunkId = TotalChunksCount - 1;
+			}
+			_chunkFrom = chunkId;
+			if (_chunkTo < _chunkFrom)
+			{
+				_chunkTo = _chunkFrom;
+				textBoxChunkTo.Text = (_chunkTo + 1).ToString();
+			}
+			textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
+
+			SetChunkCountIndicators();
 		}
 
 		private void SetChunkTo(int chunkId)
 		{
-			if (chunkId != _chunkTo)
+			_chunkTo = chunkId;
+			textBoxChunkTo.Text = (_chunkTo + 1).ToString();
+			if (_chunkTo < _chunkFrom)
 			{
-				_chunkTo = chunkId;
-				textBoxChunkTo.Text = (_chunkTo + 1).ToString();
-				if (_chunkTo < _chunkFrom)
-				{
-					_chunkFrom = _chunkTo;
-					textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
-				}
-
-				SetChunkCountIndicators();
+				_chunkFrom = _chunkTo;
+				textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
 			}
+
+			SetChunkCountIndicators();
 		}
 
 		private void DisplayOutputFilePathOrDirectory()
