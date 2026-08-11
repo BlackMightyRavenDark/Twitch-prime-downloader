@@ -54,21 +54,24 @@
 			this.timerAnimation = new System.Windows.Forms.Timer(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.pictureBoxAnimation = new System.Windows.Forms.PictureBox();
-			this.pictureBoxScrollBar = new System.Windows.Forms.PictureBox();
 			this.pictureBoxVodThumbnailImage = new System.Windows.Forms.PictureBox();
+			this.pictureBoxScrollBar = new System.Windows.Forms.PictureBox();
 			this.btnCopyVodChunkUrlList = new System.Windows.Forms.Button();
 			this.multipleProgressBarOverall = new Twitch_prime_downloader.MultipleProgressBar();
 			this.multipleProgressBarChunkGroup = new Twitch_prime_downloader.MultipleProgressBar();
 			this.contextMenuProgressBarChunkGroup = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.miIncreaseChunkGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.miDecreaseChunkGroupSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.contextMenuThumbnail = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.miVodSaveChunkListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.groupBoxDownloadVodChunkRange.SuspendLayout();
 			this.contextMenuVodTitle.SuspendLayout();
 			this.groupBoxDownloadMode.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxAnimation)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxVodThumbnailImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).BeginInit();
 			this.contextMenuProgressBarChunkGroup.SuspendLayout();
+			this.contextMenuThumbnail.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCloseFrame
@@ -297,6 +300,18 @@
 			this.toolTip1.SetToolTip(this.pictureBoxAnimation, "Фцыст идёт по Истре за Ягермейстером");
 			this.pictureBoxAnimation.Visible = false;
 			// 
+			// pictureBoxVodThumbnailImage
+			// 
+			this.pictureBoxVodThumbnailImage.Location = new System.Drawing.Point(525, 32);
+			this.pictureBoxVodThumbnailImage.Name = "pictureBoxVodThumbnailImage";
+			this.pictureBoxVodThumbnailImage.Size = new System.Drawing.Size(142, 86);
+			this.pictureBoxVodThumbnailImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.pictureBoxVodThumbnailImage.TabIndex = 2;
+			this.pictureBoxVodThumbnailImage.TabStop = false;
+			this.toolTip1.SetToolTip(this.pictureBoxVodThumbnailImage, "ПКМ - открыть меню");
+			this.pictureBoxVodThumbnailImage.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxVodThumbnailImage_Paint);
+			this.pictureBoxVodThumbnailImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVodThumbnailImage_MouseDown);
+			// 
 			// pictureBoxScrollBar
 			// 
 			this.pictureBoxScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -306,16 +321,6 @@
 			this.pictureBoxScrollBar.TabIndex = 19;
 			this.pictureBoxScrollBar.TabStop = false;
 			this.pictureBoxScrollBar.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxScrollBar_Paint);
-			// 
-			// pictureBoxVodThumbnailImage
-			// 
-			this.pictureBoxVodThumbnailImage.Location = new System.Drawing.Point(525, 32);
-			this.pictureBoxVodThumbnailImage.Name = "pictureBoxVodThumbnailImage";
-			this.pictureBoxVodThumbnailImage.Size = new System.Drawing.Size(142, 86);
-			this.pictureBoxVodThumbnailImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.pictureBoxVodThumbnailImage.TabIndex = 2;
-			this.pictureBoxVodThumbnailImage.TabStop = false;
-			this.pictureBoxVodThumbnailImage.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxVodThumbnailImage_Paint);
 			// 
 			// btnCopyVodChunkUrlList
 			// 
@@ -369,6 +374,20 @@
 			this.miDecreaseChunkGroupSizeToolStripMenuItem.Text = "Уменьшить размер группы";
 			this.miDecreaseChunkGroupSizeToolStripMenuItem.Click += new System.EventHandler(this.miDecreaseChunkGroupSizeToolStripMenuItem_Click);
 			// 
+			// contextMenuThumbnail
+			// 
+			this.contextMenuThumbnail.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this.miVodSaveChunkListToolStripMenuItem});
+			this.contextMenuThumbnail.Name = "contextMenuThumbnail";
+			this.contextMenuThumbnail.Size = new System.Drawing.Size(217, 26);
+			// 
+			// miVodSaveChunkListToolStripMenuItem
+			// 
+			this.miVodSaveChunkListToolStripMenuItem.Name = "miVodSaveChunkListToolStripMenuItem";
+			this.miVodSaveChunkListToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+			this.miVodSaveChunkListToolStripMenuItem.Text = "Сохранить список чанков";
+			this.miVodSaveChunkListToolStripMenuItem.Click += new System.EventHandler(this.miVodSaveChunkListToolStripMenuItem_Click);
+			// 
 			// DownloadFrame
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -405,9 +424,10 @@
 			this.groupBoxDownloadMode.ResumeLayout(false);
 			this.groupBoxDownloadMode.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxAnimation)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxVodThumbnailImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxScrollBar)).EndInit();
 			this.contextMenuProgressBarChunkGroup.ResumeLayout(false);
+			this.contextMenuThumbnail.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -448,5 +468,7 @@
 		private System.Windows.Forms.ContextMenuStrip contextMenuProgressBarChunkGroup;
 		private System.Windows.Forms.ToolStripMenuItem miIncreaseChunkGroupSizeToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem miDecreaseChunkGroupSizeToolStripMenuItem;
+		private System.Windows.Forms.ContextMenuStrip contextMenuThumbnail;
+		private System.Windows.Forms.ToolStripMenuItem miVodSaveChunkListToolStripMenuItem;
 	}
 }

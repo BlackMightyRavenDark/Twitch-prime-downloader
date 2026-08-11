@@ -122,7 +122,7 @@ namespace Twitch_prime_downloader
 			{
 				checkBoxUseGmtTime.Checked = config.UseGmtVodDates;
 				checkBoxSaveVodInfo.Checked = config.SaveVodInfo;
-				checkBoxSaveVodChunkInfo.Checked = checkBoxStoreSubChunksInfo.Enabled = config.SaveVodChunkInfo;
+				checkBoxAutomaticallySaveVodChunkInfo.Checked = checkBoxStoreSubChunksInfo.Enabled = config.SaveVodChunkInfo;
 				checkBoxStoreSubChunksInfo.Checked = config.StoreVodSubChunksInfo;
 				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
@@ -616,9 +616,9 @@ namespace Twitch_prime_downloader
 			config.SaveVodInfo = checkBoxSaveVodInfo.Checked;
 		}
 
-		private void checkBoxSaveVodChunkInfo_CheckedChanged(object sender, EventArgs e)
+		private void checkBoxAutomaticallySaveVodChunkInfo_CheckedChanged(object sender, EventArgs e)
 		{
-			config.SaveVodChunkInfo = checkBoxStoreSubChunksInfo.Enabled = checkBoxSaveVodChunkInfo.Checked;
+			config.SaveVodChunkInfo = checkBoxStoreSubChunksInfo.Enabled = checkBoxAutomaticallySaveVodChunkInfo.Checked;
 		}
 
 		private void checkBoxStoreSubChunksInfo_CheckedChanged(object sender, EventArgs e)

@@ -49,7 +49,8 @@ namespace Twitch_prime_downloader
 			this.btnSelectBrowser = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.groupBoxVideoInformationSettings = new System.Windows.Forms.GroupBox();
-			this.checkBoxSaveVodChunkInfo = new System.Windows.Forms.CheckBox();
+			this.checkBoxStoreSubChunksInfo = new System.Windows.Forms.CheckBox();
+			this.checkBoxAutomaticallySaveVodChunkInfo = new System.Windows.Forms.CheckBox();
 			this.checkBoxUseGmtTime = new System.Windows.Forms.CheckBox();
 			this.checkBoxSaveVodInfo = new System.Windows.Forms.CheckBox();
 			this.tabPageSystemSettings = new System.Windows.Forms.TabPage();
@@ -106,7 +107,6 @@ namespace Twitch_prime_downloader
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.miOpenVideoInBrowserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.checkBoxStoreSubChunksInfo = new System.Windows.Forms.CheckBox();
 			this.tabControlMain.SuspendLayout();
 			this.tabPageDebug.SuspendLayout();
 			this.tabPageSettings.SuspendLayout();
@@ -334,7 +334,7 @@ namespace Twitch_prime_downloader
 			this.groupBoxVideoInformationSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxStoreSubChunksInfo);
-			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodChunkInfo);
+			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxAutomaticallySaveVodChunkInfo);
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxUseGmtTime);
 			this.groupBoxVideoInformationSettings.Controls.Add(this.checkBoxSaveVodInfo);
 			this.groupBoxVideoInformationSettings.Location = new System.Drawing.Point(7, 152);
@@ -344,16 +344,27 @@ namespace Twitch_prime_downloader
 			this.groupBoxVideoInformationSettings.TabStop = false;
 			this.groupBoxVideoInformationSettings.Text = "Информация о видео";
 			// 
-			// checkBoxSaveVodChunkInfo
+			// checkBoxStoreSubChunksInfo
 			// 
-			this.checkBoxSaveVodChunkInfo.AutoSize = true;
-			this.checkBoxSaveVodChunkInfo.Location = new System.Drawing.Point(202, 19);
-			this.checkBoxSaveVodChunkInfo.Name = "checkBoxSaveVodChunkInfo";
-			this.checkBoxSaveVodChunkInfo.Size = new System.Drawing.Size(194, 17);
-			this.checkBoxSaveVodChunkInfo.TabIndex = 18;
-			this.checkBoxSaveVodChunkInfo.Text = "Сохранять информацию о чанках";
-			this.checkBoxSaveVodChunkInfo.UseVisualStyleBackColor = true;
-			this.checkBoxSaveVodChunkInfo.CheckedChanged += new System.EventHandler(this.checkBoxSaveVodChunkInfo_CheckedChanged);
+			this.checkBoxStoreSubChunksInfo.AutoSize = true;
+			this.checkBoxStoreSubChunksInfo.Location = new System.Drawing.Point(482, 19);
+			this.checkBoxStoreSubChunksInfo.Name = "checkBoxStoreSubChunksInfo";
+			this.checkBoxStoreSubChunksInfo.Size = new System.Drawing.Size(273, 17);
+			this.checkBoxStoreSubChunksInfo.TabIndex = 19;
+			this.checkBoxStoreSubChunksInfo.Text = "Сохранять информацию о вложенных сегментах";
+			this.checkBoxStoreSubChunksInfo.UseVisualStyleBackColor = true;
+			this.checkBoxStoreSubChunksInfo.CheckedChanged += new System.EventHandler(this.checkBoxStoreSubChunksInfo_CheckedChanged);
+			// 
+			// checkBoxAutomaticallySaveVodChunkInfo
+			// 
+			this.checkBoxAutomaticallySaveVodChunkInfo.AutoSize = true;
+			this.checkBoxAutomaticallySaveVodChunkInfo.Location = new System.Drawing.Point(202, 19);
+			this.checkBoxAutomaticallySaveVodChunkInfo.Name = "checkBoxAutomaticallySaveVodChunkInfo";
+			this.checkBoxAutomaticallySaveVodChunkInfo.Size = new System.Drawing.Size(274, 17);
+			this.checkBoxAutomaticallySaveVodChunkInfo.TabIndex = 18;
+			this.checkBoxAutomaticallySaveVodChunkInfo.Text = "Автоматически сохранять информацию о чанках";
+			this.checkBoxAutomaticallySaveVodChunkInfo.UseVisualStyleBackColor = true;
+			this.checkBoxAutomaticallySaveVodChunkInfo.CheckedChanged += new System.EventHandler(this.checkBoxAutomaticallySaveVodChunkInfo_CheckedChanged);
 			// 
 			// checkBoxUseGmtTime
 			// 
@@ -943,17 +954,6 @@ namespace Twitch_prime_downloader
 			this.miOpenVideoInBrowserToolStripMenuItem.Text = "Открыть видео в браузере";
 			this.miOpenVideoInBrowserToolStripMenuItem.Click += new System.EventHandler(this.miOpenVideoInBrowserToolStripMenuItem_Click);
 			// 
-			// checkBoxStoreSubChunksInfo
-			// 
-			this.checkBoxStoreSubChunksInfo.AutoSize = true;
-			this.checkBoxStoreSubChunksInfo.Location = new System.Drawing.Point(402, 19);
-			this.checkBoxStoreSubChunksInfo.Name = "checkBoxStoreSubChunksInfo";
-			this.checkBoxStoreSubChunksInfo.Size = new System.Drawing.Size(273, 17);
-			this.checkBoxStoreSubChunksInfo.TabIndex = 19;
-			this.checkBoxStoreSubChunksInfo.Text = "Сохранять информацию о вложенных сегментах";
-			this.checkBoxStoreSubChunksInfo.UseVisualStyleBackColor = true;
-			this.checkBoxStoreSubChunksInfo.CheckedChanged += new System.EventHandler(this.checkBoxStoreSubChunksInfo_CheckedChanged);
-			// 
 			// Form1
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -1045,7 +1045,7 @@ namespace Twitch_prime_downloader
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.CheckBox checkBoxUseGmtTime;
 		private System.Windows.Forms.CheckBox checkBoxSaveVodInfo;
-		private System.Windows.Forms.CheckBox checkBoxSaveVodChunkInfo;
+		private System.Windows.Forms.CheckBox checkBoxAutomaticallySaveVodChunkInfo;
 		private System.Windows.Forms.ToolStripMenuItem miSaveVodPlaylistAsToolStripMenuItem;
 		private System.Windows.Forms.Button btnAddChannelToList;
 		private System.Windows.Forms.TextBox textBoxChannelName;

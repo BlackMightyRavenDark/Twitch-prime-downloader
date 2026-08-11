@@ -16,6 +16,8 @@ namespace Twitch_prime_downloader
 	{
 		public TwitchPlaylist VodPlaylist { get; }
 		public int MaxGroupSize { get; set; }
+		public JArray SerializedChunkList { get; private set; }
+		public DownloadMode DownloadMode { get; }
 
 		public delegate void GroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
 		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
@@ -37,9 +39,10 @@ namespace Twitch_prime_downloader
 
 		private CancellationTokenSource _cancellationTokenSource;
 
-		public DownloadAbstractor(TwitchPlaylist vodPlaylist, int maxGroupSize)
+		public DownloadAbstractor(TwitchPlaylist vodPlaylist, DownloadMode downloadMode, int maxGroupSize)
 		{
 			VodPlaylist = vodPlaylist;
+			DownloadMode = downloadMode;
 			MaxGroupSize = maxGroupSize;
 		}
 
@@ -52,7 +55,6 @@ namespace Twitch_prime_downloader
 			string outputFilePath,
 			int firstChunkId,
 			int lastChunkId,
-			DownloadMode downloadMode,
 			bool saveChunkInfo,
 			bool storeSubChunksInfo,
 			string rawVodInfo,
@@ -75,7 +77,7 @@ namespace Twitch_prime_downloader
 					return DOWNLOAD_ERROR_CHUNK_RANGE;
 				}
 
-				if (downloadMode == DownloadMode.Chunked && !Directory.Exists(outputFilePath))
+				if (DownloadMode == DownloadMode.Chunked && !Directory.Exists(outputFilePath))
 				{
 					Directory.CreateDirectory(outputFilePath);
 
@@ -89,7 +91,7 @@ namespace Twitch_prime_downloader
 				_cancellationTokenSource = new CancellationTokenSource();
 
 				Stream outputStream = null;
-				if (downloadMode == DownloadMode.SingleFile)
+				if (DownloadMode == DownloadMode.SingleFile)
 				{
 					if (File.Exists(outputFilePath)) { File.Delete(outputFilePath); }
 					outputStream = File.OpenWrite(outputFilePath);
@@ -101,7 +103,7 @@ namespace Twitch_prime_downloader
 					chunkList.Insert(0, VodPlaylist.StreamHeaderChunk);
 				}
 
-				JArray jaChunks = saveChunkInfo && downloadMode == DownloadMode.SingleFile ? new JArray() : null;
+				SerializedChunkList = DownloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				int currentChunkId = firstChunkId;
 				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
@@ -178,8 +180,8 @@ namespace Twitch_prime_downloader
 						break;
 					}
 
-					if (downloadMode == DownloadMode.SingleFile && chunkDownloaders.Count > 1 &&
-						!IsContinuousSequence(groupProgressItems))
+					if (DownloadMode == DownloadMode.SingleFile && chunkDownloaders.Count > 1 &&
+						IsContinuousSequence(groupProgressItems))
 					{
 						ClearGarbage(groupProgressItems);
 						errorCode = DOWNLOAD_ERROR_GROUP_SEQUENCE;
@@ -216,7 +218,7 @@ namespace Twitch_prime_downloader
 
 					if (outputStream != null)
 					{
-						if (!AppendChunkGroup(groupProgressItems, outputStream, jaChunks, storeSubChunksInfo,
+						if (!AppendChunkGroup(groupProgressItems, outputStream, storeSubChunksInfo,
 							chunkMergingProgressed, chunkAppended))
 						{
 							errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
@@ -226,7 +228,7 @@ namespace Twitch_prime_downloader
 
 						groupMergingFinished?.Invoke(this, groupProgressItems, 200);
 					}
-					else if (downloadMode == DownloadMode.Chunked)
+					else if (DownloadMode == DownloadMode.Chunked)
 					{
 						bool success = true;
 						foreach (DownloadProgressItem progressItem in groupProgressItems)
@@ -274,7 +276,7 @@ namespace Twitch_prime_downloader
 				{
 					if (config.SaveVodInfo && !string.IsNullOrEmpty(rawVodInfo))
 					{
-						string infoFilePath = downloadMode == DownloadMode.SingleFile ?
+						string infoFilePath = DownloadMode == DownloadMode.SingleFile ?
 							outputFilePath + "_info.json" :
 							Path.Combine(outputFilePath, "_info.json");
 						File.WriteAllText(infoFilePath, rawVodInfo);
@@ -292,11 +294,11 @@ namespace Twitch_prime_downloader
 
 				try
 				{
-					if (jaChunks != null && jaChunks.Count > 0)
+					if (saveChunkInfo && SerializedChunkList != null && SerializedChunkList.Count > 0)
 					{
 						string chunksFilePath = outputFilePath + "_chunks.json";
 						if (File.Exists(chunksFilePath)) { File.Delete(chunksFilePath); }
-						File.WriteAllText(chunksFilePath, jaChunks.ToString());
+						File.WriteAllText(chunksFilePath, SerializedChunkList.ToString());
 					}
 				}
 #if DEBUG
@@ -342,7 +344,7 @@ namespace Twitch_prime_downloader
 		}
 
 		private bool AppendChunkGroup(IEnumerable<DownloadProgressItem> items,
-			Stream outputStream, JArray chunkList, bool storeSubChunksInfo,
+			Stream outputStream, bool storeSubChunksInfo,
 			ChunkMergingProgressedDelegate chunkMergingProgressed, ChunkAppendedDelegate chunkAppended)
 		{
 			int itemCount = items.Count();
@@ -376,7 +378,7 @@ namespace Twitch_prime_downloader
 								iter, itemCount, DownloadMode.SingleFile);
 						},
 						progressFunc, progressFunc);
-					if (success && chunkList != null)
+					if (success && SerializedChunkList != null)
 					{
 						chunkAppended?.Invoke(this, outputStream.Length);
 						JObject jChunk = item.ChunkDownloader.ChunkWrapper.Serialize(chunkPosition, item.DownloadedSize);
@@ -388,7 +390,7 @@ namespace Twitch_prime_downloader
 								jChunk["subChunks"] = jaSubChunks;
 							}
 						}
-						chunkList.Add(jChunk);
+						SerializedChunkList.Add(jChunk);
 					}
 
 					iter++;

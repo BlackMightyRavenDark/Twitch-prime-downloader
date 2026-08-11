@@ -156,6 +156,14 @@ namespace Twitch_prime_downloader
 #endif
 		}
 
+		private void pictureBoxVodThumbnailImage_MouseDown(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Right)
+			{
+				contextMenuThumbnail.Show(Cursor.Position);
+			}
+		}
+
 		private void pictureBoxScrollBar_Paint(object sender, PaintEventArgs e)
 		{
 			e.Graphics.FillRectangle(Brushes.White, e.ClipRectangle);
@@ -263,6 +271,67 @@ namespace Twitch_prime_downloader
 		private void miCopyVodTitleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			SetClipboardText(VodInfo.Title);
+		}
+
+		private void miVodSaveChunkListToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				if (IsDownloading)
+				{
+					MessageBox.Show("Невозможно сохранить список чанков во время скачивания!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				if (downloadAbstractor != null && downloadAbstractor.DownloadMode == DownloadMode.Chunked)
+				{
+					MessageBox.Show("Сохранить список чанков можно только в режиме скачивания в целый файл!", "Внимание!",
+						MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+					return;
+				}
+
+				if (downloadAbstractor?.SerializedChunkList == null)
+				{
+					MessageBox.Show("Список чанков не существует!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				if (downloadAbstractor.SerializedChunkList.Count == 0)
+				{
+					MessageBox.Show("Список чанков пуст!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					return;
+				}
+
+				using (SaveFileDialog sfd = new SaveFileDialog()
+				{
+					Title = "Куда будем сохранять список чанков?",
+					Filter = "JSON-files|*.json",
+					DefaultExt = ".json",
+					FileName = Path.GetFileName(OutputFilePath) + "_chunks.json"
+				})
+				{
+					if (!string.IsNullOrEmpty(config.LastUsedDirectory) &&
+						!string.IsNullOrWhiteSpace(config.LastUsedDirectory) &&
+						Directory.Exists(config.LastUsedDirectory))
+					{
+						sfd.InitialDirectory = config.LastUsedDirectory;
+					}
+
+					if (sfd.ShowDialog() == DialogResult.OK)
+					{
+						config.LastUsedDirectory = Path.GetDirectoryName(sfd.FileName);
+						File.WriteAllText(sfd.FileName, downloadAbstractor.SerializedChunkList.ToString());
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		private void miDecreaseChunkGroupSizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -511,13 +580,12 @@ namespace Twitch_prime_downloader
 
 			int errorCode = await Task.Run(() =>
 			{
-				downloadAbstractor = new DownloadAbstractor(Playlist, ChunkGroupSize);
+				downloadAbstractor = new DownloadAbstractor(Playlist, DownloadMode, ChunkGroupSize);
 				return downloadAbstractor.Download(OutputFilePath,
-					_chunkFrom, ChunkTo, DownloadMode, config.SaveVodChunkInfo, config.StoreVodSubChunksInfo, VodInfo.RawData,
+					_chunkFrom, ChunkTo, config.SaveVodChunkInfo, config.StoreVodSubChunksInfo, VodInfo.RawData,
 					OnGroupDownloadStarted, OnGroupDownloadProgressed, null,
 					OnChunkMergingProgressed, null, OnChunkStateChanged, OnChunkAppended, null);
 			});
-			downloadAbstractor = null;
 
 			timerElapsedTime.Enabled = false;
 			timerAnimation.Enabled = false;
@@ -607,7 +675,10 @@ namespace Twitch_prime_downloader
 
 		public void StopDownload()
 		{
-			downloadAbstractor?.Stop();
+			if (IsDownloading && downloadAbstractor != null)
+			{
+				downloadAbstractor.Stop();
+			}
 		}
 
 		public void SetStreamInfo(TwitchVod vod)
