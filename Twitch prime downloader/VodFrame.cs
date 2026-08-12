@@ -235,21 +235,32 @@ namespace Twitch_prime_downloader
 
 		private void btnDownload_Paint(object sender, PaintEventArgs e)
 		{
-			Button button = sender as Button;
-			Color color = button.Enabled ? button.BackColor : Color.FromArgb(192, 192, 192);
-			Brush brush = new SolidBrush(color);
-			e.Graphics.FillRectangle(brush, e.ClipRectangle);
-			brush.Dispose();
-			string t = button.Enabled ? button.Text : "Ждите...";
-			if (!string.IsNullOrEmpty(t) && !string.IsNullOrWhiteSpace(t))
+			try
 			{
-				SizeF sz = e.Graphics.MeasureString(t, button.Font);
-				int x = (int)(button.Width / 2 - sz.Width / 2);
-				int y = (int)(button.Height / 2 - sz.Height / 2);
-				brush = new SolidBrush(button.ForeColor);
-				e.Graphics.DrawString(t, button.Font, brush, x, y);
+				Button button = sender as Button;
+				Color color = button.Enabled ? button.BackColor : Color.FromArgb(192, 192, 192);
+				Brush brush = new SolidBrush(color);
+				e.Graphics.FillRectangle(brush, e.ClipRectangle);
 				brush.Dispose();
+				string t = button.Enabled ? button.Text : "Ждите...";
+				if (!string.IsNullOrEmpty(t) && !string.IsNullOrWhiteSpace(t))
+				{
+					SizeF sz = e.Graphics.MeasureString(t, button.Font);
+					int x = (int)(button.Width / 2 - sz.Width / 2);
+					int y = (int)(button.Height / 2 - sz.Height / 2);
+					brush = new SolidBrush(button.ForeColor);
+					e.Graphics.DrawString(t, button.Font, brush, x, y);
+					brush.Dispose();
+				}
 			}
+#if DEBUG
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
+#else
+			catch { }
+#endif
 		}
 
 		private void miCopyVodTitleToolStripMenuItem_Click(object sender, EventArgs e)

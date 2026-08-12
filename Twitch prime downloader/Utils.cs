@@ -50,24 +50,36 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static string GetNumberedDirectoryName(string dirPathOrig)
+		public static string GetNumberedDirectoryName(string dirPathOrig, out string errorMessage)
 		{
-			if (dirPathOrig.EndsWith("\\"))
+			try
 			{
-				dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
-			}
-			if (Directory.Exists(dirPathOrig))
-			{
-				int n = 2;
-				string dirPathNew;
-				do
+				errorMessage = null;
+				if (dirPathOrig.EndsWith("\\"))
 				{
-					dirPathNew = $"{dirPathOrig}_{n++}";
+					dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
 				}
-				while (Directory.Exists(dirPathNew));
-				return dirPathNew + "\\";
+				if (Directory.Exists(dirPathOrig))
+				{
+					int n = 2;
+					string dirPathNew;
+					do
+					{
+						dirPathNew = $"{dirPathOrig}_{n++}";
+					}
+					while (Directory.Exists(dirPathNew));
+					return dirPathNew + "\\";
+				}
+				return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
 			}
-			return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message;
+#if DEBUG
+				System.Diagnostics.Debug.WriteLine(errorMessage);
+#endif
+				return null;
+			}
 		}
 
 		public static string FormatSize(long n)
@@ -103,46 +115,59 @@ namespace Twitch_prime_downloader
 
 		public static Bitmap GenerateErrorImage()
 		{
-			Bitmap bmp = new Bitmap(320, 180);
-			Graphics g = Graphics.FromImage(bmp);
-			g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
-			Font fnt = new Font("Arial", 12);
-			Point center = new Point(bmp.Width / 2, bmp.Height / 2);
-			Random random = new Random(Environment.TickCount);
-			int n = random.Next(10);
-			if (n < 5)
+			try
 			{
-				string t = "matrix has you";
-				SizeF sz = g.MeasureString(t, fnt);
-				float yDraw = center.Y - sz.Height / 2.0f;
-				g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-				t = "fuck";
-				sz = g.MeasureString(t, fnt);
-				yDraw -= sz.Height;
-				g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-				t = "there is no image";
-				sz = g.MeasureString(t, fnt);
-				yDraw -= sz.Height;
-				g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-				t = "sorry :'(";
-				sz = g.MeasureString(t, fnt);
-				g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, center.Y + sz.Height);
+				Bitmap bmp = new Bitmap(320, 180);
+				Graphics g = Graphics.FromImage(bmp);
+				g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
+				Font fnt = new Font("Arial", 12);
+				Point center = new Point(bmp.Width / 2, bmp.Height / 2);
+				Random random = new Random(Environment.TickCount);
+				int n = random.Next(10);
+				if (n < 5)
+				{
+					string t = "matrix has you";
+					SizeF sz = g.MeasureString(t, fnt);
+					float yDraw = center.Y - sz.Height / 2.0f;
+					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+					t = "fuck";
+					sz = g.MeasureString(t, fnt);
+					yDraw -= sz.Height;
+					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+					t = "there is no image";
+					sz = g.MeasureString(t, fnt);
+					yDraw -= sz.Height;
+					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+					t = "sorry :'(";
+					sz = g.MeasureString(t, fnt);
+					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, center.Y + sz.Height);
+				}
+				else
+				{
+					string t = "картинки нет, но вы там держитесь";
+					SizeF sz = g.MeasureString(t, fnt);
+					float x = center.X - sz.Width / 2.0f;
+					g.DrawString(t, fnt, Brushes.Lime, x, center.Y - sz.Height);
+
+					t = "хорошего настроения и здоровья";
+					sz = g.MeasureString(t, fnt);
+					x = bmp.Width / 2.0f - sz.Width / 2.0f;
+					g.DrawString(t, fnt, Brushes.Lime, x, center.Y);
+				}
+				fnt.Dispose();
+
+				return bmp;
 			}
-			else
+#if DEBUG
+			catch (Exception ex)
 			{
-				string t = "картинки нет, но вы там держитесь";
-				SizeF sz = g.MeasureString(t, fnt);
-				float x = center.X - sz.Width / 2.0f;
-				g.DrawString(t, fnt, Brushes.Lime, x, center.Y - sz.Height);
-
-				t = "хорошего настроения и здоровья";
-				sz = g.MeasureString(t, fnt);
-				x = bmp.Width / 2.0f - sz.Width / 2.0f;
-				g.DrawString(t, fnt, Brushes.Lime, x, center.Y);
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+#else
+			catch
+			{
+#endif
+				return null;
 			}
-			fnt.Dispose();
-
-			return bmp;
 		}
 
 		internal static IEnumerable<MultipleProgressBarItem> GetMultipleProgressBarItems(IEnumerable<DownloadProgressItem> items)

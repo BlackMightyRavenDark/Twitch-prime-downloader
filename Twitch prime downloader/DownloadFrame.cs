@@ -384,21 +384,32 @@ namespace Twitch_prime_downloader
 
 		private void textBoxChunkFrom_Leave(object sender, EventArgs e)
 		{
-			_chunkFrom = int.Parse(textBoxChunkFrom.Text) - 1;
-			if (_chunkFrom < 0)
+			try
 			{
+				_chunkFrom = int.Parse(textBoxChunkFrom.Text) - 1;
+				if (_chunkFrom < 0)
+				{
+					_chunkFrom = 0;
+					textBoxChunkFrom.Text = "1";
+				}
+				else if (_chunkFrom >= TotalChunksCount)
+				{
+					_chunkFrom = TotalChunksCount - 1;
+					textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
+				}
+				if (_chunkFrom > _chunkTo)
+				{
+					_chunkTo = _chunkFrom;
+					textBoxChunkTo.Text = (_chunkTo + 1).ToString();
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				_chunkFrom = 0;
 				textBoxChunkFrom.Text = "1";
-			}
-			else if (_chunkFrom >= TotalChunksCount)
-			{
-				_chunkFrom = TotalChunksCount - 1;
-				textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
-			}
-			if (_chunkFrom > _chunkTo)
-			{
-				_chunkTo = _chunkFrom;
-				textBoxChunkTo.Text = (_chunkTo + 1).ToString();
+				_chunkTo = TotalChunksCount - 1;
+				textBoxChunkTo.Text = TotalChunksCount.ToString();
 			}
 
 			SetChunkCountIndicators();
@@ -406,21 +417,32 @@ namespace Twitch_prime_downloader
 
 		private void textBoxChunkTo_Leave(object sender, EventArgs e)
 		{
-			_chunkTo = int.Parse(textBoxChunkTo.Text) - 1;
-			if (_chunkTo < 0)
+			try
 			{
-				_chunkTo = 0;
-				textBoxChunkTo.Text = "1";
+				_chunkTo = int.Parse(textBoxChunkTo.Text) - 1;
+				if (_chunkTo < 0)
+				{
+					_chunkTo = 0;
+					textBoxChunkTo.Text = "1";
+				}
+				if (_chunkTo >= TotalChunksCount)
+				{
+					_chunkTo = TotalChunksCount - 1;
+					textBoxChunkTo.Text = (_chunkTo + 1).ToString();
+				}
+				else if (_chunkTo < _chunkFrom)
+				{
+					_chunkFrom = _chunkTo;
+					textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
+				}
 			}
-			if (_chunkTo >= TotalChunksCount)
+			catch (Exception ex)
 			{
+				MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				_chunkFrom = 0;
+				textBoxChunkFrom.Text = "1";
 				_chunkTo = TotalChunksCount - 1;
-				textBoxChunkTo.Text = (_chunkTo + 1).ToString();
-			}
-			else if (_chunkTo < _chunkFrom)
-			{
-				_chunkFrom = _chunkTo;
-				textBoxChunkFrom.Text = (_chunkFrom + 1).ToString();
+				textBoxChunkTo.Text = TotalChunksCount.ToString();
 			}
 
 			SetChunkCountIndicators();
@@ -544,24 +566,35 @@ namespace Twitch_prime_downloader
 			}
 
 			IsDownloading = true;
-			btnStartDownload.Enabled = false;
-			btnStopDownload.Enabled = true;
 			DownloadStarted = DateTime.Now;
 			lblProgressChunkGroup.Text = "Подготовка к скачиванию...";
 			lblElapsedTime.Text = "Прошло времени: 0:00:00";
-			timerElapsedTime.Enabled = true;
 			if (DownloadMode == DownloadMode.SingleFile)
 			{
 				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOriginal + Playlist.StreamFileExtension);
+				if (!string.IsNullOrWhiteSpace(OutputFilePath))
+				{
+					MessageBox.Show("Ошибка нумерования файла!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 				lblOutputFileName.Text = "Имя файла: " + OutputFilePath;
 			}
 			else
 			{
-				OutputFilePath = GetNumberedDirectoryName(OutputFilePathOriginal);
+				OutputFilePath = GetNumberedDirectoryName(OutputFilePathOriginal, out string errorMessage);
+				if (!string.IsNullOrWhiteSpace(errorMessage))
+				{
+					MessageBox.Show(errorMessage, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 				lblOutputFileName.Text = $"Папка для скачивания: {OutputFilePath}";
 			}
+
+			btnStartDownload.Enabled = false;
+			btnStopDownload.Enabled = true;
 			TotalChunkDownloadedCount = 0;
 			TotalByteDownloadedCount = 0L;
+			timerElapsedTime.Enabled = true;
 
 			multipleProgressBarChunkGroup.ClearItems();
 			int chunkCountMax = ChunkTo - ChunkFrom + 1;

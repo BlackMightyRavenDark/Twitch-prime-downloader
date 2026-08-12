@@ -221,17 +221,27 @@ namespace Twitch_prime_downloader
 		{
 			ClearVodFrames();
 			ClearDownloadFrames();
-
-			if (File.Exists(config.UrlListFilePath))
+			try
 			{
-				File.Delete(config.UrlListFilePath);
+				if (File.Exists(config.UrlListFilePath))
+				{
+					File.Delete(config.UrlListFilePath);
+				}
+				string[] urls = textBoxVideoUrls.Lines;
+				if (urls.Length > 0)
+				{
+					urls.SaveToFile(config.UrlListFilePath);
+				}
+				config.Save();
 			}
-			string[] urls = textBoxVideoUrls.Lines;
-			if (urls.Length > 0)
+#if DEBUG
+			catch (Exception ex)
 			{
-				urls.SaveToFile(config.UrlListFilePath);
+				Debug.WriteLine(ex.Message);
 			}
-			config.Save();
+#else
+			catch { }
+#endif
 		}
 
 		private void form1_Resize(object sender, EventArgs e)
@@ -414,17 +424,24 @@ namespace Twitch_prime_downloader
 
 		private void btnSelectDownloadDirectory_Click(object sender, EventArgs e)
 		{
-			FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-			folderBrowserDialog.Description = "Выберите папку для скачивания";
-			folderBrowserDialog.SelectedPath =
-				(!string.IsNullOrEmpty(config.DownloadDirectory) && Directory.Exists(config.DownloadDirectory)) ?
-				config.DownloadDirectory : config.SelfDirectory;
-			if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+			try
 			{
-				config.LastUsedDirectory =
-				config.DownloadDirectory = folderBrowserDialog.SelectedPath;
+				FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+				folderBrowserDialog.Description = "Выберите папку для скачивания";
+				folderBrowserDialog.SelectedPath =
+					(!string.IsNullOrEmpty(config.DownloadDirectory) && Directory.Exists(config.DownloadDirectory)) ?
+					config.DownloadDirectory : config.SelfDirectory;
+				if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+				{
+					config.LastUsedDirectory =
+					config.DownloadDirectory = folderBrowserDialog.SelectedPath;
 
-				textBoxDownloadDirectory.Text = config.DownloadDirectory;
+					textBoxDownloadDirectory.Text = config.DownloadDirectory;
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -436,19 +453,26 @@ namespace Twitch_prime_downloader
 
 		private void btnSelectBrowser_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog ofd = new OpenFileDialog();
-			ofd.Title = "Выберите браузер";
-			ofd.Filter = "exe|*.exe";
-			string dir = string.IsNullOrEmpty(config.BrowserExeFilePath) ?
-				config.SelfDirectory : Path.GetFullPath(config.BrowserExeFilePath);
-			ofd.InitialDirectory = dir;
-			if (ofd.ShowDialog() != DialogResult.Cancel)
+			try
 			{
-				config.BrowserExeFilePath = ofd.FileName;
-				textBoxBrowserExePath.Text = ofd.FileName;
-				config.LastUsedDirectory = Path.GetDirectoryName(ofd.FileName);
+				OpenFileDialog ofd = new OpenFileDialog();
+				ofd.Title = "Выберите браузер";
+				ofd.Filter = "exe|*.exe";
+				string dir = string.IsNullOrEmpty(config.BrowserExeFilePath) ?
+					config.SelfDirectory : Path.GetFullPath(config.BrowserExeFilePath);
+				ofd.InitialDirectory = dir;
+				if (ofd.ShowDialog() != DialogResult.Cancel)
+				{
+					config.BrowserExeFilePath = ofd.FileName;
+					textBoxBrowserExePath.Text = ofd.FileName;
+					config.LastUsedDirectory = Path.GetDirectoryName(ofd.FileName);
+				}
+				ofd.Dispose();
 			}
-			ofd.Dispose();
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		private void btnAddChannelToList_Click(object sender, EventArgs e)
@@ -682,24 +706,31 @@ namespace Twitch_prime_downloader
 
 		private void miOpenVideoInBrowserToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (string.IsNullOrEmpty(config.BrowserExeFilePath) || string.IsNullOrWhiteSpace(config.BrowserExeFilePath))
+			try
 			{
-				MessageBox.Show("Браузер не указан!", "Ошибка!",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
-			if (!File.Exists(config.BrowserExeFilePath))
-			{
-				MessageBox.Show("Браузер не найден!", "Ошибка!",
-					MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
+				if (string.IsNullOrEmpty(config.BrowserExeFilePath) || string.IsNullOrWhiteSpace(config.BrowserExeFilePath))
+				{
+					MessageBox.Show("Браузер не указан!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+				if (!File.Exists(config.BrowserExeFilePath))
+				{
+					MessageBox.Show("Браузер не найден!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
 
-			Process process = new Process();
-			process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFilePath);
-			process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFilePath);
-			process.StartInfo.Arguments = _activeFrameStream.Vod.Url;
-			process.Start();
+				Process process = new Process();
+				process.StartInfo.FileName = Path.GetFileName(config.BrowserExeFilePath);
+				process.StartInfo.WorkingDirectory = Path.GetFullPath(config.BrowserExeFilePath);
+				process.StartInfo.Arguments = _activeFrameStream.Vod.Url;
+				process.Start();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		private void miCopyVodThumbnailImageUrlToolStripMenuItem_Click(object sender, EventArgs e)

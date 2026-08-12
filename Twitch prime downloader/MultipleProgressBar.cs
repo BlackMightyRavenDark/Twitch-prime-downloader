@@ -19,51 +19,62 @@ namespace Twitch_prime_downloader
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			Rectangle rectangle = e.ClipRectangle.Deflate(1, 1);
-			Brush brushBkg = new SolidBrush(BackColor);
-			e.Graphics.FillRectangle(brushBkg, rectangle);
-			if (Items != null)
+			try
 			{
-				int itemCount = Items.Count();
-				if (itemCount > 0)
+				Rectangle rectangle = e.ClipRectangle.Deflate(1, 1);
+				Brush brushBkg = new SolidBrush(BackColor);
+				e.Graphics.FillRectangle(brushBkg, rectangle);
+				if (Items != null)
 				{
-					float itemWidth = (float)Width / itemCount;
-					int iter = 0;
-					foreach (MultipleProgressBarItem item in Items)
+					int itemCount = Items.Count();
+					if (itemCount > 0)
 					{
-						Rectangle clipRect = e.ClipRectangle.Deflate(1, 1);
-						e.Graphics.SetClip(e.ClipRectangle);
-						Rectangle rect;
-						float itemPositionX = (float)Math.Floor(itemWidth * iter);
-						float n = (float)Math.Floor(item.Value * itemWidth / item.MaxValue);
-						if (n > 0.0f)
+						float itemWidth = (float)Width / itemCount;
+						int iter = 0;
+						foreach (MultipleProgressBarItem item in Items)
 						{
-							rect = new Rectangle((int)itemPositionX, 0, (int)n, rectangle.Height);
-							Brush brush = new SolidBrush(item.BackgroundColor);
-							e.Graphics.FillRectangle(brush, rect);
-							brush.Dispose();
-						}
-						rect = new Rectangle((int)itemPositionX, 0, (int)itemWidth, rectangle.Height);
-						e.Graphics.SetClip(rect);
-						e.Graphics.DrawLine(Pens.Black, rect.Left, rect.Top, rect.Left, rect.Bottom);
+							Rectangle clipRect = e.ClipRectangle.Deflate(1, 1);
+							e.Graphics.SetClip(e.ClipRectangle);
+							Rectangle rect;
+							float itemPositionX = (float)Math.Floor(itemWidth * iter);
+							float n = (float)Math.Floor(item.Value * itemWidth / item.MaxValue);
+							if (n > 0.0f)
+							{
+								rect = new Rectangle((int)itemPositionX, 0, (int)n, rectangle.Height);
+								Brush brush = new SolidBrush(item.BackgroundColor);
+								e.Graphics.FillRectangle(brush, rect);
+								brush.Dispose();
+							}
+							rect = new Rectangle((int)itemPositionX, 0, (int)itemWidth, rectangle.Height);
+							e.Graphics.SetClip(rect);
+							e.Graphics.DrawLine(Pens.Black, rect.Left, rect.Top, rect.Left, rect.Bottom);
 
-						if (!string.IsNullOrEmpty(item.Title) && !string.IsNullOrWhiteSpace(item.Title))
-						{
-							SizeF size = e.Graphics.MeasureString(item.Title, Font);
-							float y = Height / 2.0f - size.Height / 2.0f;
-							Brush brushText = new SolidBrush(ForeColor);
-							e.Graphics.DrawString(item.Title, Font, brushText, itemPositionX + 4.0f, y);
-							brushText.Dispose();
-						}
+							if (!string.IsNullOrEmpty(item.Title) && !string.IsNullOrWhiteSpace(item.Title))
+							{
+								SizeF size = e.Graphics.MeasureString(item.Title, Font);
+								float y = Height / 2.0f - size.Height / 2.0f;
+								Brush brushText = new SolidBrush(ForeColor);
+								e.Graphics.DrawString(item.Title, Font, brushText, itemPositionX + 4.0f, y);
+								brushText.Dispose();
+							}
 
-						iter++;
+							iter++;
+						}
 					}
 				}
-			}
 
-			e.Graphics.SetClip(e.ClipRectangle);
-			e.Graphics.DrawRectangle(Pens.Black, rectangle);
-			brushBkg.Dispose();
+				e.Graphics.SetClip(e.ClipRectangle);
+				e.Graphics.DrawRectangle(Pens.Black, rectangle);
+				brushBkg.Dispose();
+			}
+#if DEBUG
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
+#else
+			catch { }
+#endif
 		}
 
 		public void SetItems(IEnumerable<MultipleProgressBarItem> items)
