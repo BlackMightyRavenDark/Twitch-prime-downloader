@@ -181,7 +181,7 @@ namespace Twitch_prime_downloader
 					}
 
 					if (DownloadMode == DownloadMode.SingleFile && chunkDownloaders.Count > 1 &&
-						IsContinuousSequence(groupProgressItems))
+						!IsContinuousSequence(groupProgressItems))
 					{
 						ClearGarbage(groupProgressItems);
 						errorCode = DOWNLOAD_ERROR_GROUP_SEQUENCE;

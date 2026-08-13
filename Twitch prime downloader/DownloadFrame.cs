@@ -572,7 +572,7 @@ namespace Twitch_prime_downloader
 			if (DownloadMode == DownloadMode.SingleFile)
 			{
 				OutputFilePath = MultiThreadedDownloaderLib.Utils.GetNumberedFileName(OutputFilePathOriginal + Playlist.StreamFileExtension);
-				if (!string.IsNullOrWhiteSpace(OutputFilePath))
+				if (string.IsNullOrWhiteSpace(OutputFilePath))
 				{
 					MessageBox.Show("Ошибка нумерования файла!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
