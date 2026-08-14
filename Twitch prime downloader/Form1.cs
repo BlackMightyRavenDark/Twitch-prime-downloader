@@ -101,7 +101,7 @@ namespace Twitch_prime_downloader
 				}
 				{
 					JToken jt = json.Value<JToken>("saveVodInfo");
-					config.SaveVodInfo = jt == null | jt.Value<bool>();
+					config.SaveVodInfo = jt == null || jt.Value<bool>();
 				}
 				{
 					JToken jt = json.Value<JToken>("saveVodChunkInfo");
