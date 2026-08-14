@@ -25,7 +25,7 @@ namespace Twitch_prime_downloader
 
 		private void form1_Load(object sender, EventArgs e)
 		{
-			TwitchApiLib.Utils.TwitchHelixOauthToken.TokenUpdating += (s) =>
+			TwitchApiLib.Utils.TwitchHelixOauthToken.TokenUpdating += s =>
 				Invoke(new MethodInvoker(() => textBoxHelixApiToken.Text = lblHelixApiTokenExpirationDate.Text = "Обновляется..."));
 			TwitchApiLib.Utils.TwitchHelixOauthToken.TokenUpdated += (s, errorCode, errorMessage) =>
 			{
@@ -37,7 +37,7 @@ namespace Twitch_prime_downloader
 						lblHelixApiTokenExpirationDate.Text = "<Неизвестно>";
 
 						string msg = "Не удалось обновить Helix API token!";
-						if (!string.IsNullOrEmpty(errorMessage)) { msg += Environment.NewLine + errorMessage; }
+						if (!string.IsNullOrWhiteSpace(errorMessage)) { msg += Environment.NewLine + errorMessage; }
 						MessageBox.Show(msg, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
@@ -77,7 +77,7 @@ namespace Twitch_prime_downloader
 					if (jt != null)
 					{
 						config.OutputFileNameFormat = jt.Value<string>();
-						if (string.IsNullOrEmpty(config.OutputFileNameFormat))
+						if (string.IsNullOrWhiteSpace(config.OutputFileNameFormat))
 						{
 							config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
 						}
@@ -113,12 +113,12 @@ namespace Twitch_prime_downloader
 				config.ApiApplicationClientId = json.Value<string>("apiApplicationClientId");
 				config.ApiApplicationClientSecretKey = json.Value<string>("apiApplicationClientSecretKey");
 
-				if (string.IsNullOrEmpty(config.ApiApplicationClientId) && string.IsNullOrEmpty(config.ApiApplicationClientSecretKey))
+				if (string.IsNullOrWhiteSpace(config.ApiApplicationClientId) && string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
 				{
 					SetDefaultTwitchApplication();
 				}
 			};
-			config.Loaded += (s) =>
+			config.Loaded += s =>
 			{
 				checkBoxUseGmtTime.Checked = config.UseGmtVodDates;
 				checkBoxSaveVodInfo.Checked = config.SaveVodInfo;
@@ -152,7 +152,8 @@ namespace Twitch_prime_downloader
 							}
 						}
 					}
-				} catch (Exception ex)
+				}
+				catch (Exception ex)
 				{
 					MessageBox.Show(ex.Message, "Ошибка!",
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -199,7 +200,9 @@ namespace Twitch_prime_downloader
 						canClose = false;
 					}
 				}
-				if (canClose) {
+
+				if (canClose)
+				{
 					StopAllTasks();
 					await Task.Run(() =>
 					{
@@ -208,7 +211,8 @@ namespace Twitch_prime_downloader
 						{
 							Thread.Sleep(200);
 							Invoke(new MethodInvoker(() => { unfinished = IsUnfinishedTaskPresent(); }));
-						} while (unfinished);
+						}
+						while (unfinished);
 					});
 
 					_isClosing = false;
@@ -277,13 +281,14 @@ namespace Twitch_prime_downloader
 			}
 
 			string channelName = textBoxChannelName.Text?.Trim();
-			if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
+			if (string.IsNullOrWhiteSpace(channelName))
 			{
 				MessageBox.Show("Не введено название канала!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 				btnSearchByChannelName.Enabled = true;
 				return;
 			}
+
 			if (channelName.Contains(" "))
 			{
 				MessageBox.Show("Название канала не может содержать пробелов!", "Ошибка!",
@@ -345,9 +350,7 @@ namespace Twitch_prime_downloader
 			if (actualStreamCount > 0)
 			{
 				tabPageStreams.Text = $"Стримы ({actualStreamCount})";
-
 				StackVodFrames();
-
 				tabControlMain.SelectedTab = tabPageStreams;
 			}
 
@@ -381,13 +384,14 @@ namespace Twitch_prime_downloader
 
 			for (int i = 0; i < urls.Length; ++i)
 			{
-				if (string.IsNullOrEmpty(urls[i]) || string.IsNullOrWhiteSpace(urls[i]))
+				if (string.IsNullOrWhiteSpace(urls[i]))
 				{
 					listBoxEventLog.Items.Add($"{i + 1} / {urls.Length}: Empty URL!");
 					continue;
 				}
+
 				string vodId = ExtractVodIdFromUrl(urls[i]);
-				if (string.IsNullOrEmpty(vodId) || string.IsNullOrWhiteSpace(vodId))
+				if (string.IsNullOrWhiteSpace(vodId))
 				{
 					listBoxEventLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...FAILED!");
 					continue;
@@ -399,7 +403,6 @@ namespace Twitch_prime_downloader
 					if (vodResult.ErrorCode == 200)
 					{
 						AddStreamItem(vodResult.Vod);
-
 						listBoxEventLog.Items.Add($"{i + 1} / {urls.Length}: {urls[i]}...OK");
 					}
 					else
@@ -426,17 +429,20 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-				folderBrowserDialog.Description = "Выберите папку для скачивания";
-				folderBrowserDialog.SelectedPath =
-					(!string.IsNullOrEmpty(config.DownloadDirectory) && Directory.Exists(config.DownloadDirectory)) ?
-					config.DownloadDirectory : config.SelfDirectory;
-				if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+				using (FolderBrowserDialog fbd = new FolderBrowserDialog()
 				{
-					config.LastUsedDirectory =
-					config.DownloadDirectory = folderBrowserDialog.SelectedPath;
-
-					textBoxDownloadDirectory.Text = config.DownloadDirectory;
+					Description = "Выберите папку для скачивания",
+					SelectedPath = (!string.IsNullOrWhiteSpace(config.DownloadDirectory) &&
+						Directory.Exists(config.DownloadDirectory)) ?
+						config.DownloadDirectory : config.SelfDirectory
+				})
+				{
+					if (fbd.ShowDialog() == DialogResult.OK)
+					{
+						textBoxDownloadDirectory.Text =
+						config.LastUsedDirectory =
+						config.DownloadDirectory = fbd.SelectedPath;
+					}
 				}
 			}
 			catch (Exception ex)
@@ -447,7 +453,7 @@ namespace Twitch_prime_downloader
 
 		private void btnRestoreDefaultOutputFileNameFormat_Click(object sender, EventArgs e)
 		{
-			textBoxOutputFileNameFormat.Text = FILENAME_FORMAT_DEFAULT;
+			textBoxOutputFileNameFormat.Text =
 			config.OutputFileNameFormat = FILENAME_FORMAT_DEFAULT;
 		}
 
@@ -455,19 +461,21 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				OpenFileDialog ofd = new OpenFileDialog();
-				ofd.Title = "Выберите браузер";
-				ofd.Filter = "exe|*.exe";
-				string dir = string.IsNullOrEmpty(config.BrowserExeFilePath) ?
-					config.SelfDirectory : Path.GetFullPath(config.BrowserExeFilePath);
-				ofd.InitialDirectory = dir;
-				if (ofd.ShowDialog() != DialogResult.Cancel)
+				using (OpenFileDialog ofd = new OpenFileDialog()
 				{
-					config.BrowserExeFilePath = ofd.FileName;
-					textBoxBrowserExePath.Text = ofd.FileName;
-					config.LastUsedDirectory = Path.GetDirectoryName(ofd.FileName);
+					Title = "Выберите браузер",
+					Filter = "EXE-files|*.exe",
+					InitialDirectory = string.IsNullOrWhiteSpace(config.BrowserExeFilePath) ?
+						config.SelfDirectory : Path.GetFullPath(config.BrowserExeFilePath)
+				})
+				{
+					if (ofd.ShowDialog() != DialogResult.Cancel)
+					{
+						textBoxBrowserExePath.Text =
+						config.BrowserExeFilePath = ofd.FileName;
+						config.LastUsedDirectory = Path.GetDirectoryName(ofd.FileName);
+					}
 				}
-				ofd.Dispose();
 			}
 			catch (Exception ex)
 			{
@@ -480,7 +488,7 @@ namespace Twitch_prime_downloader
 			try
 			{
 				string channelName = textBoxChannelName.Text.Trim();
-				if (string.IsNullOrEmpty(channelName) || string.IsNullOrWhiteSpace(channelName))
+				if (string.IsNullOrWhiteSpace(channelName))
 				{
 					MessageBox.Show("Введите название канал", "Ошибка!",
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -564,7 +572,7 @@ namespace Twitch_prime_downloader
 				});
 			}
 
-			if (!string.IsNullOrEmpty(errorMessage) && !string.IsNullOrWhiteSpace(errorMessage))
+			if (!string.IsNullOrWhiteSpace(errorMessage))
 			{
 				MessageBox.Show(errorMessage, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
@@ -683,8 +691,7 @@ namespace Twitch_prime_downloader
 					FileName = fixedFlleName + "_thumbnail"
 				})
 				{
-					if (!string.IsNullOrEmpty(config.LastUsedDirectory) &&
-						!string.IsNullOrWhiteSpace(config.LastUsedDirectory) &&
+					if (!string.IsNullOrWhiteSpace(config.LastUsedDirectory) &&
 						Directory.Exists(config.LastUsedDirectory))
 					{
 						sfd.InitialDirectory = config.LastUsedDirectory;
@@ -708,12 +715,13 @@ namespace Twitch_prime_downloader
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(config.BrowserExeFilePath) || string.IsNullOrWhiteSpace(config.BrowserExeFilePath))
+				if (string.IsNullOrWhiteSpace(config.BrowserExeFilePath))
 				{
 					MessageBox.Show("Браузер не указан!", "Ошибка!",
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
 				}
+
 				if (!File.Exists(config.BrowserExeFilePath))
 				{
 					MessageBox.Show("Браузер не найден!", "Ошибка!",
@@ -736,7 +744,7 @@ namespace Twitch_prime_downloader
 		private void miCopyVodThumbnailImageUrlToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			string url = _activeFrameStream.Vod?.FormatThumbnailTemplateUrl(1920, 1080);
-			if (!string.IsNullOrEmpty(url) && !string.IsNullOrWhiteSpace(url))
+			if (!string.IsNullOrWhiteSpace(url))
 			{
 				SetClipboardText(url);
 			}
@@ -744,22 +752,17 @@ namespace Twitch_prime_downloader
 
 		private void miCopyVideoUrl_Click(object sender, EventArgs e)
 		{
-			if (_activeFrameStream?.Vod != null)
+			if (!string.IsNullOrWhiteSpace(_activeFrameStream?.Vod?.Url))
 			{
-				if (!string.IsNullOrEmpty(_activeFrameStream.Vod.Url) &&
-					!string.IsNullOrWhiteSpace(_activeFrameStream.Vod.Url))
-				{
-					SetClipboardText(_activeFrameStream.Vod.Url);
-				}
+				SetClipboardText(_activeFrameStream.Vod.Url);
 			}
 		}
 
 		private void miCopyVodInfoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			TwitchVod vod = _activeFrameStream?.Vod;
-			if (vod != null && !string.IsNullOrEmpty(vod.RawData) && !string.IsNullOrWhiteSpace(vod.RawData))
+			if (!string.IsNullOrWhiteSpace(_activeFrameStream?.Vod?.RawData))
 			{
-				SetClipboardText(vod.RawData);
+				SetClipboardText(_activeFrameStream.Vod.RawData);
 			}
 			else
 			{
@@ -773,7 +776,7 @@ namespace Twitch_prime_downloader
 			try
 			{
 				string playlistRaw = _activeFrameStream.Vod?.Playlist?.PlaylistRaw;
-				if (!string.IsNullOrEmpty(playlistRaw) && !string.IsNullOrWhiteSpace(playlistRaw))
+				if (!string.IsNullOrWhiteSpace(playlistRaw))
 				{
 					string fixedFileName = FixFileName(FormatFileName(config.OutputFileNameFormat, _activeFrameStream.Vod));
 					using (SaveFileDialog sfd = new SaveFileDialog()
@@ -784,8 +787,7 @@ namespace Twitch_prime_downloader
 						FileName = fixedFileName + "_playlist"
 					})
 					{
-						if (!string.IsNullOrEmpty(config.DownloadDirectory) &&
-							!string.IsNullOrWhiteSpace(config.DownloadDirectory) &&
+						if (!string.IsNullOrWhiteSpace(config.DownloadDirectory) &&
 							Directory.Exists(config.DownloadDirectory))
 						{
 							sfd.InitialDirectory = config.DownloadDirectory;
@@ -835,7 +837,7 @@ namespace Twitch_prime_downloader
 
 		private void textBoxDownloadDirectory_Leave(object sender, EventArgs e)
 		{
-			config.DownloadDirectory = textBoxDownloadDirectory.Text;
+			config.DownloadDirectory = (sender as TextBox).Text;
 		}
 
 		private void textBoxOutputFileNameFormat_Leave(object sender, EventArgs e)
@@ -845,8 +847,7 @@ namespace Twitch_prime_downloader
 
 		private void AddStreamItem(TwitchVod vod)
 		{
-			VodFrame frame = new VodFrame(vod);
-			frame.Parent = panelStreams;
+			VodFrame frame = new VodFrame(vod) { Parent = panelStreams };
 			frame.Activated += OnVodFrame_Activated;
 			frame.ImageMouseDown += OnVodFrame_ThumbnailImageMouseDown;
 			frame.DownloadButtonClicked += OnVodFrame_DownloadButtonClick;
@@ -855,24 +856,24 @@ namespace Twitch_prime_downloader
 
 		private void OnFrameDownload_Closed(object sender)
 		{
-			int i;
-			for (i = 0; i < downloadFrames.Count; ++i)
+			int i = 0;
+			for (; i < downloadFrames.Count; ++i)
 			{
-				if (downloadFrames[i] == sender)
-				{
-					break;
-				}
+				if (downloadFrames[i] == sender) { break; }
 			}
 
-			downloadFrames.RemoveAt(i);
-			if (downloadFrames.Count > 0)
+			if (i < downloadFrames.Count)
 			{
-				tabPageDownloads.Text = $"Скачивание ({downloadFrames.Count})";
-				StackDownloadFrames();
-			}
-			else
-			{
-				tabPageDownloads.Text = "Скачивание";
+				downloadFrames.RemoveAt(i);
+				if (downloadFrames.Count > 0)
+				{
+					tabPageDownloads.Text = $"Скачивание ({downloadFrames.Count})";
+					StackDownloadFrames();
+				}
+				else
+				{
+					tabPageDownloads.Text = "Скачивание";
+				}
 			}
 		}
 
@@ -890,13 +891,13 @@ namespace Twitch_prime_downloader
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				contextMenuVodThumbnailImage.Show(Cursor.Position.X, Cursor.Position.Y);
+				contextMenuVodThumbnailImage.Show(Cursor.Position);
 			}
 		}
 
 		private async void OnVodFrame_DownloadButtonClick(object sender)
 		{
-			if (string.IsNullOrEmpty(config.DownloadDirectory))
+			if (string.IsNullOrWhiteSpace(config.DownloadDirectory))
 			{
 				MessageBox.Show("Не указана папка для скачивания!", "Ошибка!",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -918,6 +919,7 @@ namespace Twitch_prime_downloader
 				return result.ErrorCode == 200 ? result :
 					new TwitchPlaylistResult(frameStream.Vod.Playlist, frameStream.Vod.Playlist != null ? 200 : 404, null);
 			});
+
 			if (playlistResult.ErrorCode == 200)
 			{
 				if (config.DebugMode)
@@ -927,14 +929,14 @@ namespace Twitch_prime_downloader
 
 				playlistResult.Playlist.Parse();
 
-				DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist);
-				frame.Parent = panelDownloads;
-				frame.Location = new Point(0, 0);
+				DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist)
+				{
+					Parent = panelDownloads,
+					Location = new Point(0, 0),
+					ChunkRangeFirstId = 0,
+					ChunkRangeLastId = playlistResult.Playlist.Count - 1
+				};
 				frame.Closed += OnFrameDownload_Closed;
-
-				frame.ChunkFrom = 0;
-				frame.ChunkTo = frame.Playlist.Count - 1;
-
 				downloadFrames.Add(frame);
 
 				tabPageDownloads.Text = $"Скачивание ({downloadFrames.Count})";
@@ -976,18 +978,12 @@ namespace Twitch_prime_downloader
 			{
 				int w = vodFrames[0].Width;
 				int h = vodFrames[0].Height;
-				int gap = 4;
+				const int gap = 4;
 				int panelWidth = tabControlMain.Width - scrollBarStreams.Width - 10;
 				int perRow = panelWidth / (w + gap);
-				if (perRow == 0)
-				{
-					perRow = 1;
-				}
-				int rowsCount = vodFrames.Count / perRow;
-				if (vodFrames.Count % perRow != 0)
-				{
-					rowsCount++;
-				}
+				if (perRow <= 0) { perRow = 1; }
+				int rowCount = vodFrames.Count / perRow;
+				if (vodFrames.Count % perRow != 0) { rowCount++; }
 				int xStart = (panelWidth / 2) - ((w + gap) * perRow / 2);
 				int x = xStart;
 				int y = -h - gap;
@@ -1002,7 +998,7 @@ namespace Twitch_prime_downloader
 					x += w + gap;
 				}
 
-				int j = (h + gap) * rowsCount;
+				int j = (h + gap) * rowCount;
 				if (j > panelStreams.Height)
 				{
 					scrollBarStreams.Maximum = j;
@@ -1014,12 +1010,14 @@ namespace Twitch_prime_downloader
 				{
 					scrollBarStreams.Enabled = false;
 				}
-				return rowsCount;
+
+				return rowCount;
 			}
 			else
 			{
 				scrollBarStreams.Enabled = false;
 			}
+
 			return 0;
 		}
 
@@ -1029,9 +1027,9 @@ namespace Twitch_prime_downloader
 			{
 				for (int i = 0; i < downloadFrames.Count; ++i)
 				{
-					int locY = i * downloadFrames[i].Height - scrollBarDownloads.Value;
-					downloadFrames[i].Location = new Point(0, locY);
-					downloadFrames[i].Width = Width - 40 + DownloadFrame.EXTRA_WIDTH;
+					int y = i * downloadFrames[i].Height - scrollBarDownloads.Value;
+					downloadFrames[i].Location = new Point(0, y);
+					downloadFrames[i].Width = Width + DownloadFrame.EXTRA_WIDTH - 40;
 				}
 
 				int h = downloadFrames.Count * downloadFrames[0].Height;
@@ -1045,16 +1043,8 @@ namespace Twitch_prime_downloader
 					return;
 				}
 			}
-			scrollBarDownloads.Enabled = false;
-		}
 
-		private static TwitchApplication MakeTwitchApplication()
-		{
-			return new TwitchApplication(
-				config.ApiApplicationTitle,
-				config.ApiApplicationDescription,
-				config.ApiApplicationClientId,
-				config.ApiApplicationClientSecretKey);
+			scrollBarDownloads.Enabled = false;
 		}
 
 		private void SetDefaultTwitchApplication()

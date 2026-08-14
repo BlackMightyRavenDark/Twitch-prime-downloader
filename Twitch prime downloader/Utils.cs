@@ -30,35 +30,47 @@ namespace Twitch_prime_downloader
 			try
 			{
 				Uri uri = new Uri(url);
-				string host = !string.IsNullOrEmpty(uri.Host) ? uri.Host.ToLower() : null;
-				if (string.IsNullOrEmpty(host) || !host.Contains("twitch.tv"))
+				string host = !string.IsNullOrWhiteSpace(uri.Host) ? uri.Host.ToLower() : null;
+				if (string.IsNullOrWhiteSpace(host) || !host.Contains("twitch.tv"))
 				{
 					return null;
 				}
-				if (!string.IsNullOrEmpty(uri.LocalPath) && uri.LocalPath.ToLower().StartsWith("/videos/"))
+
+				if (!string.IsNullOrWhiteSpace(uri.LocalPath) && uri.LocalPath.ToLower().StartsWith("/videos/"))
 				{
 					string[] strings = uri.LocalPath.Split('/');
 					string t = strings[strings.Length - 1];
 					int n = t.IndexOf("&");
 					return n < 0 ? t : t.Substring(0, n);
 				}
-				return null;
 			}
-			catch
-			{
-				return null;
-			}
+			catch { }
+
+			return null;
 		}
 
 		public static string GetNumberedDirectoryName(string dirPathOrig, out string errorMessage)
 		{
 			try
 			{
+				if (string.IsNullOrWhiteSpace(dirPathOrig))
+				{
+					errorMessage = "An empty string passed";
+					return null;
+				}
+
 				errorMessage = null;
 				if (dirPathOrig.EndsWith("\\"))
 				{
+					if (dirPathOrig.Length == 3)
+					{
+						errorMessage = "Root directories is not supported";
+						return null;
+					}
+
 					dirPathOrig = dirPathOrig.Remove(dirPathOrig.Length - 1, 1);
 				}
+
 				if (Directory.Exists(dirPathOrig))
 				{
 					int n = 2;
@@ -68,9 +80,11 @@ namespace Twitch_prime_downloader
 						dirPathNew = $"{dirPathOrig}_{n++}";
 					}
 					while (Directory.Exists(dirPathNew));
-					return dirPathNew + "\\";
+
+					return dirPathNew;
 				}
-				return dirPathOrig.EndsWith("\\") ? dirPathOrig : dirPathOrig + "\\";
+
+				return dirPathOrig;
 			}
 			catch (Exception ex)
 			{
@@ -118,43 +132,46 @@ namespace Twitch_prime_downloader
 			try
 			{
 				Bitmap bmp = new Bitmap(320, 180);
-				Graphics g = Graphics.FromImage(bmp);
-				g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
-				Font fnt = new Font("Arial", 12);
-				Point center = new Point(bmp.Width / 2, bmp.Height / 2);
-				Random random = new Random(Environment.TickCount);
-				int n = random.Next(10);
-				if (n < 5)
+				using (Graphics g = Graphics.FromImage(bmp))
 				{
-					string t = "matrix has you";
-					SizeF sz = g.MeasureString(t, fnt);
-					float yDraw = center.Y - sz.Height / 2.0f;
-					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-					t = "fuck";
-					sz = g.MeasureString(t, fnt);
-					yDraw -= sz.Height;
-					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-					t = "there is no image";
-					sz = g.MeasureString(t, fnt);
-					yDraw -= sz.Height;
-					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
-					t = "sorry :'(";
-					sz = g.MeasureString(t, fnt);
-					g.DrawString(t, fnt, Brushes.Lime, center.X - sz.Width / 2.0f, center.Y + sz.Height);
-				}
-				else
-				{
-					string t = "картинки нет, но вы там держитесь";
-					SizeF sz = g.MeasureString(t, fnt);
-					float x = center.X - sz.Width / 2.0f;
-					g.DrawString(t, fnt, Brushes.Lime, x, center.Y - sz.Height);
+					g.FillRectangle(Brushes.Black, new RectangleF(0, 0, bmp.Width, bmp.Height));
+					using (Font font = new Font("Arial", 12))
+					{
+						Point center = new Point(bmp.Width / 2, bmp.Height / 2);
+						Random random = new Random();
+						int n = random.Next(10);
+						if (n < 5)
+						{
+							string t = "matrix has you";
+							SizeF sz = g.MeasureString(t, font);
+							float yDraw = center.Y - sz.Height / 2.0f;
+							g.DrawString(t, font, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+							t = "fuck";
+							sz = g.MeasureString(t, font);
+							yDraw -= sz.Height;
+							g.DrawString(t, font, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+							t = "there is no image";
+							sz = g.MeasureString(t, font);
+							yDraw -= sz.Height;
+							g.DrawString(t, font, Brushes.Lime, center.X - sz.Width / 2.0f, yDraw);
+							t = "sorry :'(";
+							sz = g.MeasureString(t, font);
+							g.DrawString(t, font, Brushes.Lime, center.X - sz.Width / 2.0f, center.Y + sz.Height);
+						}
+						else
+						{
+							string t = "картинки нет, но вы там держитесь";
+							SizeF sz = g.MeasureString(t, font);
+							float x = center.X - sz.Width / 2.0f;
+							g.DrawString(t, font, Brushes.Lime, x, center.Y - sz.Height);
 
-					t = "хорошего настроения и здоровья";
-					sz = g.MeasureString(t, fnt);
-					x = bmp.Width / 2.0f - sz.Width / 2.0f;
-					g.DrawString(t, fnt, Brushes.Lime, x, center.Y);
+							t = "хорошего настроения и здоровья";
+							sz = g.MeasureString(t, font);
+							x = bmp.Width / 2.0f - sz.Width / 2.0f;
+							g.DrawString(t, font, Brushes.Lime, x, center.Y);
+						}
+					}
 				}
-				fnt.Dispose();
 
 				return bmp;
 			}
@@ -209,24 +226,24 @@ namespace Twitch_prime_downloader
 
 		public static bool SetClipboardText(string text)
 		{
-			if (string.IsNullOrEmpty(text))
-			{
-				return false;
-			}
-			bool suc;
-			do
+			if (string.IsNullOrEmpty(text)) { return false; }
+
+			while (true)
 			{
 				try
 				{
 					Clipboard.SetText(text);
-					suc = true;
+					return true;
 				}
-				catch
+#if DEBUG
+				catch (Exception ex)
 				{
-					suc = false;
+					System.Diagnostics.Debug.WriteLine(ex.Message);
 				}
-			} while (!suc);
-			return true;
+#else
+				catch { }
+#endif
+			}
 		}
 
 		public static string FormatFileName(string fmt, TwitchVod twitchVod)
@@ -251,22 +268,22 @@ namespace Twitch_prime_downloader
 				.Replace("\"", "\u201C").Replace("*", "\uFE61").Replace("^", "\u2303").Replace("\n", string.Empty);
 		}
 
-		public static Image TryLoadImageFromStream(Stream stream, out string errorText)
+		public static Image TryLoadImageFromStream(Stream stream, out string errorMessage)
 		{
 			if (stream == null)
 			{
-				errorText = "Stream is null";
+				errorMessage = "Stream is null";
 				return null;
 			}
 			else if (stream.Length == 0L)
 			{
-				errorText = "Stream is empty";
+				errorMessage = "Stream is empty";
 				return null;
 			}
 
 			try
 			{
-				errorText = null;
+				errorMessage = null;
 				return Image.FromStream(stream);
 			}
 			catch (Exception ex)
@@ -274,7 +291,7 @@ namespace Twitch_prime_downloader
 #if DEBUG
 				System.Diagnostics.Debug.WriteLine(ex.Message);
 #endif
-				errorText = ex.Message;
+				errorMessage = ex.Message;
 				return null;
 			}
 		}
@@ -331,14 +348,23 @@ namespace Twitch_prime_downloader
 			}
 		}
 
+		public static TwitchApplication MakeTwitchApplication()
+		{
+			return new TwitchApplication(
+				config.ApiApplicationTitle,
+				config.ApiApplicationDescription,
+				config.ApiApplicationClientId,
+				config.ApiApplicationClientSecretKey);
+		}
+
 		public static bool IsTwitchApplicationValid(out string errorMessage)
 		{
-			if (string.IsNullOrEmpty(config.ApiApplicationClientId) || string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
+			if (string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
 			{
 				errorMessage = "Не указан ID приложения Twitch!";
 				return false;
 			}
-			else if (string.IsNullOrEmpty(config.ApiApplicationClientSecretKey) || string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
+			else if (string.IsNullOrWhiteSpace(config.ApiApplicationClientSecretKey))
 			{
 				errorMessage = "Не указан секретный ключ приложения Twitch!";
 				return false;

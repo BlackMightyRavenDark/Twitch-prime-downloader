@@ -12,12 +12,7 @@ namespace Twitch_prime_downloader
 	{
 		public static string ToText(this IEnumerable<string> collection)
 		{
-			string res = string.Empty;
-			foreach (string str in collection)
-			{
-				res += str + Environment.NewLine;
-			}
-			return res;
+			return string.Join(Environment.NewLine, collection);
 		}
 
 		public static IEnumerable<string> GetStrings(this ListBox listBox)

@@ -14,18 +14,18 @@ namespace Twitch_prime_downloader
 {
 	internal class DownloadAbstractor : IDisposable
 	{
-		public TwitchPlaylist VodPlaylist { get; }
-		public int MaxGroupSize { get; set; }
+		public TwitchPlaylist Playlist { get; }
+		public int SimultaneousDownloadChunkChunkCount { get; set; }
 		public JArray SerializedChunkList { get; private set; }
 		public DownloadMode DownloadMode { get; }
 
-		public delegate void GroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
-		public delegate void GroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
-		public delegate void GroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
-		public delegate void ChunkMergingProgressedDelegate(object sender,
+		public delegate void ChunkGroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
+		public delegate void ChunkGroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
+		public delegate void ChunkGroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
+		public delegate void ChunkMergerProgressedDelegate(object sender,
 			long processedBytes, long totalSize, int chunkId, int chunkCount, DownloadMode downloadMode);
 		public delegate void ChunkAppendedDelegate(object sender, long totalSize);
-		public delegate void GroupMergingFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
+		public delegate void ChunkGroupMergerFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
 		public delegate void DownloadCompletedDelegate(object sender, int errorCode);
 
 		public const int DOWNLOAD_ERROR_CHUNK_RANGE = int.MaxValue;
@@ -39,11 +39,11 @@ namespace Twitch_prime_downloader
 
 		private CancellationTokenSource _cancellationTokenSource;
 
-		public DownloadAbstractor(TwitchPlaylist vodPlaylist, DownloadMode downloadMode, int maxGroupSize)
+		public DownloadAbstractor(TwitchPlaylist playlist, DownloadMode downloadMode, int simultaneousDownloadChunkChunkCount)
 		{
-			VodPlaylist = vodPlaylist;
+			Playlist = playlist;
 			DownloadMode = downloadMode;
-			MaxGroupSize = maxGroupSize;
+			SimultaneousDownloadChunkChunkCount = simultaneousDownloadChunkChunkCount;
 		}
 
 		public void Dispose()
@@ -58,11 +58,11 @@ namespace Twitch_prime_downloader
 			bool saveChunkInfo,
 			bool storeSubChunksInfo,
 			string rawVodInfo,
-			GroupDownloadStartedDelegate groupDownloadStarted,
-			GroupDownloadProgressedDelegate groupDownloadProgressed,
-			GroupDownloadFinishedDelegate groupDownloadFinished,
-			ChunkMergingProgressedDelegate chunkMergingProgressed,
-			GroupMergingFinishedDelegate groupMergingFinished,
+			ChunkGroupDownloadStartedDelegate chunkGroupDownloadStarted,
+			ChunkGroupDownloadProgressedDelegate chunkGroupDownloadProgressed,
+			ChunkGroupDownloadFinishedDelegate chunkGroupDownloadFinished,
+			ChunkMergerProgressedDelegate chunkMergerProgressed,
+			ChunkGroupMergerFinishedDelegate chunkGroupMergerFinished,
 			TwitchVodChunkDownloader.ChunkStateChangedDelegate chunkStateChanged,
 			ChunkAppendedDelegate chunkAppended,
 			DownloadCompletedDelegate downloadCompleted)
@@ -71,7 +71,7 @@ namespace Twitch_prime_downloader
 
 			try
 			{
-				if (lastChunkId >= VodPlaylist.Count)
+				if (lastChunkId >= Playlist.Count)
 				{
 					downloadCompleted?.Invoke(this, DOWNLOAD_ERROR_CHUNK_RANGE);
 					return DOWNLOAD_ERROR_CHUNK_RANGE;
@@ -97,17 +97,17 @@ namespace Twitch_prime_downloader
 					outputStream = File.OpenWrite(outputFilePath);
 				}
 
-				List<TwitchVodChunk> chunkList = VodPlaylist.GetFilteredChunkList(item => true).ToList();
-				if (VodPlaylist.StreamHeaderChunk != null)
+				List<TwitchVodChunk> chunkList = Playlist.GetFilteredChunkList(item => true).ToList();
+				if (Playlist.StreamHeaderChunk != null)
 				{
-					chunkList.Insert(0, VodPlaylist.StreamHeaderChunk);
+					chunkList.Insert(0, Playlist.StreamHeaderChunk);
 				}
 
 				SerializedChunkList = DownloadMode == DownloadMode.SingleFile ? new JArray() : null;
 				int currentChunkId = firstChunkId;
 				while (currentChunkId <= lastChunkId && !_cancellationTokenSource.IsCancellationRequested)
 				{
-					List<TwitchVodChunkDownloader> chunkDownloaders = GetChunkGroup(chunkList, currentChunkId, lastChunkId, MaxGroupSize)?
+					List<TwitchVodChunkDownloader> chunkDownloaders = GetChunkGroup(chunkList, currentChunkId, lastChunkId, SimultaneousDownloadChunkChunkCount)?
 						.Select(item => new TwitchVodChunkDownloader(item, _cancellationTokenSource)).ToList();
 					if (chunkDownloaders == null || chunkDownloaders.Count <= 0)
 					{
@@ -122,16 +122,16 @@ namespace Twitch_prime_downloader
 							0L, 0L, DOWNLOAD_ERROR_UNDEFINED, DownloadItemState.Preparing);
 					}
 
-					groupDownloadStarted?.Invoke(this, dictProgress.Values);
+					chunkGroupDownloadStarted?.Invoke(this, dictProgress.Values);
 
 					void OnProgressChanged(DownloadProgressItem progressItem)
 					{
 						dictProgress[progressItem.TaskId] = progressItem;
-						if (groupDownloadProgressed != null)
+						if (chunkGroupDownloadProgressed != null)
 						{
 							List<DownloadProgressItem> itemList = dictProgress.Values.ToList();
 							itemList.Sort((x, y) => x.TaskId < y.TaskId ? -1 : 1);
-							groupDownloadProgressed.Invoke(this, itemList);
+							chunkGroupDownloadProgressed.Invoke(this, itemList);
 						}
 					}
 
@@ -172,7 +172,7 @@ namespace Twitch_prime_downloader
 
 					Task.WhenAll(tasks).Wait();
 					List<DownloadProgressItem> groupProgressItems = dictProgress.Values.ToList();
-					groupDownloadFinished?.Invoke(this, groupProgressItems, errorCode);
+					chunkGroupDownloadFinished?.Invoke(this, groupProgressItems, errorCode);
 
 					if (_cancellationTokenSource.IsCancellationRequested)
 					{
@@ -219,14 +219,14 @@ namespace Twitch_prime_downloader
 					if (outputStream != null)
 					{
 						if (!AppendChunkGroup(groupProgressItems, outputStream, storeSubChunksInfo,
-							chunkMergingProgressed, chunkAppended))
+							chunkMergerProgressed, chunkAppended))
 						{
 							errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
-							groupMergingFinished?.Invoke(this, groupProgressItems, errorCode);
+							chunkGroupMergerFinished?.Invoke(this, groupProgressItems, errorCode);
 							break;
 						}
 
-						groupMergingFinished?.Invoke(this, groupProgressItems, 200);
+						chunkGroupMergerFinished?.Invoke(this, groupProgressItems, 200);
 					}
 					else if (DownloadMode == DownloadMode.Chunked)
 					{
@@ -262,7 +262,7 @@ namespace Twitch_prime_downloader
 							break;
 						}
 
-						groupMergingFinished?.Invoke(this, groupProgressItems, 200);
+						chunkGroupMergerFinished?.Invoke(this, groupProgressItems, 200);
 					}
 
 					currentChunkId += chunkDownloaders.Count;
@@ -345,7 +345,7 @@ namespace Twitch_prime_downloader
 
 		private bool AppendChunkGroup(IEnumerable<DownloadProgressItem> items,
 			Stream outputStream, bool storeSubChunksInfo,
-			ChunkMergingProgressedDelegate chunkMergingProgressed, ChunkAppendedDelegate chunkAppended)
+			ChunkMergerProgressedDelegate chunkMergerProgressed, ChunkAppendedDelegate chunkAppended)
 		{
 			int itemCount = items.Count();
 			if (itemCount == 0) { return false; }
@@ -364,7 +364,7 @@ namespace Twitch_prime_downloader
 						long destinationPosition, long destinationLength, long bytesTransferred)
 					{
 						totalProcessed = destinationPosition - outputStreamInitialPosition;
-						chunkMergingProgressed?.Invoke(this, totalProcessed, totalSize,
+						chunkMergerProgressed?.Invoke(this, totalProcessed, totalSize,
 							iter, itemCount, DownloadMode.SingleFile);
 					}
 
@@ -374,7 +374,7 @@ namespace Twitch_prime_downloader
 						(sourcePosition, sourceLength, destinationPosition, destinationLength) =>
 						{
 							totalProcessed = 0L;
-							chunkMergingProgressed?.Invoke(this, totalProcessed, totalSize,
+							chunkMergerProgressed?.Invoke(this, totalProcessed, totalSize,
 								iter, itemCount, DownloadMode.SingleFile);
 						},
 						progressFunc, progressFunc);

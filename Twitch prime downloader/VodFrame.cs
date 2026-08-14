@@ -76,8 +76,7 @@ namespace Twitch_prime_downloader
 				using (GraphicsPath graphicsPath = new GraphicsPath())
 				{
 					graphicsPath.AddEllipse(0, 0, btnDownload.Width, btnDownload.Height);
-					Region region = new Region(graphicsPath);
-					btnDownload.Region = region;
+					btnDownload.Region = new Region(graphicsPath);
 				}
 			}
 #if DEBUG
@@ -167,33 +166,34 @@ namespace Twitch_prime_downloader
 			{
 				try
 				{
-					using (Font fnt = new Font("Lucida Console", HudFontSize))
+					using (Font font = new Font("Lucida Console", HudFontSize))
 					{
 						string durationFormatted = Vod.Duration.ToString("h':'mm':'ss");
-						SizeF size = e.Graphics.MeasureString(durationFormatted, fnt);
+						SizeF size = e.Graphics.MeasureString(durationFormatted, font);
 						RectangleF r = new RectangleF(0, 0, size.Width, size.Height);
 						e.Graphics.FillRectangle(Brushes.Black, r);
-						e.Graphics.DrawString(durationFormatted, fnt, Brushes.White, r.X, r.Y);
+						e.Graphics.DrawString(durationFormatted, font, Brushes.White, r.X, r.Y);
 
 						DateTime creationDate = UseGmtTime ? Vod.CreationDate : Vod.CreationDate.ToLocalTime();
 						string creationDateFormatted = creationDate.FormatDateTime();
-						size = e.Graphics.MeasureString(creationDateFormatted, fnt);
+						size = e.Graphics.MeasureString(creationDateFormatted, font);
+						PictureBox pictureBox = sender as PictureBox;
 						r = new RectangleF(
-							(sender as PictureBox).Width - size.Width - 2.0f,
-							(sender as PictureBox).Height - size.Height - 2.0f,
+							pictureBox.Width - size.Width - 2.0f,
+							pictureBox.Height - size.Height - 2.0f,
 							size.Width, size.Height);
 						e.Graphics.FillRectangle(Brushes.Black, r);
-						e.Graphics.DrawString(creationDateFormatted, fnt, Brushes.White, r.X, r.Y);
+						e.Graphics.DrawString(creationDateFormatted, font, Brushes.White, r.X, r.Y);
 						if (Vod.VodType == TwitchApi.TwitchVodType.Archive &&
 							Vod.DeletionDate < DateTime.MaxValue)
 						{
 							DateTime deletionDate = UseGmtTime ? Vod.DeletionDate : Vod.DeletionDate.ToLocalTime();
 							string deletionDateString = $"Будет удалён: {deletionDate.FormatDateTime()}";
-							int y = (int)((sender as PictureBox).Height - (size.Height * 2.0f) - 2.0f);
-							size = e.Graphics.MeasureString(deletionDateString, fnt);
-							r = new RectangleF((sender as PictureBox).Width - size.Width - 2.0f, y, size.Width, size.Height);
+							int y = (int)(pictureBox.Height - (size.Height * 2.0f) - 2.0f);
+							size = e.Graphics.MeasureString(deletionDateString, font);
+							r = new RectangleF(pictureBox.Width - size.Width - 2.0f, y, size.Width, size.Height);
 							e.Graphics.FillRectangle(Brushes.Black, r);
-							e.Graphics.DrawString(deletionDateString, fnt, Brushes.Yellow, r.X, r.Y);
+							e.Graphics.DrawString(deletionDateString, font, Brushes.Yellow, r.X, r.Y);
 						}
 					}
 				}
@@ -239,18 +239,20 @@ namespace Twitch_prime_downloader
 			{
 				Button button = sender as Button;
 				Color color = button.Enabled ? button.BackColor : Color.FromArgb(192, 192, 192);
-				Brush brush = new SolidBrush(color);
-				e.Graphics.FillRectangle(brush, e.ClipRectangle);
-				brush.Dispose();
+				using (Brush brush = new SolidBrush(color))
+				{
+					e.Graphics.FillRectangle(brush, e.ClipRectangle);
+				}
 				string t = button.Enabled ? button.Text : "Ждите...";
 				if (!string.IsNullOrEmpty(t) && !string.IsNullOrWhiteSpace(t))
 				{
 					SizeF sz = e.Graphics.MeasureString(t, button.Font);
 					int x = (int)(button.Width / 2 - sz.Width / 2);
 					int y = (int)(button.Height / 2 - sz.Height / 2);
-					brush = new SolidBrush(button.ForeColor);
-					e.Graphics.DrawString(t, button.Font, brush, x, y);
-					brush.Dispose();
+					using (Brush brush = new SolidBrush(button.ForeColor))
+					{
+						e.Graphics.DrawString(t, button.Font, brush, x, y);
+					}
 				}
 			}
 #if DEBUG
@@ -280,11 +282,11 @@ namespace Twitch_prime_downloader
 
 		private void lblMutedChunks_DoubleClick(object sender, EventArgs e)
 		{
-			string t = $"Стрим: {Vod.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{Vod.Playlist.MutedSegments}";
+			string t = $"Стрим: {Vod.Title}{Environment.NewLine}Выпилен звук:{Environment.NewLine}{Vod.Playlist.MutedSegments}{Environment.NewLine}";
 			string durationFormatted = Vod.Playlist.MutedSegments.TotalDuration.ToString("h':'mm':'ss");
 			double percent = 100.0 / Vod.Duration.Ticks * Vod.Playlist.MutedSegments.TotalDuration.Ticks;
 			string percentFormatted = string.Format("{0:F2}", percent);
-			t += $"{Environment.NewLine}Всего выпилено: {durationFormatted} ({percentFormatted}%){Environment.NewLine}";
+			t += $"Всего выпилено: {durationFormatted} ({percentFormatted}%){Environment.NewLine}";
 			if (MessageBox.Show($"{t}{Environment.NewLine}Скопировать это прямо в буфер?", "Определятор выпиленного звука",
 				MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 			{

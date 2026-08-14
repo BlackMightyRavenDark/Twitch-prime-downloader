@@ -39,8 +39,8 @@
 			this.btnSetMaxChunkTo = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
-			this.textBoxChunkTo = new System.Windows.Forms.TextBox();
-			this.textBoxChunkFrom = new System.Windows.Forms.TextBox();
+			this.textBoxChunkRangeLastId = new System.Windows.Forms.TextBox();
+			this.textBoxChunkRangeFirstId = new System.Windows.Forms.TextBox();
 			this.contextMenuVodTitle = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.miCopyVodTitleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.listBoxChunkFileList = new System.Windows.Forms.ListBox();
@@ -137,18 +137,18 @@
 			this.groupBoxDownloadVodChunkRange.Controls.Add(this.btnSetMaxChunkTo);
 			this.groupBoxDownloadVodChunkRange.Controls.Add(this.label2);
 			this.groupBoxDownloadVodChunkRange.Controls.Add(this.label1);
-			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkTo);
-			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkFrom);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkRangeLastId);
+			this.groupBoxDownloadVodChunkRange.Controls.Add(this.textBoxChunkRangeFirstId);
 			this.groupBoxDownloadVodChunkRange.Location = new System.Drawing.Point(673, 65);
 			this.groupBoxDownloadVodChunkRange.Name = "groupBoxDownloadVodChunkRange";
-			this.groupBoxDownloadVodChunkRange.Size = new System.Drawing.Size(219, 83);
+			this.groupBoxDownloadVodChunkRange.Size = new System.Drawing.Size(219, 78);
 			this.groupBoxDownloadVodChunkRange.TabIndex = 11;
 			this.groupBoxDownloadVodChunkRange.TabStop = false;
 			this.groupBoxDownloadVodChunkRange.Text = "Диапазон скачивания";
 			// 
 			// btnSetMaxChunkTo
 			// 
-			this.btnSetMaxChunkTo.Location = new System.Drawing.Point(162, 55);
+			this.btnSetMaxChunkTo.Location = new System.Drawing.Point(162, 49);
 			this.btnSetMaxChunkTo.Name = "btnSetMaxChunkTo";
 			this.btnSetMaxChunkTo.Size = new System.Drawing.Size(37, 20);
 			this.btnSetMaxChunkTo.TabIndex = 4;
@@ -159,7 +159,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(14, 57);
+			this.label2.Location = new System.Drawing.Point(14, 51);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(92, 13);
 			this.label2.TabIndex = 3;
@@ -174,23 +174,23 @@
 			this.label1.TabIndex = 2;
 			this.label1.Text = "Первый чанк:";
 			// 
-			// textBoxChunkTo
+			// textBoxChunkRangeLastId
 			// 
-			this.textBoxChunkTo.Location = new System.Drawing.Point(112, 55);
-			this.textBoxChunkTo.Name = "textBoxChunkTo";
-			this.textBoxChunkTo.Size = new System.Drawing.Size(44, 20);
-			this.textBoxChunkTo.TabIndex = 1;
-			this.textBoxChunkTo.Text = "10";
-			this.textBoxChunkTo.Leave += new System.EventHandler(this.textBoxChunkTo_Leave);
+			this.textBoxChunkRangeLastId.Location = new System.Drawing.Point(112, 49);
+			this.textBoxChunkRangeLastId.Name = "textBoxChunkRangeLastId";
+			this.textBoxChunkRangeLastId.Size = new System.Drawing.Size(44, 20);
+			this.textBoxChunkRangeLastId.TabIndex = 1;
+			this.textBoxChunkRangeLastId.Text = "10";
+			this.textBoxChunkRangeLastId.Leave += new System.EventHandler(this.textBoxChunkRangeLastId_Leave);
 			// 
-			// textBoxChunkFrom
+			// textBoxChunkRangeFirstId
 			// 
-			this.textBoxChunkFrom.Location = new System.Drawing.Point(112, 23);
-			this.textBoxChunkFrom.Name = "textBoxChunkFrom";
-			this.textBoxChunkFrom.Size = new System.Drawing.Size(44, 20);
-			this.textBoxChunkFrom.TabIndex = 0;
-			this.textBoxChunkFrom.Text = "1";
-			this.textBoxChunkFrom.Leave += new System.EventHandler(this.textBoxChunkFrom_Leave);
+			this.textBoxChunkRangeFirstId.Location = new System.Drawing.Point(112, 23);
+			this.textBoxChunkRangeFirstId.Name = "textBoxChunkRangeFirstId";
+			this.textBoxChunkRangeFirstId.Size = new System.Drawing.Size(44, 20);
+			this.textBoxChunkRangeFirstId.TabIndex = 0;
+			this.textBoxChunkRangeFirstId.Text = "1";
+			this.textBoxChunkRangeFirstId.Leave += new System.EventHandler(this.textBoxChunkRangeFirstId_Leave);
 			// 
 			// contextMenuVodTitle
 			// 
@@ -417,6 +417,7 @@
 			this.Paint += new System.Windows.Forms.PaintEventHandler(this.downloadFrame_Paint);
 			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.downloadFrame_MouseDown);
 			this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.downloadFrame_MouseMove);
+			this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DownloadFrame_MouseUp);
 			this.Resize += new System.EventHandler(this.downloadFrame_Resize);
 			this.groupBoxDownloadVodChunkRange.ResumeLayout(false);
 			this.groupBoxDownloadVodChunkRange.PerformLayout();
@@ -443,8 +444,8 @@
 		public System.Windows.Forms.Button btnStartDownload;
 		public System.Windows.Forms.Button btnStopDownload;
 		private System.Windows.Forms.GroupBox groupBoxDownloadVodChunkRange;
-		private System.Windows.Forms.TextBox textBoxChunkTo;
-		private System.Windows.Forms.TextBox textBoxChunkFrom;
+		private System.Windows.Forms.TextBox textBoxChunkRangeLastId;
+		private System.Windows.Forms.TextBox textBoxChunkRangeFirstId;
 		private System.Windows.Forms.Button btnSetMaxChunkTo;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label1;
