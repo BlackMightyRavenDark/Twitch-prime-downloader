@@ -49,6 +49,14 @@ namespace Twitch_prime_downloader
 			};
 
 			MultiThreadedDownloaderLib.Utils.ConnectionLimit = 100;
+			foreach (string s in Environment.GetCommandLineArgs())
+			{
+				if (string.Equals(s, "/debug"))
+				{
+					config.DebugMode = true;
+					break;
+				}
+			}
 
 			config.Saving += (s, json) =>
 			{
@@ -159,10 +167,18 @@ namespace Twitch_prime_downloader
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 
-				if (File.Exists(config.UrlListFilePath))
+				try
 				{
-					string[] strings = File.ReadAllLines(config.UrlListFilePath);
-					textBoxVideoUrls.Lines = strings;
+					if (File.Exists(config.UrlListFilePath))
+					{
+						string[] strings = File.ReadAllLines(config.UrlListFilePath);
+						textBoxVideoUrls.Lines = strings;
+					}
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(ex.Message, "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 
 				if (!config.DebugMode)
@@ -171,15 +187,6 @@ namespace Twitch_prime_downloader
 				}
 			};
 			config.Load();
-
-			foreach (string s in Environment.GetCommandLineArgs())
-			{
-				if (s.ToLower().Equals("/debug"))
-				{
-					config.DebugMode = true;
-					break;
-				}
-			}
 
 			tabControlMain.SelectedTab = tabPageSearch;
 		}
