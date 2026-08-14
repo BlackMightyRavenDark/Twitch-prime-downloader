@@ -218,7 +218,7 @@ namespace Twitch_prime_downloader
 
 					if (outputStream != null)
 					{
-						if (!AppendChunkGroup(groupProgressItems, outputStream, storeSubChunksInfo,
+						if (!AppendChunkGroup(groupProgressItems, outputStream, saveChunkInfo, storeSubChunksInfo,
 							chunkMergerProgressed, chunkAppended))
 						{
 							errorCode = MultiThreadedDownloader.DOWNLOAD_ERROR_MERGING_CHUNKS;
@@ -344,7 +344,7 @@ namespace Twitch_prime_downloader
 		}
 
 		private bool AppendChunkGroup(IEnumerable<DownloadProgressItem> items,
-			Stream outputStream, bool storeSubChunksInfo,
+			Stream outputStream, bool saveChunkInfo, bool storeSubChunksInfo,
 			ChunkMergerProgressedDelegate chunkMergerProgressed, ChunkAppendedDelegate chunkAppended)
 		{
 			int itemCount = items.Count();
@@ -378,19 +378,23 @@ namespace Twitch_prime_downloader
 								iter, itemCount, DownloadMode.SingleFile);
 						},
 						progressFunc, progressFunc);
-					if (success && SerializedChunkList != null)
+					if (success)
 					{
-						chunkAppended?.Invoke(this, outputStream.Length);
-						JObject jChunk = item.ChunkDownloader.ChunkWrapper.Serialize(chunkPosition, item.DownloadedSize);
-						if (storeSubChunksInfo)
+						if (saveChunkInfo && SerializedChunkList != null)
 						{
-							JArray jaSubChunks = item.ChunkDownloader.ChunkWrapper.ExtractSubChunks(item.ChunkDownloader.OutputStream, chunkPosition);
-							if (jaSubChunks != null)
+							JObject jChunk = item.ChunkDownloader.ChunkWrapper.Serialize(chunkPosition, item.DownloadedSize);
+							if (storeSubChunksInfo)
 							{
-								jChunk["subChunks"] = jaSubChunks;
+								JArray jaSubChunks = item.ChunkDownloader.ChunkWrapper.ExtractSubChunks(item.ChunkDownloader.OutputStream, chunkPosition);
+								if (jaSubChunks != null)
+								{
+									jChunk["subChunks"] = jaSubChunks;
+								}
 							}
+							SerializedChunkList.Add(jChunk);
 						}
-						SerializedChunkList.Add(jChunk);
+
+						chunkAppended?.Invoke(this, outputStream.Length);
 					}
 
 					iter++;
