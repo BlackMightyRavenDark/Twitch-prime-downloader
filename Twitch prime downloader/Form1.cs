@@ -329,33 +329,34 @@ namespace Twitch_prime_downloader
 				return results;
 			});
 
-			if (vodResults.Count == 0)
+			if (vodResults.Count > 0)
+			{
+				listBoxEventLog.Items.Add($"Найдено {vodResults.Count} видео");
+
+				var successfulVods = vodResults.Where(item => item.ErrorCode == 200).Select(item => item.Vod);
+				foreach (TwitchVod vod in successfulVods)
+				{
+					listBoxEventLog.Items.Add($"Создание фрейма для видео {vod.Id} \"{vod.Title}\"...");
+					AddStreamItem(vod);
+				}
+
+				int errorCount = vodResults.Where(item => item.ErrorCode != 200).Count();
+				if (errorCount > 0)
+				{
+					listBoxEventLog.Items.Add($"Количество ошибок: {errorCount}");
+				}
+
+				int successfulVodCount = successfulVods.Count();
+				if (successfulVodCount > 0)
+				{
+					tabPageStreams.Text = $"Стримы ({successfulVodCount})";
+					StackVodFrames();
+					tabControlMain.SelectedTab = tabPageStreams;
+				}
+			}
+			else
 			{
 				listBoxEventLog.Items.Add("Видео не найдены!");
-				btnSearchByChannelName.Enabled = true;
-				return;
-			}
-
-			listBoxEventLog.Items.Add($"Найдено {vodResults.Count} видео");
-			int errorCount = vodResults.Where(item => item.ErrorCode != 200).Count();
-			var successfulVods = vodResults.Where(item => item.ErrorCode == 200).Select(item => item.Vod);
-			foreach (TwitchVod vod in successfulVods)
-			{
-				listBoxEventLog.Items.Add($"Создание фрейма для видео {vod.Id} \"{vod.Title}\"...");
-				AddStreamItem(vod);
-			}
-
-			if (errorCount > 0)
-			{
-				listBoxEventLog.Items.Add($"Количество ошибок: {errorCount}");
-			}
-
-			int successfulVodCount = successfulVods.Count();
-			if (successfulVodCount > 0)
-			{
-				tabPageStreams.Text = $"Стримы ({successfulVodCount})";
-				StackVodFrames();
-				tabControlMain.SelectedTab = tabPageStreams;
 			}
 
 			btnSearchByChannelName.Enabled = true;
