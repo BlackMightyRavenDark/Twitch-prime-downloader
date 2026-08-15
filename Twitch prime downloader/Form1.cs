@@ -319,7 +319,16 @@ namespace Twitch_prime_downloader
 				return;
 			}
 
-			List<TwitchVodResult> vodResults = await Task.Run(() => userResult.User.GetVideosMultiThreaded(limit).ToList());
+			List<TwitchVodResult> vodResults = await Task.Run(() =>
+			{
+				List<TwitchVodResult> results = userResult.User.GetVideosMultiThreaded(limit).ToList();
+				if (results.Count > 0)
+				{
+					results.Sort((x, y) => x.Vod.CreationDate > y.Vod.CreationDate ? -1 : 1);
+				}
+				return results;
+			});
+
 			if (vodResults.Count == 0)
 			{
 				listBoxEventLog.Items.Add("Видео не найдены!");
@@ -327,25 +336,13 @@ namespace Twitch_prime_downloader
 				return;
 			}
 
-			vodResults.Sort((x, y) =>
-			{
-				if (x.ErrorCode != 200 || y.ErrorCode != 200) { return 0; }
-				return x.Vod.CreationDate > y.Vod.CreationDate ? -1 : 1;
-			});
-
 			listBoxEventLog.Items.Add($"Найдено {vodResults.Count} видео");
-			int errorCount = 0;
-			foreach (TwitchVodResult vodResult in vodResults)
+			int errorCount = vodResults.Where(item => item.ErrorCode != 200).Count();
+			var successfulVods = vodResults.Where(item => item.ErrorCode == 200).Select(item => item.Vod);
+			foreach (TwitchVod vod in successfulVods)
 			{
-				if (vodResult.ErrorCode == 200)
-				{
-					listBoxEventLog.Items.Add($"Создание фрейма для видео {vodResult.Vod.Id} \"{vodResult.Vod.Title}\"...");
-					AddStreamItem(vodResult.Vod);
-				}
-				else
-				{
-					errorCount++;
-				}
+				listBoxEventLog.Items.Add($"Создание фрейма для видео {vod.Id} \"{vod.Title}\"...");
+				AddStreamItem(vod);
 			}
 
 			if (errorCount > 0)
@@ -353,10 +350,10 @@ namespace Twitch_prime_downloader
 				listBoxEventLog.Items.Add($"Количество ошибок: {errorCount}");
 			}
 
-			int actualStreamCount = vodResults.Count - errorCount;
-			if (actualStreamCount > 0)
+			int successfulVodCount = successfulVods.Count();
+			if (successfulVodCount > 0)
 			{
-				tabPageStreams.Text = $"Стримы ({actualStreamCount})";
+				tabPageStreams.Text = $"Стримы ({successfulVodCount})";
 				StackVodFrames();
 				tabControlMain.SelectedTab = tabPageStreams;
 			}
