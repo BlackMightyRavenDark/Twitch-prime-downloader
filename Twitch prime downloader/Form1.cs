@@ -934,6 +934,8 @@ namespace Twitch_prime_downloader
 
 				if (playlistResult.Playlist.Parse() > 0)
 				{
+					playlistResult.Playlist.FixMutedChunkUrls();
+
 					DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist)
 					{
 						Parent = panelDownloads,

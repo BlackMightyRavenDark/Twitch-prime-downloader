@@ -43,6 +43,17 @@ namespace Twitch_prime_downloader
 			return new Rectangle(rectangle.X, rectangle.Y, rectangle.Width - width, rectangle.Height - height);
 		}
 
+		internal static void FixMutedChunkUrls(this TwitchPlaylist playlist)
+		{
+			for (int i = 0; i < playlist.Count; ++i)
+			{
+				if (playlist[i].GetState() == TwitchVodChunk.TwitchVodChunkState.Unmuted)
+				{
+					playlist[i].SetState(TwitchVodChunk.TwitchVodChunkState.Muted);
+				}
+			}
+		}
+
 		internal static JObject Serialize(this TwitchVodChunk chunk, long position, long fileSize)
 		{
 			JObject j = new JObject();
