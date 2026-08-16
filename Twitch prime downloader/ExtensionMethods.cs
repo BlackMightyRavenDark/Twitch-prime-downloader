@@ -8,14 +8,14 @@ using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
-	public static class ExtensionMethods
+	internal static class ExtensionMethods
 	{
-		public static string ToText(this IEnumerable<string> collection)
+		internal static string ToText(this IEnumerable<string> collection)
 		{
 			return string.Join(Environment.NewLine, collection);
 		}
 
-		public static IEnumerable<string> GetStrings(this ListBox listBox)
+		internal static IEnumerable<string> GetStrings(this ListBox listBox)
 		{
 			foreach (var item in listBox.Items)
 			{
@@ -23,13 +23,13 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static void SaveToFile(this IEnumerable<string> collection, string fileName)
+		internal static void SaveToFile(this IEnumerable<string> collection, string fileName)
 		{
 			string t = collection.ToText();
 			File.WriteAllText(fileName, t);
 		}
 
-		public static bool SaveToFile(this Stream stream, string fileName, bool fromOrigin = true)
+		internal static bool SaveToFile(this Stream stream, string fileName, bool fromOrigin = true)
 		{
 			Stream fileStream = File.OpenWrite(fileName);
 			if (fromOrigin) { stream.Position = 0L; }
@@ -38,7 +38,7 @@ namespace Twitch_prime_downloader
 			return res;
 		}
 
-		public static Rectangle Deflate(this Rectangle rectangle, int width, int height)
+		internal static Rectangle Deflate(this Rectangle rectangle, int width, int height)
 		{
 			return new Rectangle(rectangle.X, rectangle.Y, rectangle.Width - width, rectangle.Height - height);
 		}

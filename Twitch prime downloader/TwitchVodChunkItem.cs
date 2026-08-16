@@ -4,9 +4,9 @@ namespace Twitch_prime_downloader
 {
 	internal class TwitchVodChunkItem
 	{
-		public TwitchVodChunk Chunk { get; }
+		internal TwitchVodChunk Chunk { get; }
 
-		public TwitchVodChunkItem(TwitchVodChunk chunk)
+		internal TwitchVodChunkItem(TwitchVodChunk chunk)
 		{
 			Chunk = chunk;
 		}

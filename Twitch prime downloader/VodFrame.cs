@@ -12,8 +12,8 @@ namespace Twitch_prime_downloader
 {
 	public partial class VodFrame : UserControl
 	{
-		public TwitchVod Vod { get; private set; }
-		public bool UseGmtTime
+		internal TwitchVod Vod { get; private set; }
+		internal bool UseGmtTime
 		{
 			get => _useGmtTime;
 			set
@@ -25,7 +25,7 @@ namespace Twitch_prime_downloader
 				}
 			}
 		}
-		public bool ShowVodInfoHud
+		internal bool ShowVodInfoHud
 		{
 			get => _showVodInfoHud;
 			set
@@ -37,7 +37,7 @@ namespace Twitch_prime_downloader
 				}
 			}
 		}
-		public int HudFontSize
+		internal int HudFontSize
 		{
 			get => _hudFontSize;
 			set
@@ -54,16 +54,16 @@ namespace Twitch_prime_downloader
 		private bool _showVodInfoHud = true;
 		private int _hudFontSize = 10;
 
-		public static readonly Color ColorActive = GetColorFromRGB(0x909090);
-		public static readonly Color ColorInactive = GetColorFromRGB(0x303030);
+		internal static readonly Color ColorActive = GetColorFromRGB(0x909090);
+		internal static readonly Color ColorInactive = GetColorFromRGB(0x303030);
 
-		public delegate void ImageMouseDownDelegate(object sender, MouseEventArgs e);
-		public delegate void FrameActivatedDelegate(object sender);
-		public delegate void DownloadButtonClickedDelegate(object sender);
-		public ImageMouseDownDelegate ImageMouseDown;
-		public FrameActivatedDelegate Activated;
-		public DownloadButtonClickedDelegate DownloadButtonClicked;
-		
+		internal delegate void ImageMouseDownDelegate(object sender, MouseEventArgs e);
+		internal delegate void FrameActivatedDelegate(object sender);
+		internal delegate void DownloadButtonClickedDelegate(object sender);
+		internal ImageMouseDownDelegate ImageMouseDown;
+		internal FrameActivatedDelegate Activated;
+		internal DownloadButtonClickedDelegate DownloadButtonClicked;
+
 		public VodFrame(TwitchVod twitchVod)
 		{
 			InitializeComponent();

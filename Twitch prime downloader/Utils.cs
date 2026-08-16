@@ -8,14 +8,13 @@ using TwitchApiLib;
 
 namespace Twitch_prime_downloader
 {
-	public static class Utils
+	internal static class Utils
 	{
-		public static List<VodFrame> vodFrames = new List<VodFrame>();
-		public static List<DownloadFrame> downloadFrames = new List<DownloadFrame>();
+		internal static List<VodFrame> vodFrames = new List<VodFrame>();
+		internal static List<DownloadFrame> downloadFrames = new List<DownloadFrame>();
+		internal static readonly Configurator config = new Configurator();
 
-		public static readonly Configurator config = new Configurator();
-
-		public const string FILENAME_FORMAT_DEFAULT =
+		internal const string FILENAME_FORMAT_DEFAULT =
 			"<channel_name> [<year>-<month>-<day> <hour>-<minute>-<second><GMT>] <video_title>";
 		internal static readonly TwitchApplication defaultApplication = new TwitchApplication(
 			"Test application", "No description",
@@ -23,9 +22,9 @@ namespace Twitch_prime_downloader
 			"srr2yi260t15ir6w0wq5blir22i9pq"  // Client secret key
 		);
 
-		public enum DownloadMode { SingleFile, Chunked };
+		internal enum DownloadMode { SingleFile, Chunked };
 
-		public static string ExtractVodIdFromUrl(string url)
+		internal static string ExtractVodIdFromUrl(string url)
 		{
 			try
 			{
@@ -49,7 +48,7 @@ namespace Twitch_prime_downloader
 			return null;
 		}
 
-		public static string GetNumberedDirectoryName(string dirPathOrig, out string errorMessage)
+		internal static string GetNumberedDirectoryName(string dirPathOrig, out string errorMessage)
 		{
 			try
 			{
@@ -96,7 +95,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static string FormatSize(long n)
+		internal static string FormatSize(long n)
 		{
 			const int KB = 1000;
 			const int MB = 1000000;
@@ -119,7 +118,7 @@ namespace Twitch_prime_downloader
 			return string.Format("{0} {1:D3} {2:D3} {3:D3} bytes", gb, mb, kb, b);
 		}
 
-		public static Color GetColorFromRGB(int rgbColor)
+		internal static Color GetColorFromRGB(int rgbColor)
 		{
 			byte r = (byte)(rgbColor >> 16 & 0xFF);
 			byte g = (byte)(rgbColor >>  8 & 0xFF);
@@ -127,7 +126,7 @@ namespace Twitch_prime_downloader
 			return Color.FromArgb(r, b, g);
 		}
 
-		public static Bitmap GenerateErrorImage()
+		internal static Bitmap GenerateErrorImage()
 		{
 			try
 			{
@@ -224,7 +223,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static bool SetClipboardText(string text)
+		internal static bool SetClipboardText(string text)
 		{
 			if (string.IsNullOrEmpty(text)) { return false; }
 
@@ -246,7 +245,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static string FormatFileName(string fmt, TwitchVod twitchVod)
+		internal static string FormatFileName(string fmt, TwitchVod twitchVod)
 		{
 			DateTime creationDate = config.UseGmtVodDates ?
 				twitchVod.CreationDate : twitchVod.CreationDate.ToLocalTime();
@@ -261,14 +260,14 @@ namespace Twitch_prime_downloader
 				.Replace("<channel_name>", twitchVod.User.DisplayName);
 		}
 
-		public static string FixFileName(string fn)
+		internal static string FixFileName(string fn)
 		{
 			return fn.Replace("\\", "\u29F9").Replace("|", "\u2758").Replace("/", "\u2044")
 				.Replace("?", "\u2753").Replace(":", "\uFE55").Replace("<", "\u227A").Replace(">", "\u227B")
 				.Replace("\"", "\u201C").Replace("*", "\uFE61").Replace("^", "\u2303").Replace("\n", string.Empty);
 		}
 
-		public static Image TryLoadImageFromStream(Stream stream, out string errorMessage)
+		internal static Image TryLoadImageFromStream(Stream stream, out string errorMessage)
 		{
 			if (stream == null)
 			{
@@ -306,7 +305,7 @@ namespace Twitch_prime_downloader
 			return true;
 		}
 
-		public static bool SaveStreamToFile(Stream stream, string filePath)
+		internal static bool SaveStreamToFile(Stream stream, string filePath)
 		{
 			try
 			{
@@ -324,12 +323,12 @@ namespace Twitch_prime_downloader
 			return false;
 		}
 
-		public static Image TryLoadImageFromStream(Stream stream)
+		internal static Image TryLoadImageFromStream(Stream stream)
 		{
 			return TryLoadImageFromStream(stream, out _);
 		}
 
-		public static int DownloadData(string url, out Stream stream, FileDownloader downloader = null)
+		internal static int DownloadData(string url, out Stream stream, FileDownloader downloader = null)
 		{
 			try
 			{
@@ -348,7 +347,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public static TwitchApplication MakeTwitchApplication()
+		internal static TwitchApplication MakeTwitchApplication()
 		{
 			return new TwitchApplication(
 				config.ApiApplicationTitle,
@@ -357,7 +356,7 @@ namespace Twitch_prime_downloader
 				config.ApiApplicationClientSecretKey);
 		}
 
-		public static bool IsTwitchApplicationValid(out string errorMessage)
+		internal static bool IsTwitchApplicationValid(out string errorMessage)
 		{
 			if (string.IsNullOrWhiteSpace(config.ApiApplicationClientId))
 			{
@@ -374,7 +373,7 @@ namespace Twitch_prime_downloader
 			return true;
 		}
 
-		public static DateTime UnixMillisecondsToDateTime(long unixMilliseconds)
+		internal static DateTime UnixMillisecondsToDateTime(long unixMilliseconds)
 		{
 			DateTime minUnixDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 			return minUnixDate.AddMilliseconds(unixMilliseconds);

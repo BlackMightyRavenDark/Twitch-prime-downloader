@@ -14,32 +14,32 @@ namespace Twitch_prime_downloader
 {
 	internal class DownloadAbstractor : IDisposable
 	{
-		public TwitchPlaylist Playlist { get; }
-		public int SimultaneousDownloadChunkChunkCount { get; set; }
-		public JArray SerializedChunkList { get; private set; }
-		public DownloadMode DownloadMode { get; }
+		internal TwitchPlaylist Playlist { get; }
+		internal int SimultaneousDownloadChunkChunkCount { get; set; }
+		internal JArray SerializedChunkList { get; private set; }
+		internal DownloadMode DownloadMode { get; }
 
-		public delegate void ChunkGroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
-		public delegate void ChunkGroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
-		public delegate void ChunkGroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
-		public delegate void ChunkMergerProgressedDelegate(object sender,
+		internal delegate void ChunkGroupDownloadStartedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
+		internal delegate void ChunkGroupDownloadProgressedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems);
+		internal delegate void ChunkGroupDownloadFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
+		internal delegate void ChunkMergerProgressedDelegate(object sender,
 			long processedBytes, long totalSize, int chunkId, int chunkCount, DownloadMode downloadMode);
-		public delegate void ChunkAppendedDelegate(object sender, long totalSize);
-		public delegate void ChunkGroupMergerFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
-		public delegate void DownloadCompletedDelegate(object sender, int errorCode);
+		internal delegate void ChunkAppendedDelegate(object sender, long totalSize);
+		internal delegate void ChunkGroupMergerFinishedDelegate(object sender, IEnumerable<DownloadProgressItem> groupItems, int errorCode);
+		internal delegate void DownloadCompletedDelegate(object sender, int errorCode);
 
-		public const int DOWNLOAD_ERROR_CHUNK_RANGE = int.MaxValue;
-		public const int DOWNLOAD_ERROR_GROUP_EMPTY = int.MaxValue - 1;
-		public const int DOWNLOAD_ERROR_GROUP_SEQUENCE = int.MaxValue - 2;
-		public const int DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS = int.MaxValue - 3;
-		public const int DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE = int.MaxValue - 4;
-		public const int DOWNLOAD_ERROR_EMPTY_CHUNK = int.MaxValue - 5;
-		public const int DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH = int.MaxValue - 6;
-		public const int DOWNLOAD_ERROR_UNDEFINED = int.MaxValue - 7;
+		internal const int DOWNLOAD_ERROR_CHUNK_RANGE = int.MaxValue;
+		internal const int DOWNLOAD_ERROR_GROUP_EMPTY = int.MaxValue - 1;
+		internal const int DOWNLOAD_ERROR_GROUP_SEQUENCE = int.MaxValue - 2;
+		internal const int DOWNLOAD_ERROR_OUTPUT_DIR_NOT_EXISTS = int.MaxValue - 3;
+		internal const int DOWNLOAD_ERROR_CHUNK_BAD_STATUS_CODE = int.MaxValue - 4;
+		internal const int DOWNLOAD_ERROR_EMPTY_CHUNK = int.MaxValue - 5;
+		internal const int DOWNLOAD_ERROR_CHUNK_SIZE_MISMATCH = int.MaxValue - 6;
+		internal const int DOWNLOAD_ERROR_UNDEFINED = int.MaxValue - 7;
 
 		private CancellationTokenSource _cancellationTokenSource;
 
-		public DownloadAbstractor(TwitchPlaylist playlist, DownloadMode downloadMode, int simultaneousDownloadChunkChunkCount)
+		internal DownloadAbstractor(TwitchPlaylist playlist, DownloadMode downloadMode, int simultaneousDownloadChunkChunkCount)
 		{
 			Playlist = playlist;
 			DownloadMode = downloadMode;
@@ -51,7 +51,7 @@ namespace Twitch_prime_downloader
 			Stop();
 		}
 
-		public int Download(
+		internal int Download(
 			string outputFilePath,
 			int firstChunkId,
 			int lastChunkId,
@@ -406,7 +406,7 @@ namespace Twitch_prime_downloader
 			return success;
 		}
 
-		public void Stop()
+		internal void Stop()
 		{
 			if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
 			{

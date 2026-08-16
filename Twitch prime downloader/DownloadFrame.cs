@@ -15,21 +15,21 @@ using Twitch_prime_downloader.Properties;
 namespace Twitch_prime_downloader
 {
 	public partial class DownloadFrame : UserControl
-	{ 
-		public TwitchVod Vod { get; private set; }
-		public TwitchPlaylist Playlist { get; }
-		public int ChunkCountInPlaylist => Playlist != null ? Playlist.Count : 0;
-		public int ChunkRangeFirstId { get => _chunkRangeFirstId; set { SetFirstDownloadableChunkId(value); } }
-		public int ChunkRangeLastId { get => _chunkRangeLastId; set { SetLastDownloadableChunkId(value); } }
-		public int ChunkGroupSize { get; private set; } = 3;
-		public DownloadMode DownloadMode { get; private set; }
-		public string OutputDirectory { get; private set; }
-		public string OutputFilePathOriginal { get; private set; }
-		public string OutputFilePath { get; private set; }
-		public long OutputFileSize { get; private set; }
-		public DateTime DownloadStarted { get; private set; }
-		public int DownloadedChunkCount { get; private set; }
-		public bool IsDownloading { get; private set; }
+	{
+		internal TwitchVod Vod { get; private set; }
+		internal TwitchPlaylist Playlist { get; }
+		internal int ChunkCountInPlaylist => Playlist != null ? Playlist.Count : 0;
+		internal int ChunkRangeFirstId { get => _chunkRangeFirstId; set { SetFirstDownloadableChunkId(value); } }
+		internal int ChunkRangeLastId { get => _chunkRangeLastId; set { SetLastDownloadableChunkId(value); } }
+		internal int ChunkGroupSize { get; private set; } = 3;
+		internal DownloadMode DownloadMode { get; private set; }
+		internal string OutputDirectory { get; private set; }
+		internal string OutputFilePathOriginal { get; private set; }
+		internal string OutputFilePath { get; private set; }
+		internal long OutputFileSize { get; private set; }
+		internal DateTime DownloadStarted { get; private set; }
+		internal int DownloadedChunkCount { get; private set; }
+		internal bool IsDownloading { get; private set; }
 
 		private DownloadAbstractor _downloadAbstractor;
 		private int _chunkRangeFirstId = 0;
@@ -37,11 +37,11 @@ namespace Twitch_prime_downloader
 		private string _fixedFileNameWithoutExt;
 		private bool _isAborted = false;
 
-		public const int EXTRA_WIDTH = 450;
+		internal const int EXTRA_WIDTH = 450;
 		private int _fcstId = 0;
 
-		public delegate void ClosedDelegate(object sender);
-		public ClosedDelegate Closed;
+		internal delegate void ClosedDelegate(object sender);
+		internal ClosedDelegate Closed;
 
 		public DownloadFrame(TwitchVod vod, TwitchPlaylist playlist)
 		{
@@ -723,7 +723,7 @@ namespace Twitch_prime_downloader
 			IsDownloading = false;
 		}
 
-		public void StopDownload()
+		internal void StopDownload()
 		{
 			if (IsDownloading && _downloadAbstractor != null)
 			{
@@ -731,7 +731,7 @@ namespace Twitch_prime_downloader
 			}
 		}
 
-		public void SetStreamInfo(TwitchVod vod)
+		internal void SetStreamInfo(TwitchVod vod)
 		{
 			Vod = vod;
 			lblVodTitle.Text = $"Стрим: {Vod.Title}";
@@ -815,7 +815,7 @@ namespace Twitch_prime_downloader
 			btnCloseFrame.Enabled = enabled;
 		}
 
-		public void AbortDownload()
+		internal void AbortDownload()
 		{
 			if (!_isAborted)
 			{

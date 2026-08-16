@@ -7,37 +7,37 @@ using Newtonsoft.Json.Linq;
 
 namespace Twitch_prime_downloader
 {
-	public sealed class Configurator
+	internal sealed class Configurator
 	{
-		public string ConfigurationFilePath { get; }
-		public string SelfExeFilePath { get; }
-		public string SelfDirectory { get; }
-		public string DownloadDirectory { get; set; }
-		public string OutputFileNameFormat { get; set; }
-		public string LastUsedDirectory { get; set; }
-		public string ChannelListFilePath { get; set; }
-		public string BrowserExeFilePath { get; set; }
-		public string UrlListFilePath { get; set; }
-		public int VodInfoHudFontSize { get; set; }
-		public bool UseGmtVodDates { get; set; }
-		public bool SaveVodInfo { get; set; }
-		public bool SaveVodChunkInfo { get; set; }
-		public bool StoreVodSubChunksInfo { get; set; }
-		public bool AskWhenClosingWithActiveTasks { get; set; }
-		public bool DebugMode { get; set; }
-		public string ApiApplicationTitle { get; set; }
-		public string ApiApplicationDescription { get; set; }
-		public string ApiApplicationClientId { get; set; }
-		public string ApiApplicationClientSecretKey { get; set; }
+		internal string ConfigurationFilePath { get; }
+		internal string SelfExeFilePath { get; }
+		internal string SelfDirectory { get; }
+		internal string DownloadDirectory { get; set; }
+		internal string OutputFileNameFormat { get; set; }
+		internal string LastUsedDirectory { get; set; }
+		internal string ChannelListFilePath { get; set; }
+		internal string BrowserExeFilePath { get; set; }
+		internal string UrlListFilePath { get; set; }
+		internal int VodInfoHudFontSize { get; set; }
+		internal bool UseGmtVodDates { get; set; }
+		internal bool SaveVodInfo { get; set; }
+		internal bool SaveVodChunkInfo { get; set; }
+		internal bool StoreVodSubChunksInfo { get; set; }
+		internal bool AskWhenClosingWithActiveTasks { get; set; }
+		internal bool DebugMode { get; set; }
+		internal string ApiApplicationTitle { get; set; }
+		internal string ApiApplicationDescription { get; set; }
+		internal string ApiApplicationClientId { get; set; }
+		internal string ApiApplicationClientSecretKey { get; set; }
 
-		public delegate void SavingDelegate(object sender, JObject json);
-		public delegate void LoadingDelegate(object sender, JObject json);
-		public delegate void LoadedDelegate(object sender);
-		public SavingDelegate Saving;
-		public LoadingDelegate Loading;
-		public LoadedDelegate Loaded;
+		internal delegate void SavingDelegate(object sender, JObject json);
+		internal delegate void LoadingDelegate(object sender, JObject json);
+		internal delegate void LoadedDelegate(object sender);
+		internal SavingDelegate Saving;
+		internal LoadingDelegate Loading;
+		internal LoadedDelegate Loaded;
 
-		public Configurator()
+		internal Configurator()
 		{
 			SelfExeFilePath = Application.ExecutablePath;
 			SelfDirectory = Path.GetDirectoryName(SelfExeFilePath);
@@ -46,7 +46,7 @@ namespace Twitch_prime_downloader
 			DebugMode = false;
 		}
 
-		public void LoadDefaults()
+		internal void LoadDefaults()
 		{
 			string fn = Path.GetFileNameWithoutExtension(SelfExeFilePath);
 			ChannelListFilePath = Path.Combine(SelfDirectory, fn + "_channelList.txt");
@@ -62,7 +62,7 @@ namespace Twitch_prime_downloader
 			AskWhenClosingWithActiveTasks = true;
 		}
 
-		public void Load()
+		internal void Load()
 		{
 			LoadDefaults();
 			try
@@ -84,7 +84,7 @@ namespace Twitch_prime_downloader
 			Loaded?.Invoke(this);
 		}
 
-		public void Save()
+		internal void Save()
 		{
 			try
 			{

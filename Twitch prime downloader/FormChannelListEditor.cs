@@ -7,7 +7,7 @@ namespace Twitch_prime_downloader
 {
 	public partial class FormChannelListEditor : Form
 	{
-		public LinkedList<string> Channels { get; private set; }
+		internal LinkedList<string> Channels { get; private set; }
 
 		public FormChannelListEditor(IEnumerable<string> channels)
 		{

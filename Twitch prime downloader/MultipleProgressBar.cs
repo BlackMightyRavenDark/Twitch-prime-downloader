@@ -10,7 +10,7 @@ namespace Twitch_prime_downloader
 	public class MultipleProgressBar : Control
 	{
 		[DefaultValue(null)]
-		public IEnumerable<MultipleProgressBarItem> Items { get; private set; }
+		internal IEnumerable<MultipleProgressBarItem> Items { get; private set; }
 
 		public MultipleProgressBar()
 		{
@@ -77,33 +77,33 @@ namespace Twitch_prime_downloader
 #endif
 		}
 
-		public void SetItems(IEnumerable<MultipleProgressBarItem> items)
+		internal void SetItems(IEnumerable<MultipleProgressBarItem> items)
 		{
 			Items = items;
 			Refresh();
 		}
 
-		public void SetItem(int min, int max, int value, string title, Color backgroundColor)
+		internal void SetItem(int min, int max, int value, string title, Color backgroundColor)
 		{
 			MultipleProgressBarItem item = new MultipleProgressBarItem(min, max, value, title, backgroundColor);
 			SetItems(new[] { item });
 		}
 
-		public void ClearItems()
+		internal void ClearItems()
 		{
 			SetItems(null);
 		}
 	}
 
-	public class MultipleProgressBarItem
+	internal class MultipleProgressBarItem
 	{
-		public int MinValue { get; }
-		public int MaxValue { get; }
-		public int Value { get; }
-		public string Title { get; }
-		public Color BackgroundColor { get; }
+		internal int MinValue { get; }
+		internal int MaxValue { get; }
+		internal int Value { get; }
+		internal string Title { get; }
+		internal Color BackgroundColor { get; }
 
-		public MultipleProgressBarItem(int minValue, int maxValue, int value,
+		internal MultipleProgressBarItem(int minValue, int maxValue, int value,
 			string title, Color backgroundColor)
 		{
 			MinValue = minValue;
