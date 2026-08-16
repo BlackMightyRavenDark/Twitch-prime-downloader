@@ -932,22 +932,28 @@ namespace Twitch_prime_downloader
 					richTextBoxDebugLog.Text = playlistResult.Playlist.PlaylistRaw;
 				}
 
-				playlistResult.Playlist.Parse();
-
-				DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist)
+				if (playlistResult.Playlist.Parse() > 0)
 				{
-					Parent = panelDownloads,
-					Location = new Point(0, 0),
-					ChunkRangeFirstId = 0,
-					ChunkRangeLastId = playlistResult.Playlist.Count - 1
-				};
-				frame.Closed += OnFrameDownload_Closed;
-				downloadFrames.Add(frame);
+					DownloadFrame frame = new DownloadFrame(frameStream.Vod, playlistResult.Playlist)
+					{
+						Parent = panelDownloads,
+						Location = new Point(0, 0),
+						ChunkRangeFirstId = 0,
+						ChunkRangeLastId = playlistResult.Playlist.Count - 1
+					};
+					frame.Closed += OnFrameDownload_Closed;
+					downloadFrames.Add(frame);
 
-				tabPageDownloads.Text = $"Скачивание ({downloadFrames.Count})";
-				if (tabControlMain.SelectedTab == tabPageDownloads)
+					tabPageDownloads.Text = $"Скачивание ({downloadFrames.Count})";
+					if (tabControlMain.SelectedTab == tabPageDownloads)
+					{
+						StackDownloadFrames();
+					}
+				}
+				else
 				{
-					StackDownloadFrames();
+					MessageBox.Show("Произошла ошибка обработки плейлиста или он оказался пуст!", "Ошибка!",
+						MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
 			else
