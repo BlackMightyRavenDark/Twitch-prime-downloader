@@ -59,6 +59,7 @@ namespace Twitch_prime_downloader
 			SaveVodInfo = true;
 			SaveVodChunkInfo = false;
 			StoreVodSubChunksInfo = true;
+			VodInfoHudFontSize = 8;
 			AskWhenClosingWithActiveTasks = true;
 		}
 

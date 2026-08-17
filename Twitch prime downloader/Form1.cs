@@ -68,6 +68,7 @@ namespace Twitch_prime_downloader
 				json["saveVodInfo"] = config.SaveVodInfo;
 				json["saveVodChunkInfo"] = config.SaveVodChunkInfo;
 				json["storeVodSubChunksInfo"] = config.StoreVodSubChunksInfo;
+				json["vodInfoHudFontSize"] = config.VodInfoHudFontSize;
 				json["askWhenClosingWithActiveTasks"] = config.AskWhenClosingWithActiveTasks;
 				json["apiApplicationTitle"] = config.ApiApplicationTitle;
 				json["apiApplicationDescription"] = config.ApiApplicationDescription;
@@ -112,6 +113,15 @@ namespace Twitch_prime_downloader
 					config.StoreVodSubChunksInfo = jt == null || jt.Value<bool>();
 				}
 				{
+					JToken jt = json.Value<JToken>("vodInfoHudFontSize");
+					if (jt != null)
+					{
+						int min = (int)numericUpDownVodInfoHudFontSize.Minimum;
+						int max = (int)numericUpDownVodInfoHudFontSize.Maximum;
+						config.VodInfoHudFontSize = Clamp(jt.Value<int>(), min, max);
+					}
+				}
+				{
 					JToken jt = json.Value<JToken>("askWhenClosingWithActiveTasks");
 					config.AskWhenClosingWithActiveTasks = jt == null || jt.Value<bool>();
 				}
@@ -135,6 +145,7 @@ namespace Twitch_prime_downloader
 				textBoxDownloadDirectory.Text = config.DownloadDirectory;
 				textBoxOutputFileNameFormat.Text = config.OutputFileNameFormat;
 				textBoxBrowserExePath.Text = config.BrowserExeFilePath;
+				numericUpDownVodInfoHudFontSize.Value = config.VodInfoHudFontSize;
 				checkBoxAskWhenClosingWithActiveTasks.Checked = config.AskWhenClosingWithActiveTasks;
 				textBoxApiApplicationTitle.Text = config.ApiApplicationTitle;
 				textBoxApiApplicationDescription.Text = config.ApiApplicationDescription;
@@ -668,7 +679,17 @@ namespace Twitch_prime_downloader
 			config.AskWhenClosingWithActiveTasks = checkBoxAskWhenClosingWithActiveTasks.Checked;
 		}
 
-		private void listBoxChannelList_SelectedIndexChanged(object sender, EventArgs e)
+        private void numericUpDownVodInfoHudFontSize_ValueChanged(object sender, EventArgs e)
+        {
+
+			config.VodInfoHudFontSize = (int)numericUpDownVodInfoHudFontSize.Value;
+            foreach (VodFrame frame in vodFrames)
+            {
+				frame.HudFontSize = config.VodInfoHudFontSize;
+            }
+        }
+
+        private void listBoxChannelList_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			textBoxChannelName.Text = listBoxChannelList.Items[listBoxChannelList.SelectedIndex].ToString();
 		}
@@ -852,7 +873,7 @@ namespace Twitch_prime_downloader
 
 		private void AddStreamItem(TwitchVod vod)
 		{
-			VodFrame frame = new VodFrame(vod) { Parent = panelStreams };
+			VodFrame frame = new VodFrame(vod) { Parent = panelStreams, HudFontSize = config.VodInfoHudFontSize };
 			frame.Activated += OnVodFrame_Activated;
 			frame.ImageMouseDown += OnVodFrame_ThumbnailImageMouseDown;
 			frame.DownloadButtonClicked += OnVodFrame_DownloadButtonClick;
@@ -1081,5 +1102,5 @@ namespace Twitch_prime_downloader
 				frame.AbortDownload();
 			}
 		}
-	}
+    }
 }

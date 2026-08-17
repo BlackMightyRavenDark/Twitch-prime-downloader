@@ -267,6 +267,13 @@ namespace Twitch_prime_downloader
 				.Replace("\"", "\u201C").Replace("*", "\uFE61").Replace("^", "\u2303").Replace("\n", string.Empty);
 		}
 
+		internal static int Clamp(int value, int min, int max)
+		{
+			if (value < min) { return min; }
+			if (value > max) { return max; }
+			return value;
+		}
+
 		internal static Image TryLoadImageFromStream(Stream stream, out string errorMessage)
 		{
 			if (stream == null)
