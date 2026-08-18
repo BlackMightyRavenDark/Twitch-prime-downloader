@@ -236,20 +236,35 @@ namespace Twitch_prime_downloader
 							if (success)
 							{
 								string fn = Path.Combine(outputFilePath, progressItem.ChunkDownloader.ChunkWrapper.FileName);
-								success = SaveStreamToFile(progressItem.ChunkDownloader.OutputStream, fn);
-								if (success && saveChunkInfo)
+								success = SaveStreamToFile(progressItem.ChunkDownloader.OutputStream, fn, out
+#if DEBUG
+									string errorMessage
+#else
+									_
+#endif
+									);
+								if (success)
 								{
-									JObject jChunk = progressItem.ChunkDownloader.ChunkWrapper.Serialize(-1L, progressItem.DownloadedSize);
-									if (storeSubChunksInfo)
+									if (saveChunkInfo)
 									{
-										JArray jaSubChunks = progressItem.ChunkDownloader.ChunkWrapper.ExtractSubChunks(progressItem.ChunkDownloader.OutputStream, 0L);
-										if (jaSubChunks != null)
+										JObject jChunk = progressItem.ChunkDownloader.ChunkWrapper.Serialize(-1L, progressItem.DownloadedSize);
+										if (storeSubChunksInfo)
 										{
-											jChunk["subChunks"] = jaSubChunks;
+											JArray jaSubChunks = progressItem.ChunkDownloader.ChunkWrapper.ExtractSubChunks(progressItem.ChunkDownloader.OutputStream, 0L);
+											if (jaSubChunks != null)
+											{
+												jChunk["subChunks"] = jaSubChunks;
+											}
 										}
+										File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
 									}
-									File.WriteAllText(fn + "_chunk.json", jChunk.ToString());
 								}
+#if DEBUG
+								else if (!string.IsNullOrWhiteSpace(errorMessage))
+								{
+									System.Diagnostics.Debug.WriteLine(errorMessage);
+								}
+#endif
 							}
 
 							progressItem.ChunkDownloader.OutputStream.Dispose();

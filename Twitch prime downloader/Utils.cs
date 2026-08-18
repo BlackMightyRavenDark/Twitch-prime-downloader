@@ -312,21 +312,22 @@ namespace Twitch_prime_downloader
 			return true;
 		}
 
-		internal static bool SaveStreamToFile(Stream stream, string filePath)
+		internal static bool SaveStreamToFile(Stream stream, string filePath, out string errorMessage)
 		{
 			try
 			{
+				errorMessage = null;
 				if (File.Exists(filePath)) { File.Delete(filePath); }
 				return stream.SaveToFile(filePath);
 			}
-#if DEBUG
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
-#else
-			catch { }
+				errorMessage = ex.Message;
+#if DEBUG
+				System.Diagnostics.Debug.WriteLine(errorMessage);
 #endif
+			}
+
 			return false;
 		}
 
