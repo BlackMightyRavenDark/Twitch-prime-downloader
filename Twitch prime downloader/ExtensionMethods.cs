@@ -31,11 +31,11 @@ namespace Twitch_prime_downloader
 
 		internal static bool SaveToFile(this Stream stream, string fileName, bool fromOrigin = true)
 		{
-			Stream fileStream = File.OpenWrite(fileName);
-			if (fromOrigin) { stream.Position = 0L; }
-			bool res = MultiThreadedDownloaderLib.StreamAppender.Append(stream, fileStream);
-			fileStream.Dispose();
-			return res;
+			using (Stream fileStream = File.OpenWrite(fileName))
+			{
+				if (fromOrigin) { stream.Position = 0L; }
+				return MultiThreadedDownloaderLib.StreamAppender.Append(stream, fileStream);
+			}
 		}
 
 		internal static Rectangle Deflate(this Rectangle rectangle, int width, int height)
